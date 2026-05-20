@@ -89,6 +89,18 @@ assert(
   oidcTemplate.includes("token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/${GitHubBranch}"),
   "GitHub OIDC trust policy must stay scoped to one repository branch."
 );
+assert(
+  oidcTemplate.includes("CdkBootstrapCloudFormationExecutionRolePassRole"),
+  "GitHub OIDC deploy role must pass the CDK CloudFormation execution role."
+);
+assert(
+  oidcTemplate.includes("role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}"),
+  "CDK PassRole permission must stay scoped to the bootstrap CloudFormation execution role."
+);
+assert(
+  oidcTemplate.includes("iam:PassedToService: cloudformation.amazonaws.com"),
+  "CDK PassRole permission must only pass roles to CloudFormation."
+);
 assert(!oidcTemplate.includes("AdministratorAccess"), "GitHub OIDC deploy role must not use AdministratorAccess.");
 assert(!oidcTemplate.includes("repo:${GitHubOrg}/${GitHubRepo}:*"), "GitHub OIDC deploy role must not allow every repository ref.");
 

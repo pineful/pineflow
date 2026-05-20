@@ -78,6 +78,8 @@ Role trust policy는 다음 조건을 강제한다.
 
 CloudFormation-managed resource change statement에는 `aws:CalledVia = cloudformation.amazonaws.com` 조건을 둔다.
 
+CDK 배포 과정에서는 GitHub Actions Role이 CDK bootstrap의 CloudFormation execution role을 CloudFormation에 전달해야 한다. 이를 위해 `cdk-hnb659fds-cfn-exec-role-${account}-${region}`에 대한 `iam:PassRole`만 허용하고, `iam:PassedToService = cloudformation.amazonaws.com` 조건을 둔다.
+
 ## 비용 검증
 
 이 템플릿이 직접 만드는 리소스:

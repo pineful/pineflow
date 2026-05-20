@@ -31,6 +31,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - GitHub OIDC 배포 Role 템플릿과 설정 문서 추가.
 - GitHub OIDC trust policy 범위와 `AdministratorAccess` 금지를 자동 검증에 포함.
 - GitHub Actions 공식 action 버전을 Node 24 대응 버전으로 갱신.
+- CDK bootstrap CloudFormation execution role에 대한 제한된 PassRole 권한을 GitHub OIDC 배포 Role에 추가.
 
 ## 검증됨
 

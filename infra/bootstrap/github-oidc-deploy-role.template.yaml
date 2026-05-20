@@ -115,6 +115,15 @@ Resources:
                   - cloudfront:GetDistributionConfig
                   - cloudfront:ListDistributions
                 Resource: "*"
+              - Sid: CdkBootstrapCloudFormationExecutionRolePassRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: cloudformation.amazonaws.com
               - Sid: CloudFormationManagedResourceChanges
                 Effect: Allow
                 Action:
