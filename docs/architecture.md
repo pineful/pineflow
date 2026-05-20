@@ -6,6 +6,8 @@ Pineflow는 Vite React 프론트엔드, Express API 서버, PostgreSQL 데이터
 
 운영 환경에서는 Express 서버가 API와 빌드된 프론트엔드 정적 파일을 함께 제공합니다. AWS EC2에서는 `app` 컨테이너와 `postgres` 컨테이너를 Docker Compose로 분리해 실행합니다.
 
+이 구조는 PoC 기준입니다. 다음 본선 아키텍처는 Cognito, API Gateway, Lambda, DynamoDB, S3/CloudFront 기반 Serverless 구조로 전환합니다. 전환 계획은 `docs/serverless-plan.md`를 기준으로 합니다.
+
 ## 경계
 
 - `src/App.tsx`: 화면 구성과 사용자 상호작용.
@@ -31,6 +33,7 @@ Pineflow는 Vite React 프론트엔드, Express API 서버, PostgreSQL 데이터
 - `docs/cicd.md`: CI/CD 설계와 운영 절차.
 - `docs/security.md`: secret, 접근 제어, GitHub/AWS credential 관리 정책.
 - `docs/data-management.md`: 백업, 복구, migration 계획.
+- `docs/serverless-plan.md`: AWS Free Tier 기준 Serverless 전환 계획.
 
 ## 변경 정책
 
@@ -42,5 +45,5 @@ Pineflow는 Vite React 프론트엔드, Express API 서버, PostgreSQL 데이터
 - 기록 내보내기 기능 추가.
 - 계정 동기화와 다중 기기 사용 지원.
 - PostgreSQL 마이그레이션 도구 도입.
-- EC2 단일 인스턴스 구조에서 RDS 또는 관리형 배포 구조로 이전.
+- EC2 PoC 구조에서 Cognito/API Gateway/Lambda/DynamoDB 기반 Serverless 구조로 이전.
 - GitHub Actions rollback 자동화.

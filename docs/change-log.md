@@ -15,3 +15,4 @@
 - API access token, 보안 헤더, rate limit, secret 관리 문서, DB 백업/복구 계획을 추가했습니다.
 - GitHub에 EC2 SSH private key를 저장하지 않도록 pull-based CI/CD 구조로 전환했습니다.
 - 현재 구현/운영/보안/데이터 관리 진행 상황을 `docs/status.md`에 정리했습니다.
+- AWS Free Tier 기준 Serverless 전환 계획을 `docs/serverless-plan.md`에 추가했습니다.

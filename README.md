@@ -4,6 +4,8 @@ Pineflow는 회사 출퇴근 시스템에 속해 있지 않아도 개인의 업�
 
 출근/퇴근 기록과 개인 업무 리듬은 PostgreSQL에 저장하며, 현재 운영 구조는 AWS EC2 `t3.micro` 한 대에서 `app` 컨테이너와 `postgres` 컨테이너를 분리해 실행하는 방식을 기준으로 합니다.
 
+현재 EC2 Docker/PostgreSQL 구성은 PoC입니다. 다음 본선은 AWS Free Tier를 최대한 벗어나지 않는 Serverless 구조이며, 전환 계획은 `docs/serverless-plan.md`에 정리합니다.
+
 ## 로컬 실행
 
 이 Windows 환경에서는 npm이 레지스트리에 접속할 때 Node가 Windows 시스템 인증서 저장소를 사용하도록 설정해야 합니다.
@@ -54,5 +56,6 @@ docker compose -p pineflow -f compose.prod.yml up -d --build
 - CI/CD 흐름: `docs/cicd.md`
 - 보안 설계: `docs/security.md`
 - 데이터 백업/마이그레이션: `docs/data-management.md`
+- Serverless 전환 계획: `docs/serverless-plan.md`
 
 기능이나 구조를 수정할 때는 관련 모듈 문서를 같은 변경 안에서 함께 갱신합니다.

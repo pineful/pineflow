@@ -4,9 +4,9 @@
 
 ## 현재 상태 요약
 
-Pineflow는 모바일 우선 출퇴근 기록 앱의 초기 구현, PostgreSQL 기반 저장 구조, EC2 Docker 운영 설계, pull-based CI/CD 설계, 기본 보안 장치, 백업/복구 계획까지 완료된 상태입니다.
+Pineflow는 모바일 우선 출퇴근 기록 앱의 PoC 구현, PostgreSQL 기반 저장 구조, EC2 Docker 운영 설계, pull-based CI/CD 설계, 기본 보안 장치, 백업/복구 계획까지 완료된 상태입니다.
 
-아직 실제 AWS EC2 인스턴스에서 운영 검증은 진행하지 않았습니다. 인스턴스 생성, 시작, 중단, 서비스 실행은 운영자가 직접 수행하는 전제입니다.
+새로운 본선 방향은 AWS Free Tier를 최대한 벗어나지 않는 Serverless 구조입니다. EC2 Docker/PostgreSQL 구성은 PoC로 보존하고, 이후 작업은 `docs/serverless-plan.md`를 기준으로 진행합니다.
 
 ## 완료됨
 
@@ -29,6 +29,7 @@ Pineflow는 모바일 우선 출퇴근 기록 앱의 초기 구현, PostgreSQL �
 - secret 관리 문서 추가.
 - DB 백업/복구 스크립트 추가.
 - 데이터 백업/복구/마이그레이션 계획 문서화.
+- AWS Serverless Free Tier 전환 계획 작성.
 
 ## 검증됨
 
@@ -40,26 +41,25 @@ Pineflow는 모바일 우선 출퇴근 기록 앱의 초기 구현, PostgreSQL �
 
 ## 아직 남은 일
 
-- EC2 인스턴스에서 Docker와 Docker Compose 설치 확인.
-- EC2에 repository clone.
-- EC2에 `.env.production` 작성.
-- GHCR package 공개 여부 결정.
-- GHCR을 private으로 유지한다면 EC2에서 `docker login ghcr.io` 1회 수행.
-- `compose.deploy.yml`로 최초 컨테이너 실행.
-- `ops/systemd` timer 설치 여부 결정.
-- 도메인과 HTTPS 적용.
-- 실제 운영 환경에서 `/api/health`와 UI 접근 검증.
-- DB 백업 파일을 인스턴스 밖으로 복사하는 운영 루틴 확정.
-- 정식 migration 도구 도입.
-- rollback 스크립트 추가.
+- Serverless IaC 도구 선택: AWS SAM 또는 CDK.
+- Cognito User Pool 설계.
+- API Gateway HTTP API와 Cognito authorizer 설계.
+- Lambda API 구현.
+- DynamoDB single-table schema 구현.
+- 프론트엔드 Cognito 로그인 연동.
+- PostgreSQL PoC 데이터 export/import 전략 구현.
+- Budget, throttling, Lambda concurrency, log retention 적용.
+- EC2 PoC 문서 archive 여부 결정.
 
 ## 현재 CI/CD 방향
 
-현재 CI/CD는 push-based SSH 배포가 아닙니다.
+현재 PoC CI/CD는 push-based SSH 배포가 아닙니다.
 
 - GitHub Actions는 image build와 GHCR push까지만 수행합니다.
 - EC2 접속 정보와 SSH private key는 GitHub에 저장하지 않습니다.
 - EC2가 systemd timer 또는 운영자 수동 명령으로 GitHub/GHCR을 pull합니다.
+
+Serverless 전환 후에는 GitHub Actions가 IaC 배포와 프론트엔드 정적 배포를 맡는 구조로 다시 설계합니다. AWS credential은 장기 access key 대신 GitHub OIDC와 IAM Role을 사용하는 방향입니다.
 
 ## 주요 문서
 
@@ -69,4 +69,5 @@ Pineflow는 모바일 우선 출퇴근 기록 앱의 초기 구현, PostgreSQL �
 - CI/CD: `docs/cicd.md`
 - 보안: `docs/security.md`
 - 데이터 관리: `docs/data-management.md`
+- Serverless 전환 계획: `docs/serverless-plan.md`
 - 변경 기록: `docs/change-log.md`
