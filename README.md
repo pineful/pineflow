@@ -44,6 +44,7 @@ docker compose -p pineflow -f compose.prod.yml up -d --build
 
 ## 문서
 
+- 진행 상황: `docs/status.md`
 - 제품 계획: `docs/product-plan.md`
 - 아키텍처: `docs/architecture.md`
 - 브랜드 시스템: `docs/brand.md`
