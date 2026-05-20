@@ -9,3 +9,4 @@
 - Chose Pineflow as the product name.
 - Replaced local browser persistence with an Express API and PostgreSQL schema.
 - Added local PostgreSQL Docker Compose setup and AWS Free Tier deployment notes.
+- Added production Docker artifacts for running app and PostgreSQL as separate containers on one EC2 instance.

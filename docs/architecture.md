@@ -16,6 +16,8 @@ Pineflow is implemented as a Vite React single-page app backed by an Express API
 - `server/db.mjs`: PostgreSQL pool and migration bootstrap.
 - `server/schema.sql`: Database tables and indexes.
 - `docker-compose.yml`: Local PostgreSQL development database.
+- `compose.prod.yml`: Production EC2 topology with separate app and PostgreSQL containers.
+- `Dockerfile`: Production app image.
 - `docs/development.md`: Local environment and command notes.
 - `docs/deployment-aws.md`: AWS Free Tier deployment guidance.
 

@@ -25,6 +25,17 @@ $env:NODE_OPTIONS='--use-system-ca'
 & "C:\Program Files\nodejs\npm.cmd" run build
 ```
 
+## Production Docker Shape
+
+Production is designed for one EC2 instance running separate `app` and `postgres` containers:
+
+```bash
+cp .env.production.example .env.production
+docker compose -p pineflow -f compose.prod.yml up -d --build
+```
+
+See `docs/deployment-aws.md` for the full operating flow.
+
 ## Documentation
 
 - Product plan: `docs/product-plan.md`
