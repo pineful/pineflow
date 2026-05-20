@@ -66,5 +66,6 @@ Serverless 운영 배포는 GitHub OIDC와 AWS IAM Role을 사용합니다. 장�
 - Serverless 전환 계획: `docs/serverless-plan.md`
 - Serverless 구현 현황: `docs/serverless-implementation.md`
 - AWS Serverless 배포 전 점검표: `docs/aws-serverless-deployment-checklist.md`
+- GitHub OIDC IAM Role: `docs/aws-iam-oidc.md`
 
 기능이나 구조가 변경될 때는 관련 모듈 문서와 변경 기록을 함께 갱신합니다.

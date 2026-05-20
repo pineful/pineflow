@@ -7,7 +7,7 @@
 1. AWS 계정의 Free Tier/크레딧 상태와 기본 Region을 확인한다.
 2. 배포 Region은 우선 `ap-northeast-2`를 사용한다. 다른 Region을 쓰려면 GitHub `AWS_REGION` variable만 바꾼다.
 3. AWS CLI로 CDK bootstrap을 1회 수행한다.
-4. GitHub OIDC provider와 Pineflow 배포용 IAM Role을 만든다.
+4. `docs/aws-iam-oidc.md` 절차에 따라 GitHub OIDC provider와 Pineflow 배포용 IAM Role을 만든다.
 5. GitHub repository variables를 등록한다.
    - `AWS_ROLE_ARN`
    - `AWS_REGION`
@@ -30,6 +30,7 @@
 - S3 bucket은 public access가 차단된다.
 - CloudFront만 S3에 접근할 수 있다.
 - WAF, Route 53, custom domain, NAT Gateway, VPC Lambda, provisioned concurrency는 사용하지 않는다.
+- GitHub OIDC Role 템플릿 자체는 IAM 리소스만 만들며 월 비용을 만들지 않는다.
 
 ## 배포가 만드는 리소스
 

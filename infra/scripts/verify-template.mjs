@@ -5,6 +5,8 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const templatePath = join(__dirname, "..", "cdk.out", "PineflowServerlessStack.template.json");
 const template = JSON.parse(readFileSync(templatePath, "utf8"));
+const oidcTemplatePath = join(__dirname, "..", "bootstrap", "github-oidc-deploy-role.template.yaml");
+const oidcTemplate = readFileSync(oidcTemplatePath, "utf8");
 const resources = Object.values(template.Resources);
 
 function assert(condition, message) {
@@ -74,5 +76,20 @@ assert(!policyActions.includes("dynamodb:BatchWriteItem"), "Lambda role must not
 const budgets = resourcesOf("AWS::Budgets::Budget");
 const budgetAmounts = budgets.map((budget) => budget.Properties.Budget.BudgetLimit.Amount).sort();
 assert(JSON.stringify(budgetAmounts) === JSON.stringify([1, 3, 5]), "Budgets must exist at $1, $3, and $5.");
+
+assert(
+  oidcTemplate.includes("Url: https://token.actions.githubusercontent.com"),
+  "GitHub OIDC provider URL must stay pinned to GitHub Actions."
+);
+assert(
+  oidcTemplate.includes("token.actions.githubusercontent.com:aud: sts.amazonaws.com"),
+  "GitHub OIDC trust policy must require sts.amazonaws.com audience."
+);
+assert(
+  oidcTemplate.includes("token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/${GitHubBranch}"),
+  "GitHub OIDC trust policy must stay scoped to one repository branch."
+);
+assert(!oidcTemplate.includes("AdministratorAccess"), "GitHub OIDC deploy role must not use AdministratorAccess.");
+assert(!oidcTemplate.includes("repo:${GitHubOrg}/${GitHubRepo}:*"), "GitHub OIDC deploy role must not allow every repository ref.");
 
 console.log("Pineflow serverless guardrail verification passed.");

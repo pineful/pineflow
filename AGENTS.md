@@ -32,6 +32,7 @@
 - API contract가 바뀌면 `docs/api-contract.md`를 갱신한다.
 - 인증, 저장소, 비용, CI/CD, 배포 흐름이 바뀌면 관련 `docs/modules/` 문서와 `docs/llm-context.md`를 갱신한다.
 - AWS 리소스가 추가되면 `docs/aws-serverless-deployment-checklist.md`와 `infra/scripts/verify-template.mjs`를 같이 갱신한다.
+- GitHub OIDC/IAM 권한이 바뀌면 `docs/aws-iam-oidc.md`, `infra/bootstrap/github-oidc-deploy-role.template.yaml`, ADR을 같이 갱신한다.
 
 ## 검증 명령
 
@@ -60,6 +61,7 @@ cd infra
 - S3 static website hosting 공개
 - CloudFront OAC 제거
 - GitHub Secrets에 AWS Access Key 저장
+- GitHub OIDC trust policy를 `main` branch 밖으로 넓힘
 - WAF, Route 53, NAT Gateway, RDS, VPC Lambda, provisioned concurrency 추가
 - DynamoDB table replacement가 발생하는 키 구조 변경
 

@@ -102,6 +102,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - AWS 리소스 변경: `docs/serverless-implementation.md`, `docs/aws-serverless-deployment-checklist.md`, `infra/scripts/verify-template.mjs`
 - 비용 정책 변경: `docs/cost-guardrails.md`, `docs/adr/`
 - CI/CD 변경: `docs/cicd.md`, `.github/workflows/serverless.yml`
+- GitHub OIDC/IAM 변경: `docs/aws-iam-oidc.md`, `infra/bootstrap/github-oidc-deploy-role.template.yaml`, `docs/adr/`
 - 제품/브랜드 변경: `docs/product-plan.md`, `docs/brand.md`, `docs/modules/branding.md`
 
 ## 현재 주의사항
