@@ -1,12 +1,12 @@
 # Pineflow
 
-Pineflow is a mobile-first personal commute logger for people who want to record work boundaries without belonging to a company attendance system.
+Pineflow는 회사 출퇴근 시스템에 속해 있지 않아도 개인의 업무 시작과 종료를 기록할 수 있는 모바일 우선 출퇴근 기록 서비스입니다.
 
-개인적으로 회사에 속해있지 않더라도 출퇴근을 기록하고, PostgreSQL에 개인 업무 리듬을 저장하는 모바일 서비스입니다.
+출근/퇴근 기록과 개인 업무 리듬은 PostgreSQL에 저장하며, 현재 운영 구조는 AWS EC2 `t3.micro` 한 대에서 `app` 컨테이너와 `postgres` 컨테이너를 분리해 실행하는 방식을 기준으로 합니다.
 
-## Run
+## 로컬 실행
 
-In this Windows environment, npm needs Node to use the system certificate store:
+이 Windows 환경에서는 npm이 레지스트리에 접속할 때 Node가 Windows 시스템 인증서 저장소를 사용하도록 설정해야 합니다.
 
 ```powershell
 $env:NODE_OPTIONS='--use-system-ca'
@@ -16,33 +16,33 @@ docker compose up -d postgres
 & "C:\Program Files\nodejs\npm.cmd" run dev
 ```
 
-Set `VITE_API_BASE_URL=http://127.0.0.1:3001` in `.env` when running the Vite app separately from the API server. In production, `npm start` serves both the API and the built frontend from the same Express process.
+Vite 개발 서버와 API 서버를 따로 실행할 때는 `.env`에 `VITE_API_BASE_URL=http://127.0.0.1:3001`를 둡니다. 운영에서는 `npm start`가 API와 빌드된 프론트엔드를 같은 Express 프로세스에서 제공합니다.
 
-## Build
+## 빌드
 
 ```powershell
 $env:NODE_OPTIONS='--use-system-ca'
 & "C:\Program Files\nodejs\npm.cmd" run build
 ```
 
-## Production Docker Shape
+## 운영용 Docker 구조
 
-Production is designed for one EC2 instance running separate `app` and `postgres` containers:
+운영은 EC2 인스턴스 한 대에서 `app`, `postgres` 컨테이너를 분리해 실행하도록 설계되어 있습니다.
 
 ```bash
 cp .env.production.example .env.production
 docker compose -p pineflow -f compose.prod.yml up -d --build
 ```
 
-See `docs/deployment-aws.md` for the full operating flow.
+전체 운영 흐름은 `docs/deployment-aws.md`에 정리되어 있습니다.
 
-## Documentation
+## 문서
 
-- Product plan: `docs/product-plan.md`
-- Architecture: `docs/architecture.md`
-- Brand system: `docs/brand.md`
-- Module notes: `docs/modules/`
-- Change log: `docs/change-log.md`
-- AWS deployment notes: `docs/deployment-aws.md`
+- 제품 계획: `docs/product-plan.md`
+- 아키텍처: `docs/architecture.md`
+- 브랜드 시스템: `docs/brand.md`
+- 모듈 설계: `docs/modules/`
+- 변경 기록: `docs/change-log.md`
+- AWS 배포/운영 흐름: `docs/deployment-aws.md`
 
-When a module changes, update the matching document in `docs/modules/` during the same change.
+기능이나 구조를 수정할 때는 관련 모듈 문서를 같은 변경 안에서 함께 갱신합니다.

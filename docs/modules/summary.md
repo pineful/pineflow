@@ -1,22 +1,23 @@
-# Summary Module
+# 요약 모듈
 
-## Responsibility
+## 책임
 
-The summary module calculates today's worked time, first check-in, last check-out, and progress against the user's daily goal.
+요약 모듈은 오늘의 누적 근무 시간, 첫 출근, 마지막 퇴근, 하루 목표 대비 진행률을 계산합니다.
 
-## Design Thought
+## 설계 사상
 
-The app should answer "how is my day going?" before it answers "what is my history?" The daily progress bar is therefore closer to the main action than the timeline.
+Pineflow는 사용자가 “내 오늘이 어떻게 흘러가고 있지?”를 먼저 알 수 있어야 합니다. 그래서 오늘의 진행률은 최근 기록보다 더 위에 배치됩니다.
 
-## Current Rules
+## 현재 규칙
 
-- Only records from the current local calendar day count toward today's summary.
-- Paired check-in/check-out records produce completed duration.
-- An active session contributes live elapsed time until checkout.
-- The daily goal is stored as minutes and can be changed in 30-minute increments.
+- 사용자의 현재 로컬 날짜와 같은 날의 기록만 오늘 요약에 포함합니다.
+- 짝이 맞는 출근/퇴근 기록은 완료된 시간으로 계산합니다.
+- 활성 세션은 퇴근 전까지 현재 시각 기준으로 누적 시간에 반영합니다.
+- 하루 목표 시간은 분 단위로 저장하며 30분 단위로 변경할 수 있습니다.
 
-## Future Changes To Document
+## 향후 문서화할 변경
 
-- Weekly rollups.
-- Custom day boundary for night workers.
-- Break tracking.
+- 주간 요약.
+- 야간 근무자를 위한 하루 경계 설정.
+- 휴식 시간 추적.
+- 통계 차트와 내보내기.

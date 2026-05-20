@@ -1,24 +1,24 @@
-# Brand System
+# 브랜드 시스템
 
-## Selected Name
+## 확정 이름
 
 Pineflow
 
-The name keeps the user's `pineful` sound while making the service purpose obvious: recording the flow of a self-directed day.
+이름은 사용자의 `pineful` 발음감을 살리면서, 하루의 흐름을 기록한다는 서비스 목적을 직접적으로 전달합니다.
 
-## Naming Candidates
+## 네이밍 후보
 
-- Pineflow: strongest default because it blends identity and time flow.
-- Pinefull: more emotional, focused on filling one's day.
-- PinePulse: more technical and energetic, useful if the product later becomes analytics-heavy.
+- Pineflow: 정체성과 시간의 흐름이 함께 드러나는 가장 강한 기본안입니다.
+- Pinefull: 스스로 하루를 채워간다는 감정이 더 강한 이름입니다.
+- PinePulse: 리듬과 데이터 분석 느낌이 강해, 나중에 분석 중심 제품으로 확장할 때 어울립니다.
 
-## Logo Idea
+## 로고 아이디어
 
-The logo transforms a pineapple into a small tech object. The leaves signal growth and freshness, while the pineapple body carries circuit lines and nodes to imply data, rhythm, and personal systems.
+로고는 파인애플을 작은 테크 오브젝트처럼 변형합니다. 잎은 성장과 신선함을, 파인애플 본체의 회로선과 노드는 데이터, 리듬, 개인 시스템을 의미합니다.
 
-## Visual Principles
+## 시각 원칙
 
-- Warm technology, not cold enterprise software.
-- Personal routine, not surveillance.
-- Green and yellow are used as pineapple anchors, balanced with neutral backgrounds so the UI does not become a single-color theme.
-- Cards are reserved for compact repeatable information; main sections stay clean and unframed.
+- 차가운 기업용 소프트웨어보다 따뜻한 기술 제품처럼 느껴져야 합니다.
+- 감시가 아니라 개인 루틴 기록이라는 인상을 줍니다.
+- 초록과 노랑은 파인애플의 핵심 색으로 쓰되, 중립 배경과 섞어 단조로운 단색 UI가 되지 않게 합니다.
+- 카드는 반복 정보나 작은 정보 묶음에만 사용하고, 주요 섹션은 깔끔하게 열어 둡니다.

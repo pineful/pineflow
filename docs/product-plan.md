@@ -1,40 +1,42 @@
-# Pineflow Product Plan
+# Pineflow 제품 계획
 
-## Vision
+## 비전
 
-Pineflow is a mobile-first personal commute and work-rhythm logger for people who do not belong to a company system, but still want the psychological clarity of starting and ending a work block.
+Pineflow는 회사 소속 여부와 관계없이 개인이 자신의 업무 시작과 종료를 기록하고, 하루의 리듬을 스스로 관리할 수 있게 돕는 모바일 우선 서비스입니다.
 
-## Target Users
+서비스의 분위기는 회사 근태 관리가 아니라 개인 루틴 기록에 가깝습니다. 사용자는 감시받는 느낌이 아니라, 하루를 시작하고 마무리하는 작은 의식을 갖는 느낌을 받아야 합니다.
 
-- Freelancers who need a lightweight time boundary.
-- Students or creators who want to record deep work sessions.
-- Remote workers who want a private record separate from an employer tool.
-- People rebuilding a routine after a break.
+## 대상 사용자
 
-## Core Jobs
+- 회사 근태 시스템 밖에서 일하는 프리랜서.
+- 공부, 창작, 사이드 프로젝트 시간을 관리하고 싶은 개인.
+- 회사 도구와 별개로 개인용 업무 기록을 남기고 싶은 원격 근무자.
+- 무너진 생활 리듬을 다시 세우려는 사용자.
 
-1. Start a work block with one decisive action.
-2. End the block and preserve the day history.
-3. See today's accumulated time against a personal goal.
-4. Classify the session by intent, not by employer.
-5. Store records in PostgreSQL so the service can move from one device to another.
+## 핵심 작업
 
-## Version 0.1 Scope
+1. 한 번의 명확한 행동으로 업무 시작을 기록한다.
+2. 퇴근 기록으로 업무 세션을 종료한다.
+3. 오늘 누적 시간을 개인 목표와 비교한다.
+4. 회사나 부서가 아니라 의도와 활동 유형으로 세션을 분류한다.
+5. PostgreSQL에 기록을 저장해 브라우저나 기기 하나에 묶이지 않게 한다.
 
-- PostgreSQL-backed check-in and check-out.
-- Work modes: focus work, remote routine, study/growth, personal project.
-- Daily goal slider.
-- Today summary and recent timeline.
-- Brand surface: name, logo, tagline, naming options.
-- AWS Free Tier deployment plan.
+## 0.1 범위
 
-## Explicit Non-Goals
+- PostgreSQL 기반 출근/퇴근 기록.
+- 업무 유형: 집중 근무, 원격 루틴, 학습/성장, 개인 프로젝트.
+- 하루 목표 시간 슬라이더.
+- 오늘 요약과 최근 기록 타임라인.
+- Pineflow 이름, 태그라인, 파인애플 테크 로고.
+- AWS EC2 `t3.micro` + Docker Compose 운영 설계.
 
-- Company attendance approval.
-- Payroll or compliance reports.
-- Account login.
-- GPS tracking.
+## 명시적 비범위
 
-## Review Notes
+- 회사 승인/결재 기반 근태 관리.
+- 급여, 노무, 법적 보고 기능.
+- 계정 로그인과 다중 사용자 인증.
+- GPS 추적.
 
-The first release intentionally avoids institutional language. The service should feel like a personal ritual tool, not a corporate attendance product.
+## 검토 메모
+
+초기 버전은 조직 관리 도구처럼 느껴지면 안 됩니다. “내가 나의 하루를 시작하고 끝낸다”는 감각이 제품의 중심입니다.

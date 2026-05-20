@@ -1,21 +1,21 @@
-# Branding Module
+# 브랜딩 모듈
 
-## Responsibility
+## 책임
 
-The branding module centralizes product name, tagline, work mode labels, and naming candidates.
+브랜딩 모듈은 제품명, 태그라인, 업무 유형 라벨, 네이밍 후보를 한곳에서 관리합니다.
 
-## Design Thought
+## 설계 사상
 
-Brand text is isolated so future naming changes can happen without hunting through UI code. This is especially important because the user asked for continuing partial modification.
+브랜드 문구는 UI 코드 곳곳에 흩어지면 이후 수정이 어려워집니다. 사용자가 지속적인 부분 수정을 원했으므로, 이름과 문구는 별도 모듈에 모아 변경 비용을 낮춥니다.
 
-## Current Rules
+## 현재 규칙
 
-- `Pineflow` is the implemented product name.
-- `나만의 리듬으로 남기는 출퇴근` is the current tagline.
-- Work modes avoid company-specific categories.
+- 제품명은 `Pineflow`입니다.
+- 현재 태그라인은 `나만의 리듬으로 남기는 출퇴근`입니다.
+- 업무 유형은 회사 부서나 직책이 아니라 개인 활동의 의도를 기준으로 둡니다.
 
-## Future Changes To Document
+## 향후 문서화할 변경
 
-- Final Korean name variant.
-- App icon exports.
-- Tone-of-voice rules for notifications and onboarding.
+- 최종 한국어 서비스명 변형.
+- 앱 아이콘 export.
+- 알림과 온보딩 문구의 톤앤매너.

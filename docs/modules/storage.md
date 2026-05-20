@@ -1,22 +1,28 @@
-# Storage Module
+# 저장소 모듈
 
-## Responsibility
+## 책임
 
-The storage module persists commute sessions and user settings in PostgreSQL through the Express API.
+저장소 모듈은 Express API를 통해 출퇴근 세션과 사용자 설정을 PostgreSQL에 저장합니다.
 
-## Design Thought
+## 설계 사상
 
-PostgreSQL is the durable source of truth. The browser should not own attendance data because Pineflow is moving toward a real hosted service, GitHub-backed development, and AWS deployment.
+Pineflow가 실제 호스팅 서비스로 이동하고 있으므로, 브라우저 저장소가 기록의 원천이 되어서는 안 됩니다. PostgreSQL을 durable source of truth로 두고, 프론트엔드는 API 응답을 화면 상태로 사용합니다.
 
-## Current Contract
+## 현재 계약
 
-- `work_sessions` stores check-in/check-out sessions.
-- `user_settings` stores per-owner settings such as `daily_goal_minutes`.
-- One active session per owner is enforced by a partial unique index.
-- The API returns the existing `CommuteState` shape so the UI can stay simple.
+- `work_sessions`는 출근/퇴근 세션을 저장합니다.
+- `user_settings`는 owner별 설정을 저장합니다.
+- `daily_goal_minutes`는 하루 목표 시간을 분 단위로 저장합니다.
+- 부분 unique index로 owner별 활성 세션을 하나만 허용합니다.
+- API는 프론트엔드가 쓰기 쉬운 `CommuteState` 형태로 상태를 반환합니다.
 
-## Future Changes To Document
+## 운영 메모
 
-- Formal migration tooling.
-- Authentication-backed owner keys.
-- Encrypted backups.
+운영 환경에서는 PostgreSQL 컨테이너의 named volume에 데이터가 저장됩니다. 이 볼륨은 편리한 영속 저장소지만 백업을 대체하지 않습니다. EC2 인스턴스나 EBS 볼륨을 삭제하기 전에는 반드시 `pg_dump` 백업을 남겨야 합니다.
+
+## 향후 문서화할 변경
+
+- 정식 마이그레이션 도구 도입.
+- 인증 기반 owner key.
+- 암호화된 백업.
+- RDS 이전 시 연결/백업 정책.

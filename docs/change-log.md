@@ -1,12 +1,13 @@
-# Change Log
+# 변경 기록
 
 ## 2026-05-20
 
-- Created the Pineflow mobile-first commute recording app.
-- Added product plan, architecture notes, brand notes, and module design documents.
-- Implemented local check-in/check-out, today's summary, daily goal control, recent timeline, and pineapple-tech logo.
-- Diagnosed npm certificate verification and documented the environment fix: run npm commands with `NODE_OPTIONS=--use-system-ca` in this Windows environment.
-- Chose Pineflow as the product name.
-- Replaced local browser persistence with an Express API and PostgreSQL schema.
-- Added local PostgreSQL Docker Compose setup and AWS Free Tier deployment notes.
-- Added production Docker artifacts for running app and PostgreSQL as separate containers on one EC2 instance.
+- Pineflow 모바일 우선 출퇴근 기록 앱을 생성했습니다.
+- 제품 계획, 아키텍처, 브랜드, 모듈 설계 문서를 추가했습니다.
+- 출근/퇴근 기록, 오늘 요약, 하루 목표 시간, 최근 기록 타임라인, 파인애플 테크 로고를 구현했습니다.
+- Windows npm 인증서 문제를 확인하고 `NODE_OPTIONS=--use-system-ca` 해결 방법을 문서화했습니다.
+- 제품명을 `Pineflow`로 확정했습니다.
+- 브라우저 로컬 저장소 대신 Express API와 PostgreSQL 스키마를 사용하도록 전환했습니다.
+- 로컬 PostgreSQL Docker Compose 설정을 추가했습니다.
+- AWS EC2 `t3.micro` 한 대에서 app/postgres 컨테이너를 분리해 운영하는 Docker 배포 구성을 추가했습니다.
+- 문서 전체를 한국어 중심으로 정리했습니다.

@@ -1,21 +1,25 @@
-# Recording Module
+# 기록 모듈
 
-## Responsibility
+## 책임
 
-The recording module owns the user's active session and completed check-in/check-out events.
+기록 모듈은 사용자의 활성 세션과 완료된 출근/퇴근 이벤트를 관리합니다.
 
-## Design Thought
+## 설계 사상
 
-Recording should feel decisive. One large action starts or ends the current session. The app avoids secondary confirmations because the action is reversible in a future edit-history feature, and the first version values low friction.
+기록은 단호하고 가벼워야 합니다. 큰 버튼 하나가 현재 세션을 시작하거나 종료합니다. 첫 버전에서는 사용자의 흐름을 끊지 않기 위해 별도 확인 단계를 두지 않습니다.
 
-## Current Rules
+나중에 수동 수정 기능이 들어오면 실수 복구가 가능해지므로, 현재는 낮은 마찰을 우선합니다.
 
-- A check-in creates an active session and a `check-in` record.
-- A check-out clears the active session and creates a `check-out` record.
-- While active, mode and note are locked to preserve the meaning of the started session.
+## 현재 규칙
 
-## Future Changes To Document
+- 출근 기록은 활성 세션을 만들고 PostgreSQL에 `check_in_at`을 저장합니다.
+- 퇴근 기록은 활성 세션의 `check_out_at`을 채웁니다.
+- 활성 세션이 있는 동안 업무 유형과 메모는 잠가 세션의 의미를 유지합니다.
+- 한 owner당 활성 세션은 하나만 허용합니다.
 
-- Manual correction of times.
-- Multiple sessions per day editing.
-- Auto-suggested checkout reminders.
+## 향후 문서화할 변경
+
+- 출근/퇴근 시간 수동 수정.
+- 하루 여러 세션 편집.
+- 퇴근 리마인더.
+- 실수 기록 취소와 감사 로그.
