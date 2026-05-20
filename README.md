@@ -2,6 +2,8 @@
 
 Pineflow is a mobile-first personal commute logger for people who want to record work boundaries without belonging to a company attendance system.
 
+개인적으로 회사에 속해있지 않더라도 출퇴근을 기록하고, PostgreSQL에 개인 업무 리듬을 저장하는 모바일 서비스입니다.
+
 ## Run
 
 In this Windows environment, npm needs Node to use the system certificate store:
