@@ -27,6 +27,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - Lambda IAM 권한을 DynamoDB 최소 작업으로 축소.
 - CloudFront 보안 응답 헤더와 CSP 적용.
 - CDK 템플릿 guardrail 자동 검증 스크립트 추가.
+- LLM 기반 후속 작업을 위한 `AGENTS.md`, `docs/llm-context.md`, API 계약, 비용 가드레일, ADR 문서 추가.
 
 ## 검증됨
 
@@ -45,6 +46,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - 실제 AWS 배포 후 Cognito 로그인, API 호출, S3/CloudFront 프론트 배포 검증.
 - DynamoDB export/import 백업 절차 구현.
 - 실제 사용 후 CloudWatch 지표 기반 throttling/capacity 조정.
+- 필요 시 기존 깨져 보이는 일부 PoC 문서의 인코딩/본문을 Serverless 본선 기준으로 재정리.
 
 ## 현재 CI/CD 방향
 

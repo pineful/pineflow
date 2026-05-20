@@ -71,3 +71,7 @@ DynamoDB single-table 구조를 사용한다.
 ## 관련 점검 문서
 
 - AWS 배포 전 점검표: `docs/aws-serverless-deployment-checklist.md`
+- LLM 작업 컨텍스트: `AGENTS.md`, `docs/llm-context.md`
+- API 계약: `docs/api-contract.md`
+- 비용 가드레일: `docs/cost-guardrails.md`
+- 설계 결정 기록: `docs/adr/`

@@ -22,3 +22,4 @@
 - CloudFront 보안 응답 헤더와 CSP를 추가했습니다.
 - CDK 템플릿의 비용/보안 가드레일 자동 검증 스크립트를 추가했습니다.
 - AWS Serverless 배포 전 점검표를 추가했습니다.
+- 새 LLM 컨텍스트에서도 설계 사상을 계승할 수 있도록 `AGENTS.md`, `docs/llm-context.md`, `docs/api-contract.md`, `docs/cost-guardrails.md`, ADR 문서를 추가했습니다.
