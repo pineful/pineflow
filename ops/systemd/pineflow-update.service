@@ -1,0 +1,11 @@
+[Unit]
+Description=Update Pineflow from GitHub and GHCR
+Wants=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/pineflow
+Environment=APP_DIR=%h/pineflow
+Environment=APP_IMAGE_TAG=latest
+ExecStart=%h/pineflow/scripts/deploy-ec2.sh

@@ -1,4 +1,4 @@
-name: Deploy Pineflow
+name: Build Pineflow Image
 
 on:
   push:
@@ -63,34 +63,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  deploy:
-    name: Deploy to EC2
-    runs-on: ubuntu-latest
-    needs: build-and-publish
-    environment: production
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare SSH key
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/pineflow_key
-          chmod 600 ~/.ssh/pineflow_key
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Run remote deployment
-        env:
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          APP_DIR: ${{ secrets.EC2_APP_DIR }}
-          APP_IMAGE_TAG: ${{ github.sha }}
-        run: |
-          : "${APP_DIR:?EC2_APP_DIR secret is required}"
-          ssh -i ~/.ssh/pineflow_key "${EC2_USER}@${EC2_HOST}" \
-            "APP_DIR='${APP_DIR}' APP_IMAGE_TAG='${APP_IMAGE_TAG}' sh -s" \
-            < scripts/deploy-ec2.sh

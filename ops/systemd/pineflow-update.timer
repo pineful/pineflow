@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Pineflow update periodically
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Unit=pineflow-update.service
+
+[Install]
+WantedBy=timers.target

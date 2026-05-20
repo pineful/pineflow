@@ -13,3 +13,4 @@
 - 문서 전체를 한국어 중심으로 정리했습니다.
 - GitHub Actions, GHCR, EC2 SSH 배포 스크립트를 사용하는 CI/CD 구조를 추가했습니다.
 - API access token, 보안 헤더, rate limit, secret 관리 문서, DB 백업/복구 계획을 추가했습니다.
+- GitHub에 EC2 SSH private key를 저장하지 않도록 pull-based CI/CD 구조로 전환했습니다.

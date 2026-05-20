@@ -108,7 +108,7 @@ AWS 인스턴스 생성, 시작, 중단, 종료는 운영자가 직접 수행합
    docker compose -p pineflow -f compose.prod.yml up -d --build app
    ```
 
-   CI/CD를 사용하는 경우에는 `main` 브랜치 push가 `.github/workflows/deploy.yml`을 실행하고, EC2에서 `scripts/deploy-ec2.sh`가 app 컨테이너만 새 이미지로 교체합니다.
+   CI/CD를 사용하는 경우에는 `main` 브랜치 push가 `.github/workflows/deploy.yml`을 실행해 GHCR 이미지를 발행합니다. 이후 EC2의 systemd timer 또는 운영자의 수동 명령이 `scripts/deploy-ec2.sh`를 실행해 app 컨테이너만 새 이미지로 교체합니다.
 
 4. 상태와 로그를 확인합니다.
 

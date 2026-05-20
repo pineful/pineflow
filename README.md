@@ -38,7 +38,7 @@ docker compose -p pineflow -f compose.prod.yml up -d --build
 
 ## CI/CD
 
-`main` 브랜치에 push되면 GitHub Actions가 Docker 이미지를 빌드해 GHCR에 올리고, EC2에 SSH로 접속해 `app` 컨테이너만 새 이미지로 교체합니다.
+`main` 브랜치에 push되면 GitHub Actions가 Docker 이미지를 빌드해 GHCR에 올립니다. EC2는 SSH 접속을 받는 대상이 아니라, systemd timer 또는 수동 명령으로 스스로 GitHub/GHCR을 pull해 `app` 컨테이너를 교체합니다.
 
 필요한 GitHub Secrets와 서버 준비 절차는 `docs/cicd.md`에 정리되어 있습니다.
 

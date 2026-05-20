@@ -2,7 +2,9 @@
 
 ## 목표
 
-`main` 브랜치에 변경 사항이 push되면 GitHub Actions가 자동으로 빌드, 이미지 발행, EC2 배포를 수행합니다. 운영자는 AWS 인스턴스 생성/중단/종료를 직접 관리하고, CI/CD는 실행 중인 인스턴스 안의 Pineflow 서비스만 갱신합니다.
+`main` 브랜치에 변경 사항이 push되면 GitHub Actions가 애플리케이션 Docker 이미지를 빌드해 GHCR에 발행합니다. EC2는 GitHub Actions가 접속하는 대상이 아니라, 스스로 GitHub와 GHCR을 pull해서 서비스를 갱신합니다.
+
+이 방식은 GitHub에 EC2 SSH private key를 저장하지 않기 위한 구조입니다.
 
 ## 전체 흐름
 
@@ -11,9 +13,9 @@
 3. `npm ci`와 `npm run build`로 프론트엔드/타입 빌드를 검증합니다.
 4. Docker 이미지를 빌드합니다.
 5. 이미지를 GitHub Container Registry, 즉 GHCR에 push합니다.
-6. GitHub Actions가 EC2에 SSH로 접속합니다.
-7. EC2에서 `scripts/deploy-ec2.sh`를 실행합니다.
-8. EC2는 최신 git 상태로 맞춘 뒤 `compose.deploy.yml`로 app 이미지를 pull합니다.
+6. EC2의 `systemd timer` 또는 운영자의 수동 명령이 `scripts/deploy-ec2.sh`를 실행합니다.
+7. EC2는 `git pull --ff-only origin main`으로 배포 파일과 스크립트를 최신화합니다.
+8. EC2는 `compose.deploy.yml`로 최신 app 이미지를 pull합니다.
 9. PostgreSQL은 유지하고 app 컨테이너만 새 이미지로 교체합니다.
 10. `/api/health`로 배포 성공 여부를 확인합니다.
 
@@ -21,35 +23,32 @@
 
 EC2 `t3.micro`에서 직접 Docker build를 하지 않습니다. 작은 인스턴스에서 빌드를 수행하면 메모리, CPU credit, 디스크 사용량에 부담이 커질 수 있기 때문입니다.
 
-대신 GitHub Actions가 빌드를 맡고, EC2는 완성된 이미지를 pull해서 실행만 합니다.
+GitHub Actions는 빌드와 이미지 발행만 맡습니다. EC2 접속 정보나 SSH private key는 GitHub Secrets에 저장하지 않습니다.
 
 ## 관련 파일
 
-- `.github/workflows/deploy.yml`: GitHub Actions workflow.
+- `.github/workflows/deploy.yml`: GitHub Actions workflow. 이름은 `Build Pineflow Image`이며 이미지 발행까지만 수행합니다.
 - `Dockerfile`: app 이미지 빌드 정의.
 - `compose.deploy.yml`: GHCR 이미지를 사용하는 운영용 Compose 구성.
-- `scripts/deploy-ec2.sh`: EC2 안에서 실행되는 배포 스크립트.
+- `scripts/deploy-ec2.sh`: EC2 안에서 실행되는 pull-based 배포 스크립트.
+- `ops/systemd/pineflow-update.service`: EC2에서 update script를 실행하는 systemd service 예시.
+- `ops/systemd/pineflow-update.timer`: 주기적으로 update service를 실행하는 systemd timer 예시.
 - `.env.production.example`: 운영 환경 변수 템플릿.
 
 ## GitHub Secrets
 
-repository settings에서 다음 Secrets를 등록합니다.
+현재 구조에서는 EC2 접속용 GitHub Secrets가 필요 없습니다.
 
-- `EC2_HOST`: EC2 public IP 또는 DNS.
-- `EC2_USER`: SSH 사용자. 예: `ec2-user`, `ubuntu`.
-- `EC2_SSH_KEY`: EC2에 접속할 private key 전체 내용.
-- `EC2_APP_DIR`: EC2 안의 Pineflow 경로. 예: `/home/ec2-user/pineflow`.
+등록하지 말아야 할 값:
 
-GHCR package를 public으로 둘 경우 아래 값은 없어도 됩니다. GHCR package를 private으로 유지하려면 EC2가 이미지를 pull할 수 있도록 추가합니다.
+- `EC2_HOST`
+- `EC2_USER`
+- `EC2_SSH_KEY`
+- `EC2_APP_DIR`
+- AWS access key
+- AWS secret access key
 
-- GHCR package를 public으로 전환하거나,
-- EC2에서 한 번 `docker login ghcr.io`를 실행해 pull 권한을 저장합니다.
-
-private package로 유지할 때 EC2에서 한 번 실행하는 예시는 다음과 같습니다.
-
-```bash
-echo "<read-packages-token>" | docker login ghcr.io -u pineful --password-stdin
-```
+GitHub Actions는 기본 `GITHUB_TOKEN`으로 GHCR에 이미지를 push합니다.
 
 ## EC2 최초 준비
 
@@ -71,6 +70,13 @@ POSTGRES_USER=pineflow
 POSTGRES_PASSWORD=<긴-랜덤-비밀번호>
 DATABASE_URL=postgres://pineflow:<긴-랜덤-비밀번호>@postgres:5432/pineflow
 PINEFLOW_OWNER_KEY=<긴-랜덤-owner-secret>
+PINEFLOW_ACCESS_TOKEN=<긴-랜덤-access-token>
+```
+
+GHCR package를 public으로 두면 별도 로그인 없이 이미지를 pull할 수 있습니다. private으로 유지하려면 EC2에서 한 번 로그인합니다.
+
+```bash
+echo "<read-packages-token>" | docker login ghcr.io -u pineful --password-stdin
 ```
 
 처음 한 번은 다음 명령으로 DB와 app을 띄울 수 있습니다.
@@ -79,7 +85,34 @@ PINEFLOW_OWNER_KEY=<긴-랜덤-owner-secret>
 docker compose -p pineflow -f compose.deploy.yml up -d
 ```
 
-그 뒤부터는 GitHub Actions가 app 컨테이너를 갱신합니다.
+## 자동 업데이트 방식
+
+EC2에서 systemd timer를 사용할 수 있습니다.
+
+```bash
+mkdir -p ~/.config/systemd/user
+cp ops/systemd/pineflow-update.service ~/.config/systemd/user/
+cp ops/systemd/pineflow-update.timer ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now pineflow-update.timer
+```
+
+사용자 세션이 종료되어도 user timer가 돌게 하려면 운영자가 한 번 설정합니다.
+
+```bash
+loginctl enable-linger "$USER"
+```
+
+timer 주기는 `ops/systemd/pineflow-update.timer`의 `OnUnitActiveSec`에서 조정합니다. 현재 예시는 2분마다 확인합니다.
+
+## 수동 업데이트 방식
+
+자동 timer 없이 직접 갱신하려면 EC2에서 다음 명령을 실행합니다.
+
+```bash
+cd pineflow
+APP_IMAGE_TAG=latest scripts/deploy-ec2.sh
+```
 
 ## 배포 스크립트 동작
 
@@ -87,17 +120,23 @@ docker compose -p pineflow -f compose.deploy.yml up -d
 
 1. `APP_DIR`로 이동합니다.
 2. `.env.production`이 있는지 확인합니다.
-3. `GHCR_USERNAME`, `GHCR_TOKEN`이 있으면 GHCR에 로그인합니다.
-4. `git fetch origin main`과 `git reset --hard origin/main`으로 서버 코드를 최신 main에 맞춥니다.
-5. PostgreSQL 컨테이너를 실행 상태로 보장합니다.
-6. app 이미지를 pull합니다.
-7. app 컨테이너만 새 이미지로 재시작합니다.
-8. 사용하지 않는 Docker 이미지를 정리합니다.
-9. `curl http://127.0.0.1/api/health`로 정상 응답을 확인합니다.
+3. `git pull --ff-only origin main`으로 서버 코드를 최신 main에 맞춥니다.
+4. PostgreSQL 컨테이너를 실행 상태로 보장합니다.
+5. app 이미지를 pull합니다.
+6. app 컨테이너만 새 이미지로 재시작합니다.
+7. 사용하지 않는 Docker 이미지를 정리합니다.
+8. `curl http://127.0.0.1/api/health`로 정상 응답을 확인합니다.
 
 ## 장애 대응
 
-배포가 실패하면 GitHub Actions job이 실패합니다. 이 경우 EC2에서 직접 확인합니다.
+배포가 실패하면 EC2의 systemd service 또는 timer 로그를 확인합니다.
+
+```bash
+systemctl --user status pineflow-update.service
+journalctl --user -u pineflow-update.service -n 100
+```
+
+컨테이너 상태와 app 로그도 확인합니다.
 
 ```bash
 cd pineflow
@@ -109,10 +148,10 @@ docker compose -p pineflow -f compose.deploy.yml logs --tail=200 app
 
 ## 보안 메모
 
-- `EC2_SSH_KEY`는 GitHub Secrets에만 저장합니다.
+- GitHub에 EC2 SSH private key를 저장하지 않습니다.
+- GitHub에 AWS access key를 저장하지 않습니다.
 - `.env.production`은 EC2 안에만 둡니다.
 - `.env.production`은 Git에 커밋하지 않습니다.
 - PostgreSQL 포트 `5432`는 외부로 열지 않습니다.
-- 가능하면 GitHub Environment `production`에 승인 규칙을 걸어 수동 승인 후 배포되게 할 수 있습니다.
-- AWS API를 직접 호출하지 않으므로 AWS access key는 GitHub에 저장하지 않습니다.
-- 나중에 AWS API 호출이 필요하면 장기 access key 대신 GitHub OIDC와 AWS IAM role을 사용합니다.
+- GHCR package를 private으로 유지한다면 EC2의 Docker credential 저장 위치를 보호합니다.
+- 나중에 AWS API 호출 자동화가 필요하면 장기 access key 대신 GitHub OIDC와 AWS IAM role을 사용합니다.

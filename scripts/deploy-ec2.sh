@@ -15,8 +15,7 @@ if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
   echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 fi
 
-git fetch origin main
-git reset --hard origin/main
+git pull --ff-only origin main
 
 export APP_IMAGE_TAG
 

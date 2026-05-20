@@ -48,7 +48,7 @@ Pineflow는 개인용 서비스지만 인터넷에 노출될 수 있으므로 �
 
 현재 CI/CD는 AWS API를 호출하지 않습니다. 따라서 GitHub에 AWS access key를 저장할 필요가 없습니다.
 
-배포는 GitHub Actions가 EC2에 SSH로 접속해 Docker image를 pull하고 app 컨테이너만 교체하는 방식입니다. GitHub Secrets에 들어가는 값은 `EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY`, `EC2_APP_DIR`입니다.
+배포는 EC2가 스스로 GitHub/GHCR을 pull하는 방식입니다. GitHub Actions가 EC2에 SSH로 접속하지 않으므로 GitHub Secrets에 `EC2_SSH_KEY`를 저장하지 않습니다.
 
 나중에 GitHub Actions가 AWS API를 직접 호출해야 한다면 장기 AWS access key를 GitHub Secrets에 저장하지 않고, GitHub OIDC와 AWS IAM role을 사용합니다. GitHub 공식 문서는 OIDC가 cloud provider에서 short-lived token을 교환하게 해 장기 credential 저장을 피할 수 있다고 설명합니다. AWS 연동 시에는 trust policy에 `token.actions.githubusercontent.com:sub` 조건을 걸어 특정 repository와 branch만 role을 받을 수 있게 해야 합니다.
 
@@ -78,6 +78,6 @@ repository 설정에서 확인할 항목:
 - `5432`는 외부에 열지 않습니다.
 - SSH는 운영자 IP에서만 허용합니다.
 - `.env.production` 권한은 운영 사용자만 읽게 둡니다.
-- EC2에 저장한 SSH key나 GitHub token이 있으면 최소 권한으로 둡니다.
+- EC2에 GitHub token을 저장해야 한다면 `read:packages`처럼 최소 권한으로 둡니다.
 - 가능한 빨리 HTTPS를 적용합니다.
 - 배포 전후로 `docker compose logs app`에서 secret이 출력되지 않는지 확인합니다.
