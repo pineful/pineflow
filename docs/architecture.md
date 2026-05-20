@@ -23,9 +23,13 @@ Pineflow는 Vite React 프론트엔드, Express API 서버, PostgreSQL 데이터
 - `Dockerfile`: 운영용 app 이미지 빌드.
 - `.github/workflows/deploy.yml`: main push 시 이미지 빌드와 EC2 배포를 수행하는 GitHub Actions workflow.
 - `scripts/deploy-ec2.sh`: EC2에서 app 컨테이너를 갱신하는 배포 스크립트.
+- `scripts/backup-db.sh`: PostgreSQL dump 백업 스크립트.
+- `scripts/restore-db.sh`: dump 파일 복구 스크립트.
 - `docs/development.md`: 로컬 개발 환경과 명령.
 - `docs/deployment-aws.md`: AWS EC2 Docker 운영 흐름.
 - `docs/cicd.md`: CI/CD 설계와 운영 절차.
+- `docs/security.md`: secret, 접근 제어, GitHub/AWS credential 관리 정책.
+- `docs/data-management.md`: 백업, 복구, migration 계획.
 
 ## 변경 정책
 

@@ -1,11 +1,26 @@
 import type { CommuteState, WorkMode } from "./types";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+const accessTokenStorageKey = "pineflow.access-token";
+
+export function getStoredAccessToken() {
+  return window.localStorage.getItem(accessTokenStorageKey) ?? "";
+}
+
+export function saveAccessToken(token: string) {
+  window.localStorage.setItem(accessTokenStorageKey, token);
+}
+
+export function clearAccessToken() {
+  window.localStorage.removeItem(accessTokenStorageKey);
+}
 
 async function requestState(path: string, init?: RequestInit): Promise<CommuteState> {
+  const token = getStoredAccessToken();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {}),
     },
     ...init,

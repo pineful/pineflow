@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { ensureSettings, migrate, pool } from "./db.mjs";
 
 dotenv.config();
@@ -12,13 +14,63 @@ dotenv.config();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const port = Number(process.env.PORT ?? 3001);
-const defaultOwnerKey = process.env.PINEFLOW_OWNER_KEY ?? "default-user";
+const accessToken = process.env.PINEFLOW_ACCESS_TOKEN;
+const ownerKey = process.env.PINEFLOW_OWNER_KEY;
 
-app.use(cors());
-app.use(express.json());
+if (!accessToken || accessToken.length < 24) {
+  throw new Error("PINEFLOW_ACCESS_TOKEN must be set to a strong value with at least 24 characters.");
+}
 
-function ownerKeyFor(request) {
-  return request.header("x-owner-key") || defaultOwnerKey;
+if (!ownerKey || ownerKey.length < 12) {
+  throw new Error("PINEFLOW_OWNER_KEY must be set to a stable private owner key.");
+}
+
+app.disable("x-powered-by");
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'", ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : [])],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+  }),
+);
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : false,
+  }),
+);
+app.use(express.json({ limit: "16kb" }));
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 60 * 1000,
+    limit: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }),
+);
+
+function requireAccess(request, response, next) {
+  const authorization = request.header("authorization") ?? "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice("Bearer ".length) : "";
+
+  const expected = Buffer.from(accessToken);
+  const actual = Buffer.from(token);
+
+  if (actual.length !== expected.length || !crypto.timingSafeEqual(actual, expected)) {
+    response.status(401).json({ error: "Access key is required." });
+    return;
+  }
+
+  next();
 }
 
 function toState(rows, dailyGoalMinutes) {
@@ -86,9 +138,11 @@ app.get("/api/health", (_request, response) => {
   response.json({ ok: true, service: "pineflow-api" });
 });
 
+app.use("/api", requireAccess);
+
 app.get("/api/state", async (request, response, next) => {
   try {
-    response.json(await loadState(ownerKeyFor(request)));
+    response.json(await loadState(ownerKey));
   } catch (error) {
     next(error);
   }
@@ -96,7 +150,6 @@ app.get("/api/state", async (request, response, next) => {
 
 app.post("/api/check-in", async (request, response, next) => {
   try {
-    const ownerKey = ownerKeyFor(request);
     const mode = request.body?.mode;
     const note = String(request.body?.note ?? "").slice(0, 300);
 
@@ -131,7 +184,6 @@ app.post("/api/check-in", async (request, response, next) => {
 
 app.post("/api/check-out", async (request, response, next) => {
   try {
-    const ownerKey = ownerKeyFor(request);
     const result = await pool.query(
       `
         update work_sessions
@@ -160,7 +212,6 @@ app.post("/api/check-out", async (request, response, next) => {
 
 app.patch("/api/settings", async (request, response, next) => {
   try {
-    const ownerKey = ownerKeyFor(request);
     const dailyGoalMinutes = Number(request.body?.dailyGoalMinutes);
 
     if (!Number.isInteger(dailyGoalMinutes) || dailyGoalMinutes < 120 || dailyGoalMinutes > 720) {

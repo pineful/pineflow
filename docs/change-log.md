@@ -12,3 +12,4 @@
 - AWS EC2 `t3.micro` 한 대에서 app/postgres 컨테이너를 분리해 운영하는 Docker 배포 구성을 추가했습니다.
 - 문서 전체를 한국어 중심으로 정리했습니다.
 - GitHub Actions, GHCR, EC2 SSH 배포 스크립트를 사용하는 CI/CD 구조를 추가했습니다.
+- API access token, 보안 헤더, rate limit, secret 관리 문서, DB 백업/복구 계획을 추가했습니다.

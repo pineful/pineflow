@@ -24,6 +24,8 @@ AWS 인스턴스 생성, 시작, 중단, 종료는 운영자가 직접 수행합
 - `server/schema.sql`: app 시작 시 적용되는 DB 스키마.
 - `docs/deployment-aws.md`: 운영 흐름 문서.
 - `docs/cicd.md`: GitHub Actions 기반 자동 배포 문서.
+- `docs/security.md`: 보안 운영 정책.
+- `docs/data-management.md`: 백업, 복구, migration 정책.
 
 ## 인스턴스 전제
 
@@ -62,6 +64,7 @@ AWS 인스턴스 생성, 시작, 중단, 종료는 운영자가 직접 수행합
    POSTGRES_PASSWORD=<긴-랜덤-비밀번호>
    DATABASE_URL=postgres://pineflow:<긴-랜덤-비밀번호>@postgres:5432/pineflow
    PINEFLOW_OWNER_KEY=<긴-랜덤-owner-secret>
+   PINEFLOW_ACCESS_TOKEN=<긴-랜덤-access-token>
    ```
 
 5. 최초 실행 방식 중 하나를 선택합니다. EC2에서 직접 빌드하려면 `compose.prod.yml`을 사용합니다.
@@ -149,6 +152,8 @@ scp ec2-user@<instance-public-ip>:~/pineflow/backups/*.dump ./backups/
 ```
 
 Docker volume은 백업이 아닙니다. EC2 인스턴스나 연결된 EBS 볼륨이 삭제되면 데이터가 사라질 수 있습니다.
+
+상세 정책은 `docs/data-management.md`를 따릅니다.
 
 ## 복구 흐름
 

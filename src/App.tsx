@@ -1,5 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { createCheckIn, createCheckOut, fetchState, saveDailyGoal } from "./api";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  clearAccessToken,
+  createCheckIn,
+  createCheckOut,
+  fetchState,
+  getStoredAccessToken,
+  saveAccessToken,
+  saveDailyGoal,
+} from "./api";
 import { modeLabels, namingIdeas, productName, tagline } from "./brand";
 import {
   formatDate,
@@ -42,8 +50,19 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [accessInput, setAccessInput] = useState(() =>
+    typeof window === "undefined" ? "" : getStoredAccessToken(),
+  );
+  const [isAccessReady, setIsAccessReady] = useState(() =>
+    typeof window === "undefined" ? false : Boolean(getStoredAccessToken()),
+  );
 
   useEffect(() => {
+    if (!isAccessReady) {
+      setIsLoading(false);
+      return;
+    }
+
     fetchState()
       .then((serverState) => {
         setState(serverState);
@@ -52,7 +71,7 @@ function App() {
       })
       .catch((error: Error) => setErrorMessage(error.message))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [isAccessReady]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
@@ -111,6 +130,65 @@ function App() {
     }
   }
 
+  function submitAccess(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmed = accessInput.trim();
+    if (!trimmed) {
+      setErrorMessage("Access key를 입력해 주세요.");
+      return;
+    }
+
+    saveAccessToken(trimmed);
+    setIsLoading(true);
+    setErrorMessage("");
+    setIsAccessReady(true);
+  }
+
+  function resetAccess() {
+    clearAccessToken();
+    setAccessInput("");
+    setIsAccessReady(false);
+    setState(initialState);
+    setErrorMessage("");
+  }
+
+  if (!isAccessReady) {
+    return (
+      <main className="appShell">
+        <section className="heroPanel accessPanel">
+          <header className="topBar">
+            <Logo />
+            <div>
+              <p className="eyebrow">개인 출퇴근 기록</p>
+              <h1>{productName}</h1>
+            </div>
+          </header>
+
+          <form className="accessForm" onSubmit={submitAccess}>
+            <div>
+              <p>Private access</p>
+              <strong>Access key 입력</strong>
+              <span>서버 환경 변수에 설정한 개인 access key가 필요합니다.</span>
+            </div>
+            <input
+              type="password"
+              value={accessInput}
+              onChange={(event) => setAccessInput(event.target.value)}
+              placeholder="Access key"
+              autoComplete="current-password"
+            />
+            <button className="primaryAction" type="submit">
+              <span>잠금 해제</span>
+              <small>Pineflow 기록을 불러옵니다</small>
+            </button>
+          </form>
+        </section>
+
+        {errorMessage && <p className="errorBanner">{errorMessage}</p>}
+      </main>
+    );
+  }
+
   return (
     <main className="appShell">
       <section className="heroPanel">
@@ -151,6 +229,10 @@ function App() {
       </section>
 
       {errorMessage && <p className="errorBanner">{errorMessage}</p>}
+
+      <button className="textAction" type="button" onClick={resetAccess}>
+        Access key 다시 입력
+      </button>
 
       <section className="sectionBand">
         <div className="sectionTitle">

@@ -53,6 +53,10 @@ button {
   box-shadow: 0 24px 60px rgba(25, 45, 36, 0.24);
 }
 
+.accessPanel {
+  min-height: 520px;
+}
+
 .topBar {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -159,6 +163,48 @@ h1 {
 
 .actionPanel {
   display: grid;
+}
+
+.accessForm {
+  display: grid;
+  gap: 16px;
+}
+
+.accessForm div {
+  display: grid;
+  gap: 8px;
+}
+
+.accessForm p {
+  color: #b9f3d3;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.accessForm strong {
+  color: #f9fff9;
+  font-size: 2rem;
+}
+
+.accessForm span {
+  color: #d8ede0;
+  line-height: 1.5;
+}
+
+.accessForm input {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  color: #f9fff9;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+.accessForm input:focus {
+  border-color: #f6c247;
+  box-shadow: 0 0 0 3px rgba(246, 194, 71, 0.14);
 }
 
 .primaryAction {
@@ -379,6 +425,17 @@ h1 {
   background: rgba(255, 245, 245, 0.9);
   font-size: 0.88rem;
   font-weight: 700;
+}
+
+.textAction {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  color: #27715c;
+  background: transparent;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .brandBand {

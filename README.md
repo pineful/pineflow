@@ -51,5 +51,7 @@ docker compose -p pineflow -f compose.prod.yml up -d --build
 - 변경 기록: `docs/change-log.md`
 - AWS 배포/운영 흐름: `docs/deployment-aws.md`
 - CI/CD 흐름: `docs/cicd.md`
+- 보안 설계: `docs/security.md`
+- 데이터 백업/마이그레이션: `docs/data-management.md`
 
 기능이나 구조를 수정할 때는 관련 모듈 문서를 같은 변경 안에서 함께 갱신합니다.

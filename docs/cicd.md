@@ -114,3 +114,5 @@ docker compose -p pineflow -f compose.deploy.yml logs --tail=200 app
 - `.env.production`은 Git에 커밋하지 않습니다.
 - PostgreSQL 포트 `5432`는 외부로 열지 않습니다.
 - 가능하면 GitHub Environment `production`에 승인 규칙을 걸어 수동 승인 후 배포되게 할 수 있습니다.
+- AWS API를 직접 호출하지 않으므로 AWS access key는 GitHub에 저장하지 않습니다.
+- 나중에 AWS API 호출이 필요하면 장기 access key 대신 GitHub OIDC와 AWS IAM role을 사용합니다.
