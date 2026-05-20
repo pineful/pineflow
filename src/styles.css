@@ -1,0 +1,419 @@
+:root {
+  color: #14211c;
+  background: #f3f5ef;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(246, 194, 71, 0.22), transparent 32rem),
+    linear-gradient(180deg, #f8f6ee 0%, #edf3ed 100%);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+.appShell {
+  width: min(100%, 440px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 18px 16px 32px;
+}
+
+.heroPanel {
+  min-height: 390px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  color: #f9fff9;
+  background:
+    linear-gradient(155deg, rgba(16, 40, 32, 0.94), rgba(31, 84, 66, 0.9)),
+    url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23f6c247' stroke-opacity='.24' stroke-width='2'%3E%3Cpath d='M25 80h60v45h70v50h60'/%3E%3Cpath d='M45 175h45v-52h60V65h45'/%3E%3Ccircle cx='85' cy='80' r='6' fill='%23f6c247' fill-opacity='.35'/%3E%3Ccircle cx='155' cy='125' r='6' fill='%23f6c247' fill-opacity='.35'/%3E%3Ccircle cx='150' cy='65' r='6' fill='%23f6c247' fill-opacity='.35'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover, 230px;
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(25, 45, 36, 0.24);
+}
+
+.topBar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoMark {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.logoMark svg {
+  width: 42px;
+  height: 42px;
+}
+
+.logoBody {
+  fill: #f6c247;
+}
+
+.logoLeaf {
+  fill: #5de2a2;
+}
+
+.logoLeafLeft,
+.logoLeafRight {
+  fill: #8ee7bb;
+}
+
+.logoCircuit {
+  fill: none;
+  stroke: #163428;
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.logoNode {
+  fill: #163428;
+}
+
+.eyebrow {
+  margin: 0 0 3px;
+  color: #b9f3d3;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.statusPill {
+  align-self: start;
+  padding: 8px 10px;
+  border-radius: 999px;
+  color: #163428;
+  background: #eef3e6;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.statusPill.active {
+  background: #5de2a2;
+}
+
+.clockBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.clockBlock p {
+  color: #d8ede0;
+  font-weight: 700;
+}
+
+.clockBlock strong {
+  font-size: 3.6rem;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.clockBlock span {
+  width: fit-content;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #f4f8ee;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.83rem;
+}
+
+.actionPanel {
+  display: grid;
+}
+
+.primaryAction {
+  display: grid;
+  gap: 5px;
+  min-height: 88px;
+  padding: 20px;
+  border-radius: 8px;
+  color: #173126;
+  background: #f6c247;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.primaryAction:disabled {
+  cursor: wait;
+  opacity: 0.78;
+}
+
+.primaryAction span {
+  font-size: 1.28rem;
+  font-weight: 900;
+}
+
+.primaryAction small {
+  color: rgba(23, 49, 38, 0.78);
+  font-weight: 700;
+}
+
+.sectionBand,
+.brandBand {
+  margin-top: 16px;
+  padding: 18px 2px 4px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sectionTitle h2 {
+  color: #17231e;
+  font-size: 1.05rem;
+}
+
+.sectionTitle span {
+  color: #27715c;
+  font-weight: 900;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.metricCard,
+.timelineItem,
+.brandBand article {
+  border: 1px solid #dfe6d6;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.metricCard {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.metricCard span,
+.goalRow,
+.timelineItem p,
+.timelineItem small,
+.brandBand p,
+.noteField span {
+  color: #66746a;
+  font-size: 0.82rem;
+}
+
+.metricCard strong {
+  font-size: 1.25rem;
+}
+
+.progressTrack {
+  height: 12px;
+  margin: 14px 0 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dbe5d5;
+}
+
+.progressTrack div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #44b883, #f6c247);
+  transition: width 180ms ease;
+}
+
+.goalRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.goalRow input {
+  width: 100%;
+  accent-color: #27715c;
+}
+
+.controlsBand {
+  display: grid;
+  gap: 12px;
+}
+
+.modeControl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.modeControl button {
+  min-height: 42px;
+  border-radius: 8px;
+  color: #2f4038;
+  background: #e7ede2;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.modeControl button.selected {
+  color: #f9fff9;
+  background: #27715c;
+}
+
+.modeControl button:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+.noteField {
+  display: grid;
+  gap: 7px;
+}
+
+.noteField input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #d3ddcf;
+  border-radius: 8px;
+  color: #17231e;
+  background: rgba(255, 255, 255, 0.86);
+  outline: none;
+}
+
+.noteField input:focus {
+  border-color: #27715c;
+  box-shadow: 0 0 0 3px rgba(39, 113, 92, 0.14);
+}
+
+.timeline {
+  display: grid;
+  gap: 8px;
+}
+
+.timelineItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+}
+
+.timelineItem strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.timelineItem small {
+  justify-self: end;
+  font-weight: 800;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.dot.in {
+  background: #44b883;
+}
+
+.dot.out {
+  background: #f6c247;
+}
+
+.emptyState {
+  padding: 18px;
+  border: 1px dashed #cbd7c6;
+  border-radius: 8px;
+  color: #66746a;
+  text-align: center;
+}
+
+.errorBanner {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(193, 65, 65, 0.28);
+  border-radius: 8px;
+  color: #842525;
+  background: rgba(255, 245, 245, 0.9);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.brandBand {
+  display: grid;
+  gap: 8px;
+}
+
+.brandBand article {
+  padding: 13px;
+}
+
+.brandBand strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+@media (max-width: 360px) {
+  .appShell {
+    padding-inline: 12px;
+  }
+
+  .heroPanel {
+    padding: 16px;
+  }
+
+  .clockBlock strong {
+    font-size: 3rem;
+  }
+
+  .timelineItem {
+    grid-template-columns: auto 1fr;
+  }
+
+  .timelineItem small {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
