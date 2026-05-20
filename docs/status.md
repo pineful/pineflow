@@ -49,6 +49,11 @@ Pineflow는 모바일 우선 출퇴근 기록 앱의 PoC 구현, PostgreSQL 기�
 - 프론트엔드 Cognito 로그인 연동.
 - PostgreSQL PoC 데이터 export/import 전략 구현.
 - Budget, throttling, Lambda concurrency, log retention 적용.
+- Cognito self sign-up 비활성화와 관리자 생성 사용자 정책 적용.
+- API Gateway JWT authorizer 필수 적용.
+- DynamoDB provisioned 1 RCU / 1 WCU 시작 설정.
+- AWS Budget $1, $3, $5 알림 설정.
+- S3 public access 차단과 CloudFront OAC 적용.
 - EC2 PoC 문서 archive 여부 결정.
 
 ## 현재 CI/CD 방향

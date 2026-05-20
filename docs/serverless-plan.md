@@ -109,14 +109,51 @@ updatedAt = ...
 
 ## 비용 방어 정책
 
-필수:
+다음 항목은 선택 사항이 아니라 Serverless 전환의 필수 acceptance criteria입니다. IaC와 애플리케이션 구현은 이 체크리스트를 모두 만족해야 합니다.
 
-- AWS Budget 1차 알림.
-- AWS Budget 2차 알림.
-- API Gateway route throttling.
-- Lambda reserved concurrency 낮게 설정.
-- CloudWatch log retention 짧게 설정.
-- Cognito self sign-up 비활성화.
+## 필수 비용/보안 가드레일
+
+### 인증과 사용자 관리
+
+- Cognito self sign-up을 비활성화합니다.
+- 사용자 계정은 관리자만 생성합니다.
+- public signup, anonymous usage, shared public token 방식을 허용하지 않습니다.
+- API Gateway JWT authorizer를 모든 비공개 API route에 필수 적용합니다.
+- Lambda는 Cognito JWT의 `sub`를 기준으로 사용자 데이터를 분리합니다.
+
+### API와 Lambda 제한
+
+- API Gateway throttling을 낮게 설정합니다.
+  - 초기값 예시: `rateLimit=1 req/sec`, `burstLimit=5`.
+  - 실제 사용성에 문제가 있으면 기록 패턴을 확인한 뒤 조정합니다.
+- Lambda reserved concurrency를 낮게 설정합니다.
+  - 초기값 예시: `1`.
+  - 응답 지연이 문제가 되면 최대 `2`까지 검토합니다.
+- API와 Lambda는 인증 실패 요청이 DynamoDB까지 도달하지 않도록 구성합니다.
+
+### DynamoDB 제한
+
+- DynamoDB는 provisioned capacity로 시작합니다.
+- 초기값은 `1 RCU / 1 WCU`로 시작합니다.
+- auto scaling은 초기에는 사용하지 않습니다.
+- GSI는 초기 버전에 만들지 않습니다. GSI는 비용과 capacity 축을 늘리므로 실제 access pattern이 확인된 뒤 추가합니다.
+- 단일 사용자 사용량이 1 RCU / 1 WCU를 넘는지 CloudWatch로 확인한 뒤 조정합니다.
+
+### 로그와 모니터링
+
+- CloudWatch log retention은 짧게 설정합니다.
+  - 초기값 예시: 7일.
+- AWS Budget 알림을 반드시 설정합니다.
+  - 예시 임계값: `$1`, `$3`, `$5`.
+- Lambda error alarm과 API 4xx/5xx alarm을 추가합니다.
+
+### S3와 CloudFront
+
+- S3 bucket public access를 차단합니다.
+- S3 static website hosting을 공개 엔드포인트로 사용하지 않습니다.
+- CloudFront Origin Access Control, 즉 OAC로만 S3에 접근하게 합니다.
+- 사용자는 CloudFront 도메인 또는 연결된 도메인으로만 프론트엔드에 접근합니다.
+- CloudFront invalidation은 배포 시 최소화합니다.
 
 권장:
 
@@ -130,6 +167,7 @@ updatedAt = ...
 - `docs/serverless-plan.md` 확정.
 - Serverless IaC 도구 선택: AWS SAM 또는 CDK.
 - DynamoDB 테이블, Cognito User Pool, Lambda, API Gateway, S3/CloudFront 리소스 정의.
+- 필수 비용/보안 가드레일을 IaC assertion 또는 체크리스트로 반영.
 
 ### 2단계: Lambda API 구현
 
@@ -152,11 +190,16 @@ updatedAt = ...
 
 ### 5단계: 비용 가드레일 적용
 
-- Budget 생성.
-- API throttling 적용.
-- Lambda reserved concurrency 적용.
-- CloudWatch log retention 적용.
-- self sign-up 비활성화 확인.
+- Cognito self sign-up 비활성화 확인.
+- 관리자 생성 사용자만 로그인 가능한지 확인.
+- API Gateway JWT authorizer 적용 확인.
+- API Gateway throttling 적용 확인.
+- Lambda reserved concurrency `1~2` 적용 확인.
+- DynamoDB provisioned `1 RCU / 1 WCU` 적용 확인.
+- CloudWatch log retention 7일 적용 확인.
+- AWS Budget `$1`, `$3`, `$5` 알림 적용 확인.
+- S3 public access block 적용 확인.
+- CloudFront OAC 적용 확인.
 
 ### 6단계: 운영 전환
 

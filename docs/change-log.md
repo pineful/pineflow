@@ -16,3 +16,4 @@
 - GitHub에 EC2 SSH private key를 저장하지 않도록 pull-based CI/CD 구조로 전환했습니다.
 - 현재 구현/운영/보안/데이터 관리 진행 상황을 `docs/status.md`에 정리했습니다.
 - AWS Free Tier 기준 Serverless 전환 계획을 `docs/serverless-plan.md`에 추가했습니다.
+- Serverless 전환의 필수 비용/보안 가드레일 10개 항목을 acceptance criteria로 고정했습니다.
