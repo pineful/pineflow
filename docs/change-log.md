@@ -25,3 +25,4 @@
 - 새 LLM 컨텍스트에서도 설계 사상을 계승할 수 있도록 `AGENTS.md`, `docs/llm-context.md`, `docs/api-contract.md`, `docs/cost-guardrails.md`, ADR 문서를 추가했습니다.
 - GitHub OIDC 배포 Role CloudFormation 템플릿과 IAM 설정 문서를 추가했습니다.
 - `infra` 검증 스크립트가 GitHub OIDC trust policy 범위와 `AdministratorAccess` 금지를 함께 확인하도록 보강했습니다.
+- GitHub Actions의 Node.js 20 deprecation warning을 제거하기 위해 공식 actions를 Node 24 대응 major 버전으로 갱신했습니다.

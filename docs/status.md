@@ -30,6 +30,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - LLM 기반 후속 작업을 위한 `AGENTS.md`, `docs/llm-context.md`, API 계약, 비용 가드레일, ADR 문서 추가.
 - GitHub OIDC 배포 Role 템플릿과 설정 문서 추가.
 - GitHub OIDC trust policy 범위와 `AdministratorAccess` 금지를 자동 검증에 포함.
+- GitHub Actions 공식 action 버전을 Node 24 대응 버전으로 갱신.
 
 ## 검증됨
 
