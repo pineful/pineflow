@@ -1,20 +1,14 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
-  clearAccessToken,
-  createCheckIn,
-  createCheckOut,
-  fetchState,
-  getStoredAccessToken,
-  saveAccessToken,
-  saveDailyGoal,
-} from "./api";
+  clearSession,
+  completeNewPassword,
+  getStoredEmail,
+  getStoredIdToken,
+  signIn
+} from "./auth";
+import { createCheckIn, createCheckOut, fetchState, saveDailyGoal } from "./api";
 import { modeLabels, namingIdeas, productName, tagline } from "./brand";
-import {
-  formatDate,
-  formatDuration,
-  formatTime,
-  summarizeToday,
-} from "./date";
+import { formatDate, formatDuration, formatTime, summarizeToday } from "./date";
 import type { CommuteState, WorkMode } from "./types";
 
 const workModes = Object.keys(modeLabels) as WorkMode[];
@@ -22,7 +16,7 @@ const workModes = Object.keys(modeLabels) as WorkMode[];
 const initialState: CommuteState = {
   records: [],
   activeSession: null,
-  dailyGoalMinutes: 8 * 60,
+  dailyGoalMinutes: 8 * 60
 };
 
 function Logo() {
@@ -50,15 +44,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [accessInput, setAccessInput] = useState(() =>
-    typeof window === "undefined" ? "" : getStoredAccessToken(),
-  );
-  const [isAccessReady, setIsAccessReady] = useState(() =>
-    typeof window === "undefined" ? false : Boolean(getStoredAccessToken()),
+  const [email, setEmail] = useState(() => (typeof window === "undefined" ? "" : getStoredEmail()));
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordSession, setNewPasswordSession] = useState("");
+  const [newPasswordUsername, setNewPasswordUsername] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(() =>
+    typeof window === "undefined" ? false : Boolean(getStoredIdToken())
   );
 
   useEffect(() => {
-    if (!isAccessReady) {
+    if (!isAuthenticated) {
       setIsLoading(false);
       return;
     }
@@ -71,7 +67,7 @@ function App() {
       })
       .catch((error: Error) => setErrorMessage(error.message))
       .finally(() => setIsLoading(false));
-  }, [isAccessReady]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
@@ -80,11 +76,54 @@ function App() {
 
   const today = useMemo(
     () => summarizeToday(state.records, now, state.activeSession?.checkInAt),
-    [now, state.activeSession?.checkInAt, state.records],
+    [now, state.activeSession?.checkInAt, state.records]
   );
 
   const progress = Math.min(100, Math.round((today.totalMinutes / state.dailyGoalMinutes) * 100));
   const isActive = Boolean(state.activeSession);
+
+  async function submitLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      const result = await signIn(email.trim(), password);
+      if (result.type === "new-password-required") {
+        setNewPasswordSession(result.session);
+        setNewPasswordUsername(result.username);
+        return;
+      }
+
+      setPassword("");
+      setIsLoading(true);
+      setIsAuthenticated(true);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "로그인에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function submitNewPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      await completeNewPassword(email.trim(), newPasswordUsername, newPasswordSession, newPassword);
+      setPassword("");
+      setNewPassword("");
+      setNewPasswordSession("");
+      setNewPasswordUsername("");
+      setIsLoading(true);
+      setIsAuthenticated(true);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "새 비밀번호 설정에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   async function checkIn() {
     setIsSaving(true);
@@ -130,29 +169,18 @@ function App() {
     }
   }
 
-  function submitAccess(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmed = accessInput.trim();
-    if (!trimmed) {
-      setErrorMessage("Access key를 입력해 주세요.");
-      return;
-    }
-
-    saveAccessToken(trimmed);
-    setIsLoading(true);
-    setErrorMessage("");
-    setIsAccessReady(true);
-  }
-
-  function resetAccess() {
-    clearAccessToken();
-    setAccessInput("");
-    setIsAccessReady(false);
+  function signOut() {
+    clearSession();
+    setPassword("");
+    setNewPassword("");
+    setNewPasswordSession("");
+    setNewPasswordUsername("");
+    setIsAuthenticated(false);
     setState(initialState);
     setErrorMessage("");
   }
 
-  if (!isAccessReady) {
+  if (!isAuthenticated) {
     return (
       <main className="appShell">
         <section className="heroPanel accessPanel">
@@ -164,24 +192,52 @@ function App() {
             </div>
           </header>
 
-          <form className="accessForm" onSubmit={submitAccess}>
-            <div>
-              <p>Private access</p>
-              <strong>Access key 입력</strong>
-              <span>서버 환경 변수에 설정한 개인 access key가 필요합니다.</span>
-            </div>
-            <input
-              type="password"
-              value={accessInput}
-              onChange={(event) => setAccessInput(event.target.value)}
-              placeholder="Access key"
-              autoComplete="current-password"
-            />
-            <button className="primaryAction" type="submit">
-              <span>잠금 해제</span>
-              <small>Pineflow 기록을 불러옵니다</small>
-            </button>
-          </form>
+          {newPasswordSession ? (
+            <form className="accessForm" onSubmit={submitNewPassword}>
+              <div>
+                <p>첫 로그인</p>
+                <strong>새 비밀번호 설정</strong>
+                <span>관리자가 만든 임시 비밀번호를 나만의 비밀번호로 바꿉니다.</span>
+              </div>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                placeholder="새 비밀번호"
+                autoComplete="new-password"
+              />
+              <button className="primaryAction" type="submit" disabled={isSaving}>
+                <span>비밀번호 설정</span>
+                <small>Pineflow 계정을 활성화합니다</small>
+              </button>
+            </form>
+          ) : (
+            <form className="accessForm" onSubmit={submitLogin}>
+              <div>
+                <p>Private sign in</p>
+                <strong>Cognito 로그인</strong>
+                <span>관리자가 생성한 계정으로만 Pineflow를 사용할 수 있습니다.</span>
+              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="이메일"
+                autoComplete="username"
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="비밀번호"
+                autoComplete="current-password"
+              />
+              <button className="primaryAction" type="submit" disabled={isSaving}>
+                <span>로그인</span>
+                <small>JWT로 안전하게 API를 호출합니다</small>
+              </button>
+            </form>
+          )}
         </section>
 
         {errorMessage && <p className="errorBanner">{errorMessage}</p>}
@@ -222,7 +278,7 @@ function App() {
                 ? "서버에서 기록을 불러오는 중입니다"
                 : isActive
                   ? "오늘의 세션을 마칩니다"
-                  : "PostgreSQL에 시간을 저장합니다"}
+                  : "DynamoDB에 현재 시간을 저장합니다"}
             </small>
           </button>
         </div>
@@ -230,8 +286,8 @@ function App() {
 
       {errorMessage && <p className="errorBanner">{errorMessage}</p>}
 
-      <button className="textAction" type="button" onClick={resetAccess}>
-        Access key 다시 입력
+      <button className="textAction" type="button" onClick={signOut}>
+        로그아웃
       </button>
 
       <section className="sectionBand">
@@ -289,7 +345,7 @@ function App() {
             value={note}
             disabled={isActive}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="예: 오전에는 글쓰기, 오후에는 운동"
+            placeholder="예: 오전에는 글쓰기, 오후에는 이동"
           />
         </label>
       </section>
@@ -319,7 +375,7 @@ function App() {
 
       <section className="brandBand">
         <div className="sectionTitle">
-          <h2>네이밍 후보</h2>
+          <h2>네이밍 메모</h2>
         </div>
         {namingIdeas.map((idea) => (
           <article key={idea.name}>

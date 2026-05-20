@@ -1,0 +1,63 @@
+# Serverless 구현 현황
+
+마지막 업데이트: 2026-05-20
+
+## 이번 단계의 목표
+
+Pineflow의 운영 기준을 EC2 Docker PoC에서 AWS Serverless 구조로 옮기기 위한 실제 코드 기반을 만들었다. 이 단계의 핵심은 배포 전에 반드시 필요한 보안/비용 가드레일을 인프라 코드에 고정하고, 프론트엔드가 Cognito 로그인 기반으로 API를 호출할 수 있게 만드는 것이다.
+
+## 추가된 구성
+
+- `infra/`: AWS CDK TypeScript 프로젝트.
+- `infra/lib/pineflow-serverless-stack.ts`: Cognito, API Gateway, Lambda, DynamoDB, S3, CloudFront, Budgets 정의.
+- `infra/lambda/pineflow-api/index.mjs`: Serverless API 핸들러.
+- `.github/workflows/serverless.yml`: GitHub OIDC 기반 Serverless 검증/배포 workflow.
+- `src/auth.ts`: Cognito 로그인과 첫 로그인 비밀번호 변경 처리.
+- `src/App.tsx`: access key 입력 화면을 Cognito 로그인 화면으로 전환.
+
+Lambda 코드는 Node.js 20 Lambda 런타임에 포함된 AWS SDK for JavaScript v3를 사용한다. 따라서 Lambda asset에는 별도 `node_modules`를 포함하지 않는다.
+
+## 보안 설계
+
+- Cognito User Pool은 `selfSignUpEnabled: false`로 생성한다.
+- Cognito App Client는 secret 없는 웹 클라이언트로 두되, OAuth 기본 예시 callback이 생기지 않도록 `disableOAuth: true`를 명시했다.
+- 실제 데이터 API는 API Gateway JWT authorizer를 통과해야 한다.
+- Lambda는 JWT claim의 `sub`를 기준으로 `USER#<sub>` partition에만 접근한다.
+- GitHub Actions는 장기 AWS Access Key를 저장하지 않고 OIDC로 AWS IAM Role을 assume하는 구조를 사용한다.
+
+## 비용 가드레일
+
+- API Gateway throttling: rate `1 req/sec`, burst `5`.
+- Lambda reserved concurrency: `1`.
+- DynamoDB provisioned capacity: `1 RCU / 1 WCU`.
+- CloudWatch log retention: 7일.
+- AWS Budgets: 월 $1, $3, $5 알림.
+- S3 public access block 적용.
+- CloudFront OAC로만 S3 object 접근 허용.
+
+## 데이터 설계
+
+DynamoDB single-table 구조를 사용한다.
+
+- `pk`: `USER#<cognito-sub>`
+- `sk`: `SETTINGS`, `ACTIVE_SESSION`, `SESSION#<iso-time>#<session-id>`
+
+이 구조는 사용자별 최근 기록 조회, 현재 활성 세션 조회, 설정 조회를 단순한 key 기반 접근으로 처리하기 위해 선택했다. 초기 버전에서는 GSI를 만들지 않는다. 사용량이 적은 개인 서비스이므로 불필요한 capacity 축을 늘리지 않는 편이 비용 방어에 유리하다.
+
+## 배포 흐름
+
+1. GitHub Actions가 앱과 인프라를 검증한다.
+2. `main` branch에서 AWS OIDC 설정이 준비되어 있으면 CDK stack을 배포한다.
+3. CDK output에서 API endpoint, Cognito 정보, S3 bucket, CloudFront distribution id를 읽는다.
+4. 그 값을 Vite 환경변수로 넣어 프론트엔드를 빌드한다.
+5. `dist/`를 S3에 업로드한다.
+6. CloudFront cache를 invalidation 한다.
+
+## 아직 남은 작업
+
+- AWS 계정에서 CDK bootstrap 수행.
+- GitHub OIDC용 AWS IAM Role 생성.
+- GitHub repository variables 등록.
+- Cognito 관리자 생성 사용자로 실제 로그인 검증.
+- DynamoDB export/import 운영 절차 구체화.
+- 실제 AWS 배포 후 CloudWatch 지표와 Budget 알림 수신 검증.

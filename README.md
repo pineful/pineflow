@@ -1,24 +1,25 @@
 # Pineflow
 
-Pineflow는 회사 출퇴근 시스템에 속해 있지 않아도 개인의 업무 시작과 종료를 기록할 수 있는 모바일 우선 출퇴근 기록 서비스입니다.
+Pineflow는 회사에 속해 있지 않아도 개인의 출근, 퇴근, 집중 시간을 기록할 수 있는 모바일 우선 출퇴근 기록 서비스입니다.
 
-출근/퇴근 기록과 개인 업무 리듬은 PostgreSQL에 저장하며, 현재 운영 구조는 AWS EC2 `t3.micro` 한 대에서 `app` 컨테이너와 `postgres` 컨테이너를 분리해 실행하는 방식을 기준으로 합니다.
-
-현재 EC2 Docker/PostgreSQL 구성은 PoC입니다. 다음 본선은 AWS Free Tier를 최대한 벗어나지 않는 Serverless 구조이며, 전환 계획은 `docs/serverless-plan.md`에 정리합니다.
+기존 EC2 Docker/PostgreSQL 구성은 PoC로 유지합니다. 실제 운영 기준은 AWS Free Tier를 최대한 벗어나지 않는 Serverless 구조이며, 관련 설계는 `docs/serverless-plan.md`와 `docs/serverless-implementation.md`에 정리합니다.
 
 ## 로컬 실행
 
-이 Windows 환경에서는 npm이 레지스트리에 접속할 때 Node가 Windows 시스템 인증서 저장소를 사용하도록 설정해야 합니다.
+Windows 환경에서는 npm registry 접근 시 Node가 Windows 시스템 인증서 저장소를 사용하도록 설정합니다.
 
 ```powershell
 $env:NODE_OPTIONS='--use-system-ca'
 & "C:\Program Files\nodejs\npm.cmd" install
-docker compose up -d postgres
-& "C:\Program Files\nodejs\npm.cmd" run api
 & "C:\Program Files\nodejs\npm.cmd" run dev
 ```
 
-Vite 개발 서버와 API 서버를 따로 실행할 때는 `.env`에 `VITE_API_BASE_URL=http://127.0.0.1:3001`를 둡니다. 운영에서는 `npm start`가 API와 빌드된 프론트엔드를 같은 Express 프로세스에서 제공합니다.
+PoC API를 로컬에서 쓰려면 별도 터미널에서 PostgreSQL과 API도 실행합니다.
+
+```powershell
+docker compose up -d postgres
+& "C:\Program Files\nodejs\npm.cmd" run api
+```
 
 ## 빌드
 
@@ -27,35 +28,37 @@ $env:NODE_OPTIONS='--use-system-ca'
 & "C:\Program Files\nodejs\npm.cmd" run build
 ```
 
-## 운영용 Docker 구조
+## Serverless 인프라 검증
 
-운영은 EC2 인스턴스 한 대에서 `app`, `postgres` 컨테이너를 분리해 실행하도록 설계되어 있습니다.
-
-```bash
-cp .env.production.example .env.production
-docker compose -p pineflow -f compose.prod.yml up -d --build
+```powershell
+cd infra
+$env:NODE_OPTIONS='--use-system-ca'
+& "C:\Program Files\nodejs\npm.cmd" install
+& "C:\Program Files\nodejs\npm.cmd" run build
+& "C:\Program Files\nodejs\npm.cmd" run synth
 ```
-
-전체 운영 흐름은 `docs/deployment-aws.md`에 정리되어 있습니다.
 
 ## CI/CD
 
-`main` 브랜치에 push되면 GitHub Actions가 Docker 이미지를 빌드해 GHCR에 올립니다. EC2는 SSH 접속을 받는 대상이 아니라, systemd timer 또는 수동 명령으로 스스로 GitHub/GHCR을 pull해 `app` 컨테이너를 교체합니다.
+Serverless 운영 배포는 GitHub OIDC와 AWS IAM Role을 사용합니다. 장기 AWS Access Key를 GitHub Secrets에 저장하지 않습니다.
 
-필요한 GitHub Secrets와 서버 준비 절차는 `docs/cicd.md`에 정리되어 있습니다.
+배포 workflow는 CDK stack을 배포한 뒤 output을 사용해 프론트엔드를 빌드하고 S3/CloudFront에 반영합니다.
+
+기존 Docker image workflow는 PoC 수동 실행용으로 남겨두었습니다.
 
 ## 문서
 
 - 진행 상황: `docs/status.md`
 - 제품 계획: `docs/product-plan.md`
 - 아키텍처: `docs/architecture.md`
-- 브랜드 시스템: `docs/brand.md`
+- 브랜드: `docs/brand.md`
 - 모듈 설계: `docs/modules/`
 - 변경 기록: `docs/change-log.md`
-- AWS 배포/운영 흐름: `docs/deployment-aws.md`
-- CI/CD 흐름: `docs/cicd.md`
-- 보안 설계: `docs/security.md`
+- AWS 배포/운영: `docs/deployment-aws.md`
+- CI/CD: `docs/cicd.md`
+- 보안: `docs/security.md`
 - 데이터 백업/마이그레이션: `docs/data-management.md`
 - Serverless 전환 계획: `docs/serverless-plan.md`
+- Serverless 구현 현황: `docs/serverless-implementation.md`
 
-기능이나 구조를 수정할 때는 관련 모듈 문서를 같은 변경 안에서 함께 갱신합니다.
+기능이나 구조가 변경될 때는 관련 모듈 문서와 변경 기록을 함께 갱신합니다.

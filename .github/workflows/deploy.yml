@@ -1,9 +1,6 @@
-name: Build Pineflow Image
+name: Build Pineflow PoC Image
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency:

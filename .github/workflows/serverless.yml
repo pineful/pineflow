@@ -1,0 +1,105 @@
+name: Pineflow Serverless
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pineflow-serverless-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate app and infrastructure
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install infrastructure dependencies
+        working-directory: infra
+        run: npm ci
+
+      - name: Build infrastructure
+        working-directory: infra
+        run: npm run build
+
+      - name: Synthesize CDK
+        working-directory: infra
+        run: npm run synth
+
+  deploy:
+    name: Deploy serverless stack
+    needs: validate
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AWS_ROLE_ARN != '' && vars.AWS_REGION != '' && vars.BUDGET_ALERT_EMAIL != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Install infrastructure dependencies
+        working-directory: infra
+        run: npm ci
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy CDK stack
+        working-directory: infra
+        run: npx cdk deploy --require-approval never --outputs-file cdk-outputs.json --parameters BudgetAlertEmail=${{ vars.BUDGET_ALERT_EMAIL }}
+
+      - name: Export frontend environment
+        run: |
+          node <<'NODE' >> "$GITHUB_ENV"
+          const outputs = require("./infra/cdk-outputs.json").PineflowServerlessStack;
+          const apiEndpoint = outputs.ApiEndpoint.endsWith("/")
+            ? outputs.ApiEndpoint.slice(0, -1)
+            : outputs.ApiEndpoint;
+          console.log(`VITE_API_BASE_URL=${apiEndpoint}`);
+          console.log(`VITE_COGNITO_REGION=${process.env.AWS_REGION}`);
+          console.log(`VITE_COGNITO_USER_POOL_ID=${outputs.UserPoolId}`);
+          console.log(`VITE_COGNITO_USER_POOL_CLIENT_ID=${outputs.UserPoolClientId}`);
+          console.log(`FRONTEND_BUCKET_NAME=${outputs.FrontendBucketName}`);
+          console.log(`FRONTEND_DISTRIBUTION_ID=${outputs.FrontendDistributionId}`);
+          NODE
+
+      - name: Build frontend for deployed API
+        run: npm run build
+
+      - name: Upload frontend to S3
+        run: aws s3 sync dist "s3://$FRONTEND_BUCKET_NAME" --delete
+
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id "$FRONTEND_DISTRIBUTION_ID" --paths "/index.html" "/assets/*"

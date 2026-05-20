@@ -3,12 +3,12 @@ import type { CommuteRecord } from "./types";
 const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
   month: "long",
   day: "numeric",
-  weekday: "long",
+  weekday: "long"
 });
 
 const timeFormatter = new Intl.DateTimeFormat("ko-KR", {
   hour: "2-digit",
-  minute: "2-digit",
+  minute: "2-digit"
 });
 
 export function formatDate(value: Date | string) {
@@ -61,7 +61,7 @@ export function summarizeToday(records: CommuteRecord[], now: Date, activeCheckI
     records: todays,
     totalMinutes,
     firstCheckIn: todays.find((record) => record.type === "check-in")?.timestamp ?? activeCheckIn,
-    lastCheckOut: [...todays].reverse().find((record) => record.type === "check-out")?.timestamp,
+    lastCheckOut: [...todays].reverse().find((record) => record.type === "check-out")?.timestamp
   };
 }
 
