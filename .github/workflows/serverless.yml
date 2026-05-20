@@ -37,13 +37,9 @@ jobs:
         working-directory: infra
         run: npm ci
 
-      - name: Build infrastructure
+      - name: Verify infrastructure guardrails
         working-directory: infra
-        run: npm run build
-
-      - name: Synthesize CDK
-        working-directory: infra
-        run: npm run synth
+        run: npm run verify
 
   deploy:
     name: Deploy serverless stack

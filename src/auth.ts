@@ -1,9 +1,10 @@
 const region = import.meta.env.VITE_COGNITO_REGION ?? "";
 const userPoolClientId = import.meta.env.VITE_COGNITO_USER_POOL_CLIENT_ID ?? "";
-const tokenStorageKey = "pineflow.id-token";
+const tokenStorageKey = "pineflow.access-token";
 const emailStorageKey = "pineflow.email";
 
 type CognitoAuthResult = {
+  AccessToken?: string;
   IdToken?: string;
 };
 
@@ -19,7 +20,7 @@ type CognitoResponse = {
 };
 
 export type LoginResult =
-  | { type: "signed-in"; idToken: string }
+  | { type: "signed-in"; accessToken: string }
   | { type: "new-password-required"; session: string; username: string };
 
 function endpoint() {
@@ -53,21 +54,40 @@ async function cognitoRequest(target: string, payload: Record<string, unknown>) 
 }
 
 export function getStoredIdToken() {
-  return window.localStorage.getItem(tokenStorageKey) ?? "";
+  return getStoredAccessToken();
+}
+
+export function getStoredAccessToken() {
+  const token = window.sessionStorage.getItem(tokenStorageKey) ?? "";
+  if (!token || isJwtExpired(token)) {
+    window.sessionStorage.removeItem(tokenStorageKey);
+    return "";
+  }
+
+  return token;
 }
 
 export function getStoredEmail() {
   return window.localStorage.getItem(emailStorageKey) ?? "";
 }
 
-export function saveSession(idToken: string, email: string) {
-  window.localStorage.setItem(tokenStorageKey, idToken);
+export function saveSession(accessToken: string, email: string) {
+  window.sessionStorage.setItem(tokenStorageKey, accessToken);
   window.localStorage.setItem(emailStorageKey, email);
 }
 
 export function clearSession() {
-  window.localStorage.removeItem(tokenStorageKey);
+  window.sessionStorage.removeItem(tokenStorageKey);
   window.localStorage.removeItem(emailStorageKey);
+}
+
+function isJwtExpired(token: string) {
+  try {
+    const payload = JSON.parse(window.atob(token.split(".")[1] ?? "")) as { exp?: number };
+    return !payload.exp || payload.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
 }
 
 export async function signIn(email: string, password: string): Promise<LoginResult> {
@@ -88,13 +108,13 @@ export async function signIn(email: string, password: string): Promise<LoginResu
     };
   }
 
-  const idToken = body.AuthenticationResult?.IdToken;
-  if (!idToken) {
+  const accessToken = body.AuthenticationResult?.AccessToken;
+  if (!accessToken) {
     throw new Error("로그인 토큰을 받지 못했습니다.");
   }
 
-  saveSession(idToken, email);
-  return { type: "signed-in", idToken };
+  saveSession(accessToken, email);
+  return { type: "signed-in", accessToken };
 }
 
 export async function completeNewPassword(
@@ -113,11 +133,11 @@ export async function completeNewPassword(
     }
   });
 
-  const idToken = body.AuthenticationResult?.IdToken;
-  if (!idToken) {
+  const accessToken = body.AuthenticationResult?.AccessToken;
+  if (!accessToken) {
     throw new Error("새 비밀번호 설정 후 로그인 토큰을 받지 못했습니다.");
   }
 
-  saveSession(idToken, email);
-  return idToken;
+  saveSession(accessToken, email);
+  return accessToken;
 }

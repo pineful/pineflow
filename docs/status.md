@@ -23,16 +23,22 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - S3 public access block과 CloudFront OAC 적용.
 - 프론트엔드 access key 화면을 Cognito 로그인 화면으로 전환.
 - GitHub Actions Serverless workflow 추가.
+- 모든 API route에 JWT authorizer 적용.
+- Lambda IAM 권한을 DynamoDB 최소 작업으로 축소.
+- CloudFront 보안 응답 헤더와 CSP 적용.
+- CDK 템플릿 guardrail 자동 검증 스크립트 추가.
 
 ## 검증됨
 
 - `infra` TypeScript build 성공.
 - `infra` CDK synth 성공.
 - CDK synth 결과에서 주요 보안/비용 가드레일 확인.
+- `infra` CDK 템플릿 guardrail 자동 검증 성공.
+- 루트 애플리케이션 `npm audit --audit-level=high` 취약점 없음.
+- `infra` `npm audit --audit-level=high` 기준 high 이상 취약점 없음. 단, `aws-cdk-lib` 하위 개발/인프라 도구 체인에 moderate `brace-expansion` 이슈가 남아 있으며 Lambda 런타임 asset에는 포함되지 않는다.
 
 ## 아직 남은 일
 
-- 루트 앱 빌드 재검증.
 - AWS 계정에서 CDK bootstrap 수행.
 - GitHub OIDC용 AWS IAM Role 생성.
 - GitHub repository variables 등록.

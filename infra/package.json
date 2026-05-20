@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc --noEmit",
     "synth": "cdk synth",
+    "verify": "npm run build && npm run synth && node scripts/verify-template.mjs",
     "diff": "cdk diff",
     "deploy": "cdk deploy"
   },

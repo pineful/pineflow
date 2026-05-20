@@ -17,3 +17,8 @@
 - 프론트엔드 로그인 방식을 access key 입력에서 Cognito JWT 로그인으로 전환했습니다.
 - Serverless GitHub Actions workflow를 추가하고, 기존 Docker image workflow는 PoC 수동 실행용으로 조정했습니다.
 - Serverless 인증/저장소 모듈 설계 문서를 추가했습니다.
+- Serverless endpoint 흐름과 secure coding 관점 점검 후 public health route를 제거하고 모든 API route에 JWT authorizer를 적용했습니다.
+- Lambda IAM 권한을 최소 DynamoDB 작업으로 축소하고, 입력 크기/JSON 형식/조건부 충돌/예외 처리를 보완했습니다.
+- CloudFront 보안 응답 헤더와 CSP를 추가했습니다.
+- CDK 템플릿의 비용/보안 가드레일 자동 검증 스크립트를 추가했습니다.
+- AWS Serverless 배포 전 점검표를 추가했습니다.

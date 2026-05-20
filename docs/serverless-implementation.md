@@ -14,6 +14,7 @@ Pineflow의 운영 기준을 EC2 Docker PoC에서 AWS Serverless 구조로 옮�
 - `.github/workflows/serverless.yml`: GitHub OIDC 기반 Serverless 검증/배포 workflow.
 - `src/auth.ts`: Cognito 로그인과 첫 로그인 비밀번호 변경 처리.
 - `src/App.tsx`: access key 입력 화면을 Cognito 로그인 화면으로 전환.
+- `infra/scripts/verify-template.mjs`: CDK 출력 템플릿의 비용/보안 가드레일 자동 검증.
 
 Lambda 코드는 Node.js 20 Lambda 런타임에 포함된 AWS SDK for JavaScript v3를 사용한다. 따라서 Lambda asset에는 별도 `node_modules`를 포함하지 않는다.
 
@@ -24,6 +25,11 @@ Lambda 코드는 Node.js 20 Lambda 런타임에 포함된 AWS SDK for JavaScript
 - 실제 데이터 API는 API Gateway JWT authorizer를 통과해야 한다.
 - Lambda는 JWT claim의 `sub`를 기준으로 `USER#<sub>` partition에만 접근한다.
 - GitHub Actions는 장기 AWS Access Key를 저장하지 않고 OIDC로 AWS IAM Role을 assume하는 구조를 사용한다.
+- CloudFront는 CSP, HSTS, frame deny, no-referrer 등 기본 보안 응답 헤더를 적용한다.
+- 브라우저에는 API용 access token만 `sessionStorage`에 저장한다. 브라우저 종료 후 토큰은 유지하지 않는다.
+- 모든 API route는 `/api/health`까지 JWT authorizer를 요구한다.
+- Lambda IAM 권한은 필요한 DynamoDB item 작업으로 제한하고 `Scan`, `BatchWriteItem`은 허용하지 않는다.
+- dependency audit 기준 애플리케이션에는 취약점이 없고, `infra`에는 high 이상 취약점이 없다. `infra`의 moderate `brace-expansion` 이슈는 CDK 도구 체인의 transitive dependency이며 Lambda 배포 asset에는 포함되지 않는다.
 
 ## 비용 가드레일
 
@@ -61,3 +67,7 @@ DynamoDB single-table 구조를 사용한다.
 - Cognito 관리자 생성 사용자로 실제 로그인 검증.
 - DynamoDB export/import 운영 절차 구체화.
 - 실제 AWS 배포 후 CloudWatch 지표와 Budget 알림 수신 검증.
+
+## 관련 점검 문서
+
+- AWS 배포 전 점검표: `docs/aws-serverless-deployment-checklist.md`

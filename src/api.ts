@@ -1,10 +1,10 @@
 import type { CommuteState, WorkMode } from "./types";
-import { getStoredIdToken } from "./auth";
+import { getStoredAccessToken } from "./auth";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
 async function requestState(path: string, init?: RequestInit): Promise<CommuteState> {
-  const token = getStoredIdToken();
+  const token = getStoredAccessToken();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     headers: {
       "Content-Type": "application/json",

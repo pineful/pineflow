@@ -16,6 +16,7 @@ if (!tableName) {
 const dynamodb = new DynamoDBClient({});
 const allowedModes = new Set(["focus", "remote", "study", "project"]);
 const defaultDailyGoalMinutes = 480;
+const maxBodyBytes = 4096;
 
 function json(statusCode, body) {
   return {
@@ -29,12 +30,24 @@ function json(statusCode, body) {
 }
 
 function parseBody(event) {
-  if (!event.body) return {};
+  if (event.isBase64Encoded) {
+    return { ok: false, error: "Base64 encoded body is not supported." };
+  }
+
+  if (!event.body) return { ok: true, value: {} };
+  if (Buffer.byteLength(event.body, "utf8") > maxBodyBytes) {
+    return { ok: false, error: "Request body is too large." };
+  }
 
   try {
-    return JSON.parse(event.body);
+    const value = JSON.parse(event.body);
+    if (value === null || Array.isArray(value) || typeof value !== "object") {
+      return { ok: false, error: "Request body must be a JSON object." };
+    }
+
+    return { ok: true, value };
   } catch {
-    return null;
+    return { ok: false, error: "Request body must be valid JSON." };
   }
 }
 
@@ -59,11 +72,17 @@ function itemToObject(item) {
 
 function objectToItem(item) {
   return Object.fromEntries(
-    Object.entries(item).map(([key, value]) => {
-      if (typeof value === "number") return [key, { N: String(value) }];
-      return [key, { S: String(value) }];
-    })
+    Object.entries(item)
+      .filter(([, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => {
+        if (typeof value === "number") return [key, { N: String(value) }];
+        return [key, { S: String(value) }];
+      })
   );
+}
+
+function isConditionalFailure(error) {
+  return error?.name === "ConditionalCheckFailedException" || error?.name === "TransactionCanceledException";
 }
 
 function toRecords(session) {
@@ -168,33 +187,39 @@ async function checkIn(pk, body) {
     updatedAt: now
   };
 
-  await dynamodb.send(
-    new TransactWriteItemsCommand({
-      TransactItems: [
-        {
-          Put: {
-            TableName: tableName,
-            Item: objectToItem(sessionItem),
-            ConditionExpression: "attribute_not_exists(pk)"
-          }
-        },
-        {
-          Put: {
-            TableName: tableName,
-            Item: {
-              ...objectToItem({
+  try {
+    await dynamodb.send(
+      new TransactWriteItemsCommand({
+        TransactItems: [
+          {
+            Put: {
+              TableName: tableName,
+              Item: objectToItem(sessionItem),
+              ConditionExpression: "attribute_not_exists(pk)"
+            }
+          },
+          {
+            Put: {
+              TableName: tableName,
+              Item: objectToItem({
                 ...sessionItem,
                 sk: "ACTIVE_SESSION",
                 sessionSk,
                 entityType: "ACTIVE_SESSION"
-              })
-            },
-            ConditionExpression: "attribute_not_exists(pk)"
+              }),
+              ConditionExpression: "attribute_not_exists(pk)"
+            }
           }
-        }
-      ]
-    })
-  );
+        ]
+      })
+    );
+  } catch (error) {
+    if (isConditionalFailure(error)) {
+      return json(409, { error: "An active session already exists." });
+    }
+
+    throw error;
+  }
 
   return json(201, await loadState(pk));
 }
@@ -213,29 +238,37 @@ async function checkOut(pk) {
   }
 
   const now = new Date().toISOString();
-  await dynamodb.send(
-    new TransactWriteItemsCommand({
-      TransactItems: [
-        {
-          Update: {
-            TableName: tableName,
-            Key: objectToItem({ pk, sk: activeItem.sessionSk }),
-            UpdateExpression: "set checkOutAt = :now, updatedAt = :now",
-            ConditionExpression: "attribute_exists(pk) and attribute_not_exists(checkOutAt)",
-            ExpressionAttributeValues: {
-              ":now": { S: now }
+  try {
+    await dynamodb.send(
+      new TransactWriteItemsCommand({
+        TransactItems: [
+          {
+            Update: {
+              TableName: tableName,
+              Key: objectToItem({ pk, sk: activeItem.sessionSk }),
+              UpdateExpression: "set checkOutAt = :now, updatedAt = :now",
+              ConditionExpression: "attribute_exists(pk) and attribute_not_exists(checkOutAt)",
+              ExpressionAttributeValues: {
+                ":now": { S: now }
+              }
+            }
+          },
+          {
+            Delete: {
+              TableName: tableName,
+              Key: objectToItem({ pk, sk: "ACTIVE_SESSION" })
             }
           }
-        },
-        {
-          Delete: {
-            TableName: tableName,
-            Key: objectToItem({ pk, sk: "ACTIVE_SESSION" })
-          }
-        }
-      ]
-    })
-  );
+        ]
+      })
+    );
+  } catch (error) {
+    if (isConditionalFailure(error)) {
+      return json(409, { error: "There is no active session to check out." });
+    }
+
+    throw error;
+  }
 
   return json(200, await loadState(pk));
 }
@@ -264,27 +297,32 @@ async function updateSettings(pk, body) {
 }
 
 export async function handler(event) {
-  const method = event.requestContext?.http?.method ?? "GET";
-  const path = event.rawPath ?? "";
+  try {
+    const method = event.requestContext?.http?.method ?? "GET";
+    const path = event.rawPath ?? "";
 
-  if (method === "GET" && path === "/api/health") {
-    return json(200, { ok: true, service: "pineflow-api" });
+    const pk = getUserPartitionKey(event);
+    if (!pk) {
+      return json(401, { error: "Cognito JWT is required." });
+    }
+
+    if (method === "GET" && path === "/api/health") {
+      return json(200, { ok: true, service: "pineflow-api" });
+    }
+
+    const body = parseBody(event);
+    if (!body.ok) {
+      return json(400, { error: body.error });
+    }
+
+    if (method === "GET" && path === "/api/state") return json(200, await loadState(pk));
+    if (method === "POST" && path === "/api/check-in") return checkIn(pk, body.value);
+    if (method === "POST" && path === "/api/check-out") return checkOut(pk);
+    if (method === "PATCH" && path === "/api/settings") return updateSettings(pk, body.value);
+
+    return json(404, { error: "Not found." });
+  } catch (error) {
+    console.error("Unhandled Pineflow API error", { name: error?.name });
+    return json(500, { error: "Unexpected server error." });
   }
-
-  const pk = getUserPartitionKey(event);
-  if (!pk) {
-    return json(401, { error: "Cognito JWT is required." });
-  }
-
-  const body = parseBody(event);
-  if (body === null) {
-    return json(400, { error: "Request body must be valid JSON." });
-  }
-
-  if (method === "GET" && path === "/api/state") return json(200, await loadState(pk));
-  if (method === "POST" && path === "/api/check-in") return checkIn(pk, body);
-  if (method === "POST" && path === "/api/check-out") return checkOut(pk);
-  if (method === "PATCH" && path === "/api/settings") return updateSettings(pk, body);
-
-  return json(404, { error: "Not found." });
 }

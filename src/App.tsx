@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   clearSession,
   completeNewPassword,
+  getStoredAccessToken,
   getStoredEmail,
-  getStoredIdToken,
   signIn
 } from "./auth";
 import { createCheckIn, createCheckOut, fetchState, saveDailyGoal } from "./api";
@@ -50,7 +50,7 @@ function App() {
   const [newPasswordSession, setNewPasswordSession] = useState("");
   const [newPasswordUsername, setNewPasswordUsername] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(() =>
-    typeof window === "undefined" ? false : Boolean(getStoredIdToken())
+    typeof window === "undefined" ? false : Boolean(getStoredAccessToken())
   );
 
   useEffect(() => {

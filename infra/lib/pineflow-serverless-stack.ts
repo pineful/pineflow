@@ -8,6 +8,7 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as s3 from "aws-cdk-lib/aws-s3";
@@ -66,6 +67,89 @@ export class PineflowServerlessStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN
     });
 
+    const frontendBucket = new s3.Bucket(this, "FrontendBucket", {
+      bucketName: `pineflow-frontend-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    });
+
+    const responseHeadersPolicy = new cloudfront.ResponseHeadersPolicy(
+      this,
+      "FrontendSecurityHeadersPolicy",
+      {
+        responseHeadersPolicyName: "pineflow-frontend-security-headers",
+        securityHeadersBehavior: {
+          contentSecurityPolicy: {
+            contentSecurityPolicy: [
+              "default-src 'self'",
+              "base-uri 'self'",
+              "object-src 'none'",
+              "frame-ancestors 'none'",
+              "form-action 'self'",
+              "img-src 'self' data:",
+              "script-src 'self'",
+              "style-src 'self' 'unsafe-inline'",
+              `connect-src 'self' https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com https://*.execute-api.${cdk.Stack.of(this).region}.amazonaws.com`
+            ].join("; "),
+            override: true
+          },
+          contentTypeOptions: { override: true },
+          frameOptions: {
+            frameOption: cloudfront.HeadersFrameOption.DENY,
+            override: true
+          },
+          referrerPolicy: {
+            referrerPolicy: cloudfront.HeadersReferrerPolicy.NO_REFERRER,
+            override: true
+          },
+          strictTransportSecurity: {
+            accessControlMaxAge: cdk.Duration.days(365),
+            includeSubdomains: true,
+            preload: true,
+            override: true
+          },
+          xssProtection: {
+            protection: true,
+            modeBlock: true,
+            override: true
+          }
+        }
+      }
+    );
+
+    const distribution = new cloudfront.Distribution(this, "FrontendDistribution", {
+      defaultRootObject: "index.html",
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(frontendBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        responseHeadersPolicy
+      },
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: cdk.Duration.minutes(5)
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: cdk.Duration.minutes(5)
+        }
+      ]
+    });
+
+    const apiLogGroup = new logs.LogGroup(this, "ApiFunctionLogGroup", {
+      logGroupName: "/aws/lambda/pineflow-api",
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    });
+
     const apiFunction = new lambda.Function(this, "ApiFunction", {
       functionName: "pineflow-api",
       code: lambda.Code.fromAsset("lambda/pineflow-api"),
@@ -75,13 +159,25 @@ export class PineflowServerlessStack extends cdk.Stack {
       memorySize: 128,
       timeout: cdk.Duration.seconds(5),
       reservedConcurrentExecutions: 1,
-      logRetention: logs.RetentionDays.ONE_WEEK,
+      logGroup: apiLogGroup,
       environment: {
         TABLE_NAME: table.tableName
       }
     });
 
-    table.grantReadWriteData(apiFunction);
+    apiFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:TransactWriteItems"
+        ],
+        resources: [table.tableArn]
+      })
+    );
 
     const httpApi = new apigwv2.HttpApi(this, "HttpApi", {
       apiName: "pineflow-api",
@@ -93,7 +189,7 @@ export class PineflowServerlessStack extends cdk.Stack {
           apigwv2.CorsHttpMethod.POST,
           apigwv2.CorsHttpMethod.OPTIONS
         ],
-        allowOrigins: ["*"],
+        allowOrigins: [`https://${distribution.distributionDomainName}`],
         maxAge: cdk.Duration.days(1)
       }
     });
@@ -115,13 +211,9 @@ export class PineflowServerlessStack extends cdk.Stack {
     );
 
     const integration = new integrations.HttpLambdaIntegration("ApiIntegration", apiFunction);
-    httpApi.addRoutes({
-      path: "/api/health",
-      methods: [apigwv2.HttpMethod.GET],
-      integration
-    });
 
     for (const route of [
+      { path: "/api/health", method: apigwv2.HttpMethod.GET },
       { path: "/api/state", method: apigwv2.HttpMethod.GET },
       { path: "/api/check-in", method: apigwv2.HttpMethod.POST },
       { path: "/api/check-out", method: apigwv2.HttpMethod.POST },
@@ -134,38 +226,6 @@ export class PineflowServerlessStack extends cdk.Stack {
         authorizer: jwtAuthorizer
       });
     }
-
-    const frontendBucket = new s3.Bucket(this, "FrontendBucket", {
-      bucketName: `pineflow-frontend-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      enforceSSL: true,
-      removalPolicy: cdk.RemovalPolicy.RETAIN
-    });
-
-    const distribution = new cloudfront.Distribution(this, "FrontendDistribution", {
-      defaultRootObject: "index.html",
-      defaultBehavior: {
-        origin: origins.S3BucketOrigin.withOriginAccessControl(frontendBucket),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED
-      },
-      errorResponses: [
-        {
-          httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: "/index.html",
-          ttl: cdk.Duration.minutes(5)
-        },
-        {
-          httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: "/index.html",
-          ttl: cdk.Duration.minutes(5)
-        }
-      ]
-    });
 
     new cloudwatch.Alarm(this, "ApiLambdaErrorAlarm", {
       alarmName: "pineflow-api-lambda-errors",
