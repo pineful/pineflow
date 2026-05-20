@@ -19,9 +19,13 @@ Pineflow는 Vite React 프론트엔드, Express API 서버, PostgreSQL 데이터
 - `server/schema.sql`: 데이터베이스 테이블과 인덱스.
 - `docker-compose.yml`: 로컬 개발용 PostgreSQL.
 - `compose.prod.yml`: EC2 운영용 app/postgres 컨테이너 구성.
+- `compose.deploy.yml`: CI/CD에서 GHCR 이미지를 pull해 실행하는 운영 구성.
 - `Dockerfile`: 운영용 app 이미지 빌드.
+- `.github/workflows/deploy.yml`: main push 시 이미지 빌드와 EC2 배포를 수행하는 GitHub Actions workflow.
+- `scripts/deploy-ec2.sh`: EC2에서 app 컨테이너를 갱신하는 배포 스크립트.
 - `docs/development.md`: 로컬 개발 환경과 명령.
 - `docs/deployment-aws.md`: AWS EC2 Docker 운영 흐름.
+- `docs/cicd.md`: CI/CD 설계와 운영 절차.
 
 ## 변경 정책
 
@@ -34,3 +38,4 @@ Pineflow는 Vite React 프론트엔드, Express API 서버, PostgreSQL 데이터
 - 계정 동기화와 다중 기기 사용 지원.
 - PostgreSQL 마이그레이션 도구 도입.
 - EC2 단일 인스턴스 구조에서 RDS 또는 관리형 배포 구조로 이전.
+- GitHub Actions rollback 자동화.

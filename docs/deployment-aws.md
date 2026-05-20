@@ -19,9 +19,11 @@ AWS 인스턴스 생성, 시작, 중단, 종료는 운영자가 직접 수행합
 
 - `Dockerfile`: 운영용 app 이미지 빌드.
 - `compose.prod.yml`: 운영용 Docker Compose 구성.
+- `compose.deploy.yml`: GHCR 이미지를 pull해서 실행하는 CI/CD용 Compose 구성.
 - `.env.production.example`: 운영 환경 변수 템플릿.
 - `server/schema.sql`: app 시작 시 적용되는 DB 스키마.
 - `docs/deployment-aws.md`: 운영 흐름 문서.
+- `docs/cicd.md`: GitHub Actions 기반 자동 배포 문서.
 
 ## 인스턴스 전제
 
@@ -62,10 +64,16 @@ AWS 인스턴스 생성, 시작, 중단, 종료는 운영자가 직접 수행합
    PINEFLOW_OWNER_KEY=<긴-랜덤-owner-secret>
    ```
 
-5. 이미지를 빌드하고 서비스를 시작합니다.
+5. 최초 실행 방식 중 하나를 선택합니다. EC2에서 직접 빌드하려면 `compose.prod.yml`을 사용합니다.
 
    ```bash
    docker compose -p pineflow -f compose.prod.yml up -d --build
+   ```
+
+   GitHub Actions가 만든 GHCR 이미지를 pull해서 실행하려면 `compose.deploy.yml`을 사용합니다.
+
+   ```bash
+   docker compose -p pineflow -f compose.deploy.yml up -d
    ```
 
 6. 상태와 로그를 확인합니다.
@@ -91,11 +99,13 @@ AWS 인스턴스 생성, 시작, 중단, 종료는 운영자가 직접 수행합
    git pull --ff-only
    ```
 
-3. app 컨테이너만 다시 빌드하고 재시작합니다.
+3. 수동 업데이트라면 app 컨테이너만 다시 빌드하고 재시작합니다.
 
    ```bash
    docker compose -p pineflow -f compose.prod.yml up -d --build app
    ```
+
+   CI/CD를 사용하는 경우에는 `main` 브랜치 push가 `.github/workflows/deploy.yml`을 실행하고, EC2에서 `scripts/deploy-ec2.sh`가 app 컨테이너만 새 이미지로 교체합니다.
 
 4. 상태와 로그를 확인합니다.
 
@@ -164,7 +174,7 @@ Docker volume은 백업이 아닙니다. EC2 인스턴스나 연결된 EBS 볼�
 - Nginx 또는 Caddy를 앞단에 두고 HTTPS를 적용합니다.
 - 단일 인스턴스 DB 내구성이 부족해지면 PostgreSQL을 RDS로 옮깁니다.
 - `PINEFLOW_OWNER_KEY` 단일 사용자 모델을 실제 인증 모델로 교체합니다.
-- GitHub Actions로 Docker 이미지 빌드와 배포 스크립트를 자동화합니다.
+- 이전 이미지 SHA로 되돌리는 rollback 스크립트를 추가합니다.
 
 ## AWS 비용 메모
 

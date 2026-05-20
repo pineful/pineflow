@@ -36,6 +36,12 @@ docker compose -p pineflow -f compose.prod.yml up -d --build
 
 전체 운영 흐름은 `docs/deployment-aws.md`에 정리되어 있습니다.
 
+## CI/CD
+
+`main` 브랜치에 push되면 GitHub Actions가 Docker 이미지를 빌드해 GHCR에 올리고, EC2에 SSH로 접속해 `app` 컨테이너만 새 이미지로 교체합니다.
+
+필요한 GitHub Secrets와 서버 준비 절차는 `docs/cicd.md`에 정리되어 있습니다.
+
 ## 문서
 
 - 제품 계획: `docs/product-plan.md`
@@ -44,5 +50,6 @@ docker compose -p pineflow -f compose.prod.yml up -d --build
 - 모듈 설계: `docs/modules/`
 - 변경 기록: `docs/change-log.md`
 - AWS 배포/운영 흐름: `docs/deployment-aws.md`
+- CI/CD 흐름: `docs/cicd.md`
 
 기능이나 구조를 수정할 때는 관련 모듈 문서를 같은 변경 안에서 함께 갱신합니다.
