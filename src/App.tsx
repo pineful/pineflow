@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import {
   clearSession,
   completeNewPassword,
@@ -69,6 +69,13 @@ function weatherCondition(code: number) {
   if ([71, 73, 75, 77, 85, 86].includes(code)) return "눈";
   if ([95, 96, 99].includes(code)) return "뇌우";
   return "변화 있음";
+}
+
+function weatherTone(condition: string) {
+  if (condition.includes("비") || condition.includes("이슬비") || condition.includes("뇌우")) return "rain";
+  if (condition.includes("눈")) return "snow";
+  if (condition.includes("구름") || condition.includes("안개")) return "cloud";
+  return "sun";
 }
 
 function weatherHourLabel(value: string) {
@@ -152,6 +159,82 @@ async function resolveLocationLabel(latitude: number, longitude: number, fallbac
   } catch {
     return fallback;
   }
+}
+
+function accountInitial(value: string) {
+  const visibleName = value.split("@")[0]?.trim() || "P";
+  return visibleName.slice(0, 1).toUpperCase();
+}
+
+function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
+  if (hourly.length < 2) return null;
+
+  const width = 320;
+  const height = 138;
+  const paddingX = 14;
+  const top = 18;
+  const chartHeight = 64;
+  const precipitationBase = 122;
+  const temperatures = hourly.map((slot) => slot.temperature);
+  const minTemperature = Math.min(...temperatures);
+  const maxTemperature = Math.max(...temperatures);
+  const spread = Math.max(maxTemperature - minTemperature, 1);
+
+  const points = hourly.map((slot, index) => {
+    const x = paddingX + (index / (hourly.length - 1)) * (width - paddingX * 2);
+    const y = top + ((maxTemperature - slot.temperature) / spread) * chartHeight;
+    return { x, y, slot };
+  });
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const first = points[0];
+  const middle = points[Math.floor(points.length / 2)];
+  const last = points[points.length - 1];
+  const labelPoints = [first, middle, last];
+  const barWidth = Math.max(4, (width - paddingX * 2) / hourly.length - 5);
+
+  return (
+    <div className="weatherChart" aria-label="2일 온도와 강수 흐름 차트">
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-hidden="true">
+        <defs>
+          <linearGradient id="temperatureLine" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="#44b883" />
+            <stop offset="100%" stopColor="#f6c247" />
+          </linearGradient>
+        </defs>
+        <path className="chartGrid" d="M14 18H306M14 50H306M14 82H306" />
+        {points.map(({ x, slot }) => {
+          const barHeight = Math.max(3, (slot.precipitationProbability / 100) * 28);
+          return (
+            <rect
+              className="rainBar"
+              key={slot.time}
+              x={x - barWidth / 2}
+              y={precipitationBase - barHeight}
+              width={barWidth}
+              height={barHeight}
+              rx="2"
+            />
+          );
+        })}
+        <polyline className="temperatureLine" points={line} />
+        {points.map(({ x, y, slot }) => (
+          <circle className={`chartPoint ${weatherTone(slot.condition)}`} key={slot.time} cx={x} cy={y} r="4.2" />
+        ))}
+        {labelPoints.map(({ x, slot }) => (
+          <text className="chartLabel" key={slot.time} x={x} y="136" textAnchor="middle">
+            {slot.label.startsWith("오늘 ") ? slot.label.replace("오늘 ", "") : slot.label}
+          </text>
+        ))}
+      </svg>
+      <div className="chartLegend">
+        <span>온도</span>
+        <span>강수 가능성</span>
+        <strong>
+          {minTemperature}° - {maxTemperature}°
+        </strong>
+      </div>
+    </div>
+  );
 }
 
 function Logo() {
@@ -300,6 +383,7 @@ function App() {
 
   const progress = Math.min(100, Math.round((today.totalMinutes / state.dailyGoalMinutes) * 100));
   const isActive = Boolean(state.activeSession);
+  const accountEmail = email || getStoredEmail() || "Pineflow 계정";
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -473,9 +557,34 @@ function App() {
             <p className="eyebrow">개인 출퇴근 기록</p>
             <h1>{productName}</h1>
           </div>
-          <span className={isActive ? "statusPill active" : "statusPill"}>
-            {isActive ? "기록 중" : "대기"}
-          </span>
+          <details className="accountMenu">
+            <summary aria-label="계정 메뉴">
+              <span className="accountAvatar">{accountInitial(accountEmail)}</span>
+              <span className="accountChevron" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            <div className="accountPopover">
+              <div className="accountIdentity">
+                <span className="accountAvatar large">{accountInitial(accountEmail)}</span>
+                <div>
+                  <strong>{accountEmail}</strong>
+                  <span className={isActive ? "accountStatus active" : "accountStatus"}>
+                    {isActive ? "기록 중" : "대기"}
+                  </span>
+                </div>
+              </div>
+              <button type="button" disabled>
+                내 정보
+              </button>
+              <button type="button" disabled>
+                암호 변경
+              </button>
+              <button type="button" onClick={signOut}>
+                로그아웃
+              </button>
+            </div>
+          </details>
         </header>
 
         <div className="clockBlock">
@@ -505,10 +614,6 @@ function App() {
 
       {errorMessage && <p className="errorBanner">{errorMessage}</p>}
 
-      <button className="textAction" type="button" onClick={signOut}>
-        로그아웃
-      </button>
-
       <section className="sectionBand weatherBand">
         <div className="sectionTitle">
           <h2>오늘 날씨</h2>
@@ -527,16 +632,22 @@ function App() {
               <span>바람 {weather.windSpeed}km/h</span>
             </div>
             {weather.hourly && weather.hourly.length > 0 && (
-              <div className="weatherTimeline" aria-label="2일 시간대별 날씨">
-                {weather.hourly.map((slot) => (
-                  <article className="weatherSlot" key={slot.time}>
-                    <span>{slot.label}</span>
-                    <strong>{slot.temperature}°</strong>
-                    <small>{slot.condition}</small>
-                    <em>강수 {slot.precipitationProbability}%</em>
-                  </article>
-                ))}
-              </div>
+              <>
+                <WeatherChart hourly={weather.hourly} />
+                <div className="weatherTimeline" aria-label="2일 시간대별 날씨">
+                  {weather.hourly.map((slot) => (
+                    <article className="weatherSlot" key={slot.time}>
+                      <span>{slot.label}</span>
+                      <div className={`weatherGlyph ${weatherTone(slot.condition)}`} aria-hidden="true" />
+                      <strong>{slot.temperature}°</strong>
+                      <small>{slot.condition}</small>
+                      <em style={{ "--rain": `${slot.precipitationProbability}%` } as CSSProperties}>
+                        강수 {slot.precipitationProbability}%
+                      </em>
+                    </article>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         ) : (

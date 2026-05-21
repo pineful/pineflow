@@ -62,6 +62,7 @@ button {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 12px;
+  position: relative;
 }
 
 .logoMark {
@@ -145,18 +146,122 @@ h1 {
   line-height: 1;
 }
 
-.statusPill {
+.accountMenu {
+  position: relative;
+  justify-self: end;
   align-self: start;
-  padding: 8px 10px;
-  border-radius: 999px;
-  color: #163428;
-  background: #eef3e6;
-  font-size: 0.78rem;
-  font-weight: 800;
 }
 
-.statusPill.active {
-  background: #5de2a2;
+.accountMenu summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 52px;
+  min-height: 42px;
+  padding: 4px 8px 4px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  list-style: none;
+}
+
+.accountMenu summary::-webkit-details-marker {
+  display: none;
+}
+
+.accountAvatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: #173126;
+  background: #f6c247;
+  font-size: 0.9rem;
+  font-weight: 950;
+}
+
+.accountAvatar.large {
+  width: 40px;
+  height: 40px;
+}
+
+.accountChevron {
+  color: #d8ede0;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.accountPopover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: min(78vw, 260px);
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(20, 33, 28, 0.12);
+  border-radius: 8px;
+  color: #17231e;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 42px rgba(13, 30, 23, 0.28);
+}
+
+.accountIdentity {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 6px;
+}
+
+.accountIdentity strong {
+  display: block;
+  overflow: hidden;
+  color: #17231e;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountStatus {
+  display: inline-grid;
+  margin-top: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #27715c;
+  background: #eef3e6;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.accountStatus.active {
+  color: #163428;
+  background: #a4efc4;
+}
+
+.accountPopover button {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: #2f4038;
+  background: transparent;
+  text-align: left;
+  font-size: 0.84rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.accountPopover button:hover:not(:disabled) {
+  background: #eef3e9;
+}
+
+.accountPopover button:disabled {
+  color: #9aa7a0;
+  cursor: default;
 }
 
 .clockBlock {
@@ -374,6 +479,107 @@ h1 {
   background: #f9fbf6;
 }
 
+.weatherChart {
+  grid-column: 1 / -1;
+  padding: 14px 14px 10px;
+  border: 1px solid #dfe6d6;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.92)),
+    radial-gradient(circle at top right, rgba(246, 194, 71, 0.2), transparent 16rem);
+}
+
+.weatherChart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chartGrid {
+  fill: none;
+  stroke: #dce6d6;
+  stroke-dasharray: 4 8;
+  stroke-linecap: round;
+}
+
+.temperatureLine {
+  fill: none;
+  stroke: url("#temperatureLine");
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.rainBar {
+  fill: #83b7e6;
+  opacity: 0.78;
+}
+
+.chartPoint {
+  stroke: #f9fbf6;
+  stroke-width: 2.6;
+}
+
+.chartPoint.sun {
+  fill: #f6c247;
+}
+
+.chartPoint.cloud {
+  fill: #8aa49b;
+}
+
+.chartPoint.rain {
+  fill: #4f8fcd;
+}
+
+.chartPoint.snow {
+  fill: #9cd8ee;
+}
+
+.chartLabel {
+  fill: #66746a;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.chartLegend {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  color: #66746a;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.chartLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chartLegend span::before {
+  width: 18px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #44b883, #f6c247);
+  content: "";
+}
+
+.chartLegend span:nth-child(2)::before {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #83b7e6;
+}
+
+.chartLegend strong {
+  justify-self: end;
+  color: #17231e;
+  font-size: 0.8rem;
+}
+
 .weatherTimeline {
   grid-column: 1 / -1;
   display: grid;
@@ -387,12 +593,17 @@ h1 {
 
 .weatherSlot {
   display: grid;
-  gap: 5px;
-  min-height: 116px;
+  grid-template-columns: auto 1fr;
+  gap: 6px 8px;
+  min-height: 130px;
   padding: 12px;
   border: 1px solid #dfe6d6;
   border-radius: 8px;
   background: #f9fbf6;
+}
+
+.weatherSlot span {
+  grid-column: 1 / -1;
 }
 
 .weatherSlot span,
@@ -408,6 +619,92 @@ h1 {
   color: #17231e;
   font-size: 1.5rem;
   line-height: 1;
+}
+
+.weatherSlot small,
+.weatherSlot em {
+  grid-column: 1 / -1;
+}
+
+.weatherSlot em {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 18px;
+  padding-top: 7px;
+}
+
+.weatherSlot em::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: #dbe5d5;
+  content: "";
+}
+
+.weatherSlot em::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--rain);
+  height: 4px;
+  border-radius: 999px;
+  background: #4f8fcd;
+  content: "";
+}
+
+.weatherGlyph {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  align-self: center;
+  border-radius: 999px;
+  background: #f6c247;
+  box-shadow: 0 0 0 5px rgba(246, 194, 71, 0.16);
+}
+
+.weatherGlyph.cloud {
+  background: #a8b8b0;
+  box-shadow:
+    -7px 5px 0 -2px #c7d4ce,
+    7px 6px 0 -3px #7e948a;
+}
+
+.weatherGlyph.rain {
+  background: #8fb7dc;
+  box-shadow:
+    -7px 5px 0 -2px #b8d2ea,
+    6px 6px 0 -3px #5e95c5;
+}
+
+.weatherGlyph.rain::after,
+.weatherGlyph.snow::after {
+  position: absolute;
+  left: 6px;
+  bottom: -8px;
+  width: 4px;
+  height: 8px;
+  border-radius: 999px;
+  background: #4f8fcd;
+  box-shadow: 9px -2px 0 #4f8fcd;
+  content: "";
+}
+
+.weatherGlyph.snow {
+  background: #c8e8f1;
+  box-shadow:
+    -7px 5px 0 -2px #e5f5f8,
+    6px 6px 0 -3px #9bd5e7;
+}
+
+.weatherGlyph.snow::after {
+  width: 5px;
+  height: 5px;
+  background: #8ccde2;
+  box-shadow: 9px -1px 0 #8ccde2;
 }
 
 .progressTrack {
@@ -545,17 +842,6 @@ h1 {
   font-weight: 700;
 }
 
-.textAction {
-  width: 100%;
-  margin-top: 12px;
-  padding: 10px;
-  color: #27715c;
-  background: transparent;
-  font-size: 0.84rem;
-  font-weight: 800;
-  cursor: pointer;
-}
-
 @media (max-width: 360px) {
   .appShell {
     padding-inline: 12px;
@@ -580,5 +866,14 @@ h1 {
 
   .weatherGrid {
     grid-template-columns: 1fr;
+  }
+
+  .chartLegend {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chartLegend strong {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 }
