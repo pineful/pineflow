@@ -101,6 +101,10 @@ assert(
   oidcTemplate.includes("iam:PassedToService: cloudformation.amazonaws.com"),
   "CDK PassRole permission must only pass roles to CloudFormation."
 );
+assert(
+  oidcTemplate.includes("cloudformation:DescribeStackEvents"),
+  "GitHub OIDC deploy role must read CloudFormation stack events while CDK monitors deployment."
+);
 assert(!oidcTemplate.includes("AdministratorAccess"), "GitHub OIDC deploy role must not use AdministratorAccess.");
 assert(!oidcTemplate.includes("repo:${GitHubOrg}/${GitHubRepo}:*"), "GitHub OIDC deploy role must not allow every repository ref.");
 

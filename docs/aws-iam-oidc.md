@@ -80,6 +80,8 @@ CloudFormation-managed resource change statement에는 `aws:CalledVia = cloudfor
 
 CDK 배포 과정에서는 GitHub Actions Role이 CDK bootstrap의 CloudFormation execution role을 CloudFormation에 전달해야 한다. 이를 위해 `cdk-hnb659fds-cfn-exec-role-${account}-${region}`에 대한 `iam:PassRole`만 허용하고, `iam:PassedToService = cloudformation.amazonaws.com` 조건을 둔다.
 
+CDK는 배포 중 CloudFormation stack event를 polling하므로 `cloudformation:DescribeStackEvents` 읽기 권한도 필요하다. 이 권한은 stack 이벤트 조회 전용이며 리소스를 생성하거나 수정하지 않는다.
+
 ## 비용 검증
 
 이 템플릿이 직접 만드는 리소스:
