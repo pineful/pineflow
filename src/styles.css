@@ -746,12 +746,14 @@ h1 {
 }
 
 .modeControl button {
-  min-height: 42px;
+  display: grid;
+  gap: 5px;
+  min-height: 74px;
+  padding: 12px;
   border-radius: 8px;
   color: #2f4038;
   background: #e7ede2;
-  font-size: 0.84rem;
-  font-weight: 800;
+  text-align: left;
   cursor: pointer;
 }
 
@@ -760,9 +762,71 @@ h1 {
   background: #27715c;
 }
 
+.modeControl button strong {
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.modeControl button span {
+  color: #66746a;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.modeControl button.selected span {
+  color: #d8ede0;
+}
+
 .modeControl button:disabled {
   cursor: default;
   opacity: 0.72;
+}
+
+.planChips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.planChips button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d3ddcf;
+  border-radius: 999px;
+  color: #2f4038;
+  background: rgba(255, 255, 255, 0.74);
+  font-size: 0.8rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.planChips button.selected {
+  border-color: #27715c;
+  color: #f9fff9;
+  background: #27715c;
+}
+
+.activePlan {
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+  border: 1px solid #dfe6d6;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.activePlan span {
+  color: #66746a;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.activePlan strong {
+  color: #17231e;
+  font-size: 1rem;
 }
 
 .noteField {

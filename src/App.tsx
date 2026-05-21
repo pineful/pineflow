@@ -7,7 +7,7 @@ import {
   signIn
 } from "./auth";
 import { createCheckIn, createCheckOut, fetchState, saveDailyGoal } from "./api";
-import { modeLabels, productName, tagline } from "./brand";
+import { modeDescriptions, modeLabels, modePlans, productName, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, summarizeToday } from "./date";
 import type { CommuteState, WorkMode } from "./types";
 
@@ -384,6 +384,8 @@ function App() {
   const progress = Math.min(100, Math.round((today.totalMinutes / state.dailyGoalMinutes) * 100));
   const isActive = Boolean(state.activeSession);
   const accountEmail = email || getStoredEmail() || "Pineflow 계정";
+  const selectedModePlan = modePlans[mode];
+  const activeIntent = state.activeSession?.note || note;
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -606,7 +608,7 @@ function App() {
                 ? "내 기록을 불러오는 중입니다"
                 : isActive
                   ? "오늘의 세션을 마칩니다"
-                  : "현재 시간을 내 기록에 남깁니다"}
+                  : `${modeLabels[mode]}로 시작합니다`}
             </small>
           </button>
         </div>
@@ -691,28 +693,54 @@ function App() {
 
       <section className="sectionBand controlsBand">
         <div className="sectionTitle">
-          <h2>기록 설정</h2>
+          <h2>{isActive ? "진행 중인 계획" : "오늘의 시작 계획"}</h2>
+          <span>{modeLabels[mode]}</span>
         </div>
-        <div className="modeControl" role="tablist" aria-label="기록 유형">
-          {workModes.map((workMode) => (
-            <button
-              key={workMode}
-              className={mode === workMode ? "selected" : ""}
-              type="button"
-              disabled={isActive}
-              onClick={() => setMode(workMode)}
-            >
-              {modeLabels[workMode]}
-            </button>
-          ))}
-        </div>
+        {isActive ? (
+          <div className="activePlan">
+            <span>{modeDescriptions[mode]}</span>
+            <strong>{activeIntent || "정해둔 의도 없이 시작한 세션"}</strong>
+          </div>
+        ) : (
+          <>
+            <div className="modeControl" role="tablist" aria-label="기록 유형">
+              {workModes.map((workMode) => (
+                <button
+                  key={workMode}
+                  className={mode === workMode ? "selected" : ""}
+                  type="button"
+                  disabled={isActive}
+                  onClick={() => {
+                    setMode(workMode);
+                    setNote("");
+                  }}
+                >
+                  <strong>{modeLabels[workMode]}</strong>
+                  <span>{modeDescriptions[workMode]}</span>
+                </button>
+              ))}
+            </div>
+            <div className="planChips" aria-label="오늘의 의도 빠른 선택">
+              {selectedModePlan.map((plan) => (
+                <button
+                  key={plan}
+                  className={note === plan ? "selected" : ""}
+                  type="button"
+                  onClick={() => setNote(plan)}
+                >
+                  {plan}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <label className="noteField">
-          <span>오늘의 의도</span>
+          <span>{isActive ? "시작할 때 정한 의도" : "내 말로 다듬기"}</span>
           <input
             value={note}
             disabled={isActive}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="예: 오전에는 글쓰기, 오후에는 이동"
+            placeholder="예: 오전에는 글쓰기, 오후에는 정리"
           />
         </label>
       </section>
