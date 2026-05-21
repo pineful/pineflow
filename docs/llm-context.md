@@ -104,6 +104,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - CI/CD 변경: `docs/cicd.md`, `.github/workflows/serverless.yml`
 - GitHub OIDC/IAM 변경: `docs/aws-iam-oidc.md`, `infra/bootstrap/github-oidc-deploy-role.template.yaml`, `docs/adr/`
 - 제품/브랜드 변경: `docs/product-plan.md`, `docs/brand.md`, `docs/modules/branding.md`
+- 날씨 정보 변경: `docs/modules/weather.md`, `src/App.tsx`, `infra/lib/pineflow-serverless-stack.ts`
 
 ## 현재 주의사항
 

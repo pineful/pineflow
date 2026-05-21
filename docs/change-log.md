@@ -28,3 +28,5 @@
 - GitHub Actions의 Node.js 20 deprecation warning을 제거하기 위해 공식 actions를 Node 24 대응 major 버전으로 갱신했습니다.
 - CDK 배포 중 CloudFormation execution role을 전달할 수 있도록 GitHub OIDC Role에 제한된 `iam:PassRole` 권한을 추가했습니다.
 - CDK가 배포 진행 상황을 읽을 수 있도록 GitHub OIDC Role에 `cloudformation:DescribeStackEvents` 조회 권한을 추가했습니다.
+- 사용자 화면에서 네이밍 메모와 내부 시스템명을 제거하고, 오늘 날씨 카드를 추가했습니다.
+- 날씨 정보 모듈 문서를 추가하고 CloudFront CSP에 Open-Meteo 연결 허용을 반영했습니다.

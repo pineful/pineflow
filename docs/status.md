@@ -33,6 +33,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - GitHub Actions 공식 action 버전을 Node 24 대응 버전으로 갱신.
 - CDK bootstrap CloudFormation execution role에 대한 제한된 PassRole 권한을 GitHub OIDC 배포 Role에 추가.
 - CDK 배포 모니터링을 위한 CloudFormation stack event 조회 권한을 GitHub OIDC 배포 Role에 추가.
+- 사용자 화면에서 내부 시스템명을 제거하고 오늘 날씨 카드를 추가.
 
 ## 검증됨
 

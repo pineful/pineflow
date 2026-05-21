@@ -7,7 +7,7 @@ import {
   signIn
 } from "./auth";
 import { createCheckIn, createCheckOut, fetchState, saveDailyGoal } from "./api";
-import { modeLabels, namingIdeas, productName, tagline } from "./brand";
+import { modeLabels, productName, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, summarizeToday } from "./date";
 import type { CommuteState, WorkMode } from "./types";
 
@@ -18,6 +18,35 @@ const initialState: CommuteState = {
   activeSession: null,
   dailyGoalMinutes: 8 * 60
 };
+
+type WeatherState = {
+  status: "loading" | "ready" | "unavailable";
+  locationLabel: string;
+  temperature?: number;
+  apparentTemperature?: number;
+  humidity?: number;
+  windSpeed?: number;
+  precipitationProbability?: number;
+  condition?: string;
+  message?: string;
+};
+
+const seoulCoordinates = {
+  latitude: 37.5665,
+  longitude: 126.978,
+  label: "서울 기준"
+};
+
+function weatherCondition(code: number) {
+  if (code === 0) return "맑음";
+  if ([1, 2, 3].includes(code)) return "구름 조금";
+  if ([45, 48].includes(code)) return "안개";
+  if ([51, 53, 55, 56, 57].includes(code)) return "이슬비";
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "비";
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return "눈";
+  if ([95, 96, 99].includes(code)) return "뇌우";
+  return "변화 있음";
+}
 
 function Logo() {
   return (
@@ -44,6 +73,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [weather, setWeather] = useState<WeatherState>({
+    status: "loading",
+    locationLabel: seoulCoordinates.label
+  });
   const [email, setEmail] = useState(() => (typeof window === "undefined" ? "" : getStoredEmail()));
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -72,6 +105,70 @@ function App() {
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadWeather(latitude: number, longitude: number, locationLabel: string) {
+      try {
+        const params = new URLSearchParams({
+          latitude: String(latitude),
+          longitude: String(longitude),
+          current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m",
+          daily: "precipitation_probability_max",
+          timezone: "auto"
+        });
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error("날씨 정보를 불러오지 못했습니다.");
+        }
+
+        const data = await response.json();
+        if (!isMounted) return;
+
+        setWeather({
+          status: "ready",
+          locationLabel,
+          temperature: Math.round(data.current.temperature_2m),
+          apparentTemperature: Math.round(data.current.apparent_temperature),
+          humidity: data.current.relative_humidity_2m,
+          windSpeed: Math.round(data.current.wind_speed_10m),
+          precipitationProbability: data.daily.precipitation_probability_max?.[0],
+          condition: weatherCondition(data.current.weather_code)
+        });
+      } catch {
+        if (!isMounted) return;
+        setWeather({
+          status: "unavailable",
+          locationLabel,
+          message: "지금은 날씨를 불러올 수 없습니다."
+        });
+      }
+    }
+
+    function loadDefaultWeather() {
+      void loadWeather(seoulCoordinates.latitude, seoulCoordinates.longitude, seoulCoordinates.label);
+    }
+
+    if (!("geolocation" in navigator)) {
+      loadDefaultWeather();
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        void loadWeather(position.coords.latitude, position.coords.longitude, "현재 위치 기준");
+      },
+      loadDefaultWeather,
+      { enableHighAccuracy: false, maximumAge: 30 * 60 * 1000, timeout: 5000 }
+    );
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const today = useMemo(
@@ -197,7 +294,7 @@ function App() {
               <div>
                 <p>첫 로그인</p>
                 <strong>새 비밀번호 설정</strong>
-                <span>관리자가 만든 임시 비밀번호를 나만의 비밀번호로 바꿉니다.</span>
+                <span>처음 받은 임시 비밀번호를 나만의 비밀번호로 바꿉니다.</span>
               </div>
               <input
                 type="password"
@@ -215,8 +312,8 @@ function App() {
             <form className="accessForm" onSubmit={submitLogin}>
               <div>
                 <p>Private sign in</p>
-                <strong>Cognito 로그인</strong>
-                <span>관리자가 생성한 계정으로만 Pineflow를 사용할 수 있습니다.</span>
+                <strong>로그인</strong>
+                <span>관리자가 만든 계정으로만 Pineflow를 사용할 수 있습니다.</span>
               </div>
               <input
                 type="email"
@@ -234,7 +331,7 @@ function App() {
               />
               <button className="primaryAction" type="submit" disabled={isSaving}>
                 <span>로그인</span>
-                <small>JWT로 안전하게 API를 호출합니다</small>
+                <small>내 기록을 안전하게 불러옵니다</small>
               </button>
             </form>
           )}
@@ -275,10 +372,10 @@ function App() {
             <span>{isActive ? "퇴근 기록" : "출근 기록"}</span>
             <small>
               {isLoading
-                ? "서버에서 기록을 불러오는 중입니다"
+                ? "내 기록을 불러오는 중입니다"
                 : isActive
                   ? "오늘의 세션을 마칩니다"
-                  : "DynamoDB에 현재 시간을 저장합니다"}
+                  : "현재 시간을 내 기록에 남깁니다"}
             </small>
           </button>
         </div>
@@ -289,6 +386,31 @@ function App() {
       <button className="textAction" type="button" onClick={signOut}>
         로그아웃
       </button>
+
+      <section className="sectionBand weatherBand">
+        <div className="sectionTitle">
+          <h2>오늘 날씨</h2>
+          <span>{weather.locationLabel}</span>
+        </div>
+        {weather.status === "ready" ? (
+          <div className="weatherGrid">
+            <div className="weatherMain">
+              <strong>{weather.temperature}°</strong>
+              <span>{weather.condition}</span>
+            </div>
+            <div className="weatherDetails">
+              <span>체감 {weather.apparentTemperature}°</span>
+              <span>습도 {weather.humidity}%</span>
+              <span>강수 {weather.precipitationProbability ?? 0}%</span>
+              <span>바람 {weather.windSpeed}km/h</span>
+            </div>
+          </div>
+        ) : (
+          <p className="weatherFallback">
+            {weather.status === "loading" ? "날씨를 불러오는 중입니다." : weather.message}
+          </p>
+        )}
+      </section>
 
       <section className="sectionBand">
         <div className="sectionTitle">
@@ -371,18 +493,6 @@ function App() {
             <p className="emptyState">아직 기록이 없습니다. 첫 출근을 남겨보세요.</p>
           )}
         </div>
-      </section>
-
-      <section className="brandBand">
-        <div className="sectionTitle">
-          <h2>네이밍 메모</h2>
-        </div>
-        {namingIdeas.map((idea) => (
-          <article key={idea.name}>
-            <strong>{idea.name}</strong>
-            <p>{idea.reason}</p>
-          </article>
-        ))}
       </section>
     </main>
   );

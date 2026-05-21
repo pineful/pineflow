@@ -1,7 +1,7 @@
 import type { WorkMode } from "./types";
 
 export const productName = "Pineflow";
-export const tagline = "나만의 리듬으로 흐르는 출퇴근 기록";
+export const tagline = "나만의 리듬으로 흐르는 하루 기록";
 
 export const modeLabels: Record<WorkMode, string> = {
   focus: "집중 근무",
@@ -9,18 +9,3 @@ export const modeLabels: Record<WorkMode, string> = {
   study: "학습/성장",
   project: "개인 프로젝트"
 };
-
-export const namingIdeas = [
-  {
-    name: "Pineflow",
-    reason: "pineful의 발음감과 하루의 흐름을 함께 담은 이름입니다."
-  },
-  {
-    name: "Pinefull",
-    reason: "스스로 채워가는 하루라는 의미가 강해 개인 기록 서비스에 어울립니다."
-  },
-  {
-    name: "PinePulse",
-    reason: "일하는 리듬과 생활의 맥박을 기술적으로 기록한다는 인상을 줍니다."
-  }
-];

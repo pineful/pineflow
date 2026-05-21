@@ -3,13 +3,13 @@ const userPoolClientId = import.meta.env.VITE_COGNITO_USER_POOL_CLIENT_ID ?? "";
 const tokenStorageKey = "pineflow.access-token";
 const emailStorageKey = "pineflow.email";
 
-type CognitoAuthResult = {
+type AuthResult = {
   AccessToken?: string;
   IdToken?: string;
 };
 
-type CognitoResponse = {
-  AuthenticationResult?: CognitoAuthResult;
+type AuthResponse = {
+  AuthenticationResult?: AuthResult;
   ChallengeName?: "NEW_PASSWORD_REQUIRED";
   Session?: string;
   ChallengeParameters?: {
@@ -29,11 +29,11 @@ function endpoint() {
 
 function ensureConfigured() {
   if (!region || !userPoolClientId) {
-    throw new Error("Cognito 설정이 아직 준비되지 않았습니다.");
+    throw new Error("로그인 설정이 아직 준비되지 않았습니다.");
   }
 }
 
-async function cognitoRequest(target: string, payload: Record<string, unknown>) {
+async function authRequest(target: string, payload: Record<string, unknown>) {
   ensureConfigured();
 
   const response = await fetch(endpoint(), {
@@ -45,7 +45,7 @@ async function cognitoRequest(target: string, payload: Record<string, unknown>) 
     body: JSON.stringify(payload)
   });
 
-  const body = (await response.json().catch(() => ({}))) as CognitoResponse;
+  const body = (await response.json().catch(() => ({}))) as AuthResponse;
   if (!response.ok) {
     throw new Error(body.message ?? "로그인 요청에 실패했습니다.");
   }
@@ -91,7 +91,7 @@ function isJwtExpired(token: string) {
 }
 
 export async function signIn(email: string, password: string): Promise<LoginResult> {
-  const body = await cognitoRequest("InitiateAuth", {
+  const body = await authRequest("InitiateAuth", {
     AuthFlow: "USER_PASSWORD_AUTH",
     ClientId: userPoolClientId,
     AuthParameters: {
@@ -110,7 +110,7 @@ export async function signIn(email: string, password: string): Promise<LoginResu
 
   const accessToken = body.AuthenticationResult?.AccessToken;
   if (!accessToken) {
-    throw new Error("로그인 토큰을 받지 못했습니다.");
+    throw new Error("로그인 응답을 확인하지 못했습니다.");
   }
 
   saveSession(accessToken, email);
@@ -123,7 +123,7 @@ export async function completeNewPassword(
   session: string,
   newPassword: string
 ) {
-  const body = await cognitoRequest("RespondToAuthChallenge", {
+  const body = await authRequest("RespondToAuthChallenge", {
     ChallengeName: "NEW_PASSWORD_REQUIRED",
     ClientId: userPoolClientId,
     Session: session,
@@ -135,7 +135,7 @@ export async function completeNewPassword(
 
   const accessToken = body.AuthenticationResult?.AccessToken;
   if (!accessToken) {
-    throw new Error("새 비밀번호 설정 후 로그인 토큰을 받지 못했습니다.");
+    throw new Error("새 비밀번호 설정 후 로그인 응답을 확인하지 못했습니다.");
   }
 
   saveSession(accessToken, email);

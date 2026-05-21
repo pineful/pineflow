@@ -13,7 +13,8 @@ Pineflow는 Vite React 프론트엔드, Express API 서버, PostgreSQL 데이터
 - `src/App.tsx`: 화면 구성과 사용자 상호작용.
 - `src/api.ts`: 브라우저에서 API를 호출하는 클라이언트.
 - `src/date.ts`: 날짜, 시간, 기간, 오늘 요약 계산 규칙.
-- `src/brand.ts`: 제품명, 태그라인, 업무 유형 라벨, 네이밍 후보.
+- `src/brand.ts`: 제품명, 태그라인, 업무 유형 라벨.
+- `src/App.tsx`: 출퇴근 기록 화면과 오늘 날씨 카드.
 - `src/types.ts`: 프론트엔드에서 공유하는 도메인 타입.
 - `src/styles.css`: 시각 디자인과 반응형 레이아웃.
 - `server/index.mjs`: Express API, 요청 검증, 운영 정적 파일 서빙.
