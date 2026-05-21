@@ -11,15 +11,15 @@ export const modeLabels: Record<WorkMode, string> = {
 };
 
 export const modeDescriptions: Record<WorkMode, string> = {
-  focus: "깊게 끝낼 일",
-  remote: "장소와 생활 리듬",
-  study: "배우고 쌓을 것",
-  project: "내가 만드는 결과물"
+  focus: "혼자 깊게 하는 일",
+  remote: "장소가 중요한 일",
+  study: "배우거나 연습하는 일",
+  project: "결과물을 만드는 일"
 };
 
 export const modePlans: Record<WorkMode, string[]> = {
-  focus: ["핵심 작업 1개 끝내기", "글쓰기와 정리", "방해 없이 90분 몰입", "오전 집중 블록"],
-  remote: ["집에서 루틴 유지", "카페에서 가볍게 시작", "회의 후 정리", "이동 전 짧은 블록"],
-  study: ["강의 1개 듣기", "책 30쪽 읽기", "복습 노트 만들기", "실습 문제 풀기"],
-  project: ["기능 하나 완성", "아이디어 스케치", "버그 하나 정리", "배포 전 점검"]
+  focus: ["문서 작성", "코딩", "기획 정리", "딥워크"],
+  remote: ["집 업무", "외부 장소", "회의/통화", "운영 정리"],
+  study: ["강의 듣기", "책 읽기", "복습 노트", "실습"],
+  project: ["기능 구현", "디자인 수정", "버그 수정", "배포 점검"]
 };

@@ -386,6 +386,7 @@ function App() {
   const accountEmail = email || getStoredEmail() || "Pineflow 계정";
   const selectedModePlan = modePlans[mode];
   const activeIntent = state.activeSession?.note || note;
+  const activeCheckInAt = state.activeSession ? new Date(state.activeSession.checkInAt) : null;
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -608,7 +609,9 @@ function App() {
                 ? "내 기록을 불러오는 중입니다"
                 : isActive
                   ? "오늘의 세션을 마칩니다"
-                  : `${modeLabels[mode]}로 시작합니다`}
+                  : note
+                    ? `${note} 기록으로 시작합니다`
+                    : `${modeLabels[mode]} 기록으로 시작합니다`}
             </small>
           </button>
         </div>
@@ -693,16 +696,27 @@ function App() {
 
       <section className="sectionBand controlsBand">
         <div className="sectionTitle">
-          <h2>{isActive ? "진행 중인 계획" : "오늘의 시작 계획"}</h2>
-          <span>{modeLabels[mode]}</span>
+          <h2>{isActive ? "이번 기록" : "이번 기록 내용"}</h2>
+          <span>{isActive ? "기록 중" : "최근 기록에 남음"}</span>
         </div>
         {isActive ? (
           <div className="activePlan">
-            <span>{modeDescriptions[mode]}</span>
-            <strong>{activeIntent || "정해둔 의도 없이 시작한 세션"}</strong>
+            <div>
+              <span>종류</span>
+              <strong>{modeLabels[mode]}</strong>
+            </div>
+            <div>
+              <span>메모</span>
+              <strong>{activeIntent || "메모 없음"}</strong>
+            </div>
+            <div>
+              <span>시작</span>
+              <strong>{activeCheckInAt ? formatTime(activeCheckInAt) : "--:--"}</strong>
+            </div>
           </div>
         ) : (
           <>
+            <span className="controlLabel">기록 종류</span>
             <div className="modeControl" role="tablist" aria-label="기록 유형">
               {workModes.map((workMode) => (
                 <button
@@ -720,6 +734,7 @@ function App() {
                 </button>
               ))}
             </div>
+            <span className="controlLabel">자주 쓰는 메모</span>
             <div className="planChips" aria-label="오늘의 의도 빠른 선택">
               {selectedModePlan.map((plan) => (
                 <button
@@ -734,15 +749,16 @@ function App() {
             </div>
           </>
         )}
-        <label className="noteField">
-          <span>{isActive ? "시작할 때 정한 의도" : "내 말로 다듬기"}</span>
-          <input
-            value={note}
-            disabled={isActive}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="예: 오전에는 글쓰기, 오후에는 정리"
-          />
-        </label>
+        {!isActive && (
+          <label className="noteField">
+            <span>기록에 남길 메모</span>
+            <input
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="예: Pineflow 화면 정리"
+            />
+          </label>
+        )}
       </section>
 
       <section className="sectionBand">

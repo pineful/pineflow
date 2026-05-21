@@ -736,7 +736,13 @@ h1 {
 
 .controlsBand {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+}
+
+.controlLabel {
+  color: #66746a;
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
 .modeControl {
@@ -811,11 +817,21 @@ h1 {
 
 .activePlan {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 7px;
   padding: 14px;
   border: 1px solid #dfe6d6;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.72);
+}
+
+.activePlan div {
+  display: grid;
+  gap: 5px;
+}
+
+.activePlan div:nth-child(2) {
+  grid-column: 1 / -1;
 }
 
 .activePlan span {
