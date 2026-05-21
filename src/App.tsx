@@ -28,13 +28,36 @@ type WeatherState = {
   windSpeed?: number;
   precipitationProbability?: number;
   condition?: string;
+  hourly?: HourlyWeather[];
   message?: string;
+};
+
+type HourlyWeather = {
+  time: string;
+  label: string;
+  temperature: number;
+  precipitationProbability: number;
+  condition: string;
+};
+
+type ReverseGeocodeResult = {
+  localityName?: string;
+  locality?: string;
+  city?: string;
+  principalSubdivision?: string;
+  localityInfo?: {
+    administrative?: Array<{
+      name?: string;
+      description?: string;
+      order?: number;
+    }>;
+  };
 };
 
 const seoulCoordinates = {
   latitude: 37.5665,
   longitude: 126.978,
-  label: "서울 기준"
+  label: "서울 중구 기준"
 };
 
 function weatherCondition(code: number) {
@@ -48,18 +71,106 @@ function weatherCondition(code: number) {
   return "변화 있음";
 }
 
+function weatherHourLabel(value: string) {
+  const date = new Date(value);
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+
+  const isSameDate = (left: Date, right: Date) =>
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate();
+
+  const hour = `${date.getHours()}`.padStart(2, "0");
+  if (isSameDate(date, today)) return `오늘 ${hour}시`;
+  if (isSameDate(date, tomorrow)) return `내일 ${hour}시`;
+  return `${date.getMonth() + 1}/${date.getDate()} ${hour}시`;
+}
+
+function buildHourlyWeather(hourly: {
+  time?: string[];
+  temperature_2m?: number[];
+  precipitation_probability?: number[];
+  weather_code?: number[];
+}) {
+  const times = hourly.time ?? [];
+  const startIndex = Math.max(
+    times.findIndex((time) => new Date(time).getTime() >= Date.now() - 60 * 60 * 1000),
+    0
+  );
+
+  return times
+    .slice(startIndex)
+    .filter((_, index) => index % 3 === 0)
+    .slice(0, 16)
+    .map((time) => {
+      const index = times.indexOf(time);
+      return {
+        time,
+        label: weatherHourLabel(time),
+        temperature: Math.round(hourly.temperature_2m?.[index] ?? 0),
+        precipitationProbability: hourly.precipitation_probability?.[index] ?? 0,
+        condition: weatherCondition(hourly.weather_code?.[index] ?? -1)
+      };
+    });
+}
+
+function uniqueFilled(values: Array<string | undefined>) {
+  return [...new Set(values.map((value) => value?.trim()).filter(Boolean))] as string[];
+}
+
+function locationLabelFromGeocode(data: ReverseGeocodeResult, fallback: string) {
+  const finerAdministrativeNames = data.localityInfo?.administrative
+    ?.filter((item) => item.name && item.order && item.order >= 6)
+    .sort((left, right) => (right.order ?? 0) - (left.order ?? 0))
+    .map((item) => item.name);
+
+  const parts = uniqueFilled([
+    data.localityName,
+    data.locality,
+    ...(finerAdministrativeNames ?? []),
+    data.city,
+    data.principalSubdivision
+  ]).slice(0, 3);
+
+  return parts.length > 0 ? `${parts.join(" · ")} 기준` : fallback;
+}
+
+async function resolveLocationLabel(latitude: number, longitude: number, fallback: string) {
+  try {
+    const params = new URLSearchParams({
+      latitude: String(latitude),
+      longitude: String(longitude),
+      localityLanguage: "ko"
+    });
+    const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?${params.toString()}`);
+    if (!response.ok) return fallback;
+
+    const data = (await response.json()) as ReverseGeocodeResult;
+    return locationLabelFromGeocode(data, fallback);
+  } catch {
+    return fallback;
+  }
+}
+
 function Logo() {
   return (
     <div className="logoMark" aria-label="Pineflow logo">
       <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
-        <path className="logoLeaf" d="M32 5c4 8 3 13 0 17-3-4-4-9 0-17Z" />
-        <path className="logoLeaf logoLeafLeft" d="M19 13c8 1 12 4 13 9-6-1-10-4-13-9Z" />
-        <path className="logoLeaf logoLeafRight" d="M45 13c-8 1-12 4-13 9 6-1 10-4 13-9Z" />
-        <path className="logoBody" d="M18 28c0-6 5-11 14-11s14 5 14 11v13c0 10-6 18-14 18s-14-8-14-18V28Z" />
-        <path className="logoCircuit" d="M24 31h16M27 39h10M31 25v28M24 47h16" />
-        <circle className="logoNode" cx="24" cy="31" r="2" />
-        <circle className="logoNode" cx="40" cy="47" r="2" />
-        <circle className="logoNode" cx="31" cy="25" r="2" />
+        <path className="logoLeaf logoLeafBack" d="M31 5c4 6 4 12 1 17-4-5-4-11-1-17Z" />
+        <path className="logoLeaf logoLeafLeft" d="M20 11c7 1 11 4 13 10-6 0-10-4-13-10Z" />
+        <path className="logoLeaf logoLeafRight" d="M44 11c-7 1-11 4-13 10 6 0 10-4 13-10Z" />
+        <path className="logoEar" d="M16 28c-5 2-7 7-5 11 5 0 8-3 9-8Z" />
+        <path className="logoEar logoEarRight" d="M48 28c5 2 7 7 5 11-5 0-8-3-9-8Z" />
+        <path className="logoBody" d="M17 30c0-8 6-14 15-14s15 6 15 14v10c0 11-6 19-15 19s-15-8-15-19V30Z" />
+        <path className="logoPattern" d="M22 32l20 14M42 32 22 46M25 25l16 11M39 25 23 36" />
+        <circle className="logoEye" cx="26" cy="37" r="2.2" />
+        <circle className="logoEye" cx="38" cy="37" r="2.2" />
+        <path className="logoMouth" d="M29 43c2 2 4 2 6 0" />
+        <circle className="logoCheek" cx="23" cy="42" r="2.4" />
+        <circle className="logoCheek" cx="41" cy="42" r="2.4" />
+        <path className="logoPaw" d="M15 43c-3 2-4 5-2 7 4 0 6-2 7-5M49 43c3 2 4 5 2 7-4 0-6-2-7-5" />
       </svg>
     </div>
   );
@@ -110,16 +221,26 @@ function App() {
   useEffect(() => {
     let isMounted = true;
 
-    async function loadWeather(latitude: number, longitude: number, locationLabel: string) {
+    async function loadWeather(
+      latitude: number,
+      longitude: number,
+      locationLabel: string,
+      shouldResolveLocation = true
+    ) {
       try {
         const params = new URLSearchParams({
           latitude: String(latitude),
           longitude: String(longitude),
           current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m",
           daily: "precipitation_probability_max",
+          hourly: "temperature_2m,apparent_temperature,precipitation_probability,weather_code",
+          forecast_days: "2",
           timezone: "auto"
         });
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`);
+        const [response, resolvedLocationLabel] = await Promise.all([
+          fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`),
+          shouldResolveLocation ? resolveLocationLabel(latitude, longitude, locationLabel) : locationLabel
+        ]);
         if (!response.ok) {
           throw new Error("날씨 정보를 불러오지 못했습니다.");
         }
@@ -129,13 +250,14 @@ function App() {
 
         setWeather({
           status: "ready",
-          locationLabel,
+          locationLabel: resolvedLocationLabel,
           temperature: Math.round(data.current.temperature_2m),
           apparentTemperature: Math.round(data.current.apparent_temperature),
           humidity: data.current.relative_humidity_2m,
           windSpeed: Math.round(data.current.wind_speed_10m),
           precipitationProbability: data.daily.precipitation_probability_max?.[0],
-          condition: weatherCondition(data.current.weather_code)
+          condition: weatherCondition(data.current.weather_code),
+          hourly: buildHourlyWeather(data.hourly ?? {})
         });
       } catch {
         if (!isMounted) return;
@@ -148,7 +270,7 @@ function App() {
     }
 
     function loadDefaultWeather() {
-      void loadWeather(seoulCoordinates.latitude, seoulCoordinates.longitude, seoulCoordinates.label);
+      void loadWeather(seoulCoordinates.latitude, seoulCoordinates.longitude, seoulCoordinates.label, false);
     }
 
     if (!("geolocation" in navigator)) {
@@ -163,7 +285,7 @@ function App() {
         void loadWeather(position.coords.latitude, position.coords.longitude, "현재 위치 기준");
       },
       loadDefaultWeather,
-      { enableHighAccuracy: false, maximumAge: 30 * 60 * 1000, timeout: 5000 }
+      { enableHighAccuracy: false, maximumAge: 0, timeout: 5000 }
     );
 
     return () => {
@@ -401,9 +523,21 @@ function App() {
             <div className="weatherDetails">
               <span>체감 {weather.apparentTemperature}°</span>
               <span>습도 {weather.humidity}%</span>
-              <span>강수 {weather.precipitationProbability ?? 0}%</span>
+              <span>최대 강수 {weather.precipitationProbability ?? 0}%</span>
               <span>바람 {weather.windSpeed}km/h</span>
             </div>
+            {weather.hourly && weather.hourly.length > 0 && (
+              <div className="weatherTimeline" aria-label="2일 시간대별 날씨">
+                {weather.hourly.map((slot) => (
+                  <article className="weatherSlot" key={slot.time}>
+                    <span>{slot.label}</span>
+                    <strong>{slot.temperature}°</strong>
+                    <small>{slot.condition}</small>
+                    <em>강수 {slot.precipitationProbability}%</em>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <p className="weatherFallback">

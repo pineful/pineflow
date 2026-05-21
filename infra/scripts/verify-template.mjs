@@ -68,6 +68,7 @@ const csp =
 assert(csp.includes("default-src 'self'"), "CloudFront CSP must define default-src 'self'.");
 assert(csp.includes("connect-src"), "CloudFront CSP must restrict connect-src.");
 assert(csp.includes("https://api.open-meteo.com"), "CloudFront CSP must allow the public weather API.");
+assert(csp.includes("https://api.bigdatacloud.net"), "CloudFront CSP must allow the public reverse geocoding API.");
 
 const policies = resourcesOf("AWS::IAM::Policy");
 const policyActions = JSON.stringify(policies.flatMap((policy) => policy.Properties.PolicyDocument.Statement));

@@ -83,8 +83,17 @@ button {
   fill: #f6c247;
 }
 
+.logoEar,
+.logoPaw {
+  fill: #f2ad58;
+}
+
 .logoLeaf {
   fill: #5de2a2;
+}
+
+.logoLeafBack {
+  fill: #34bc78;
 }
 
 .logoLeafLeft,
@@ -92,15 +101,30 @@ button {
   fill: #8ee7bb;
 }
 
-.logoCircuit {
+.logoPattern,
+.logoMouth {
   fill: none;
   stroke: #163428;
   stroke-linecap: round;
-  stroke-width: 3;
+  stroke-linejoin: round;
 }
 
-.logoNode {
+.logoPattern {
+  opacity: 0.28;
+  stroke-width: 2;
+}
+
+.logoMouth {
+  stroke-width: 2.3;
+}
+
+.logoEye {
   fill: #163428;
+}
+
+.logoCheek {
+  fill: #f48a74;
+  opacity: 0.85;
 }
 
 .eyebrow {
@@ -243,6 +267,7 @@ h1 {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 12px;
 }
@@ -255,6 +280,7 @@ h1 {
 .sectionTitle span {
   color: #27715c;
   font-weight: 900;
+  text-align: right;
 }
 
 .summaryGrid {
@@ -339,12 +365,49 @@ h1 {
   border-radius: 8px;
   background: #eef3e9;
   font-weight: 800;
+  text-align: center;
 }
 
 .weatherFallback {
   padding: 14px;
   border-radius: 8px;
   background: #f9fbf6;
+}
+
+.weatherTimeline {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(92px, 1fr);
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+}
+
+.weatherSlot {
+  display: grid;
+  gap: 5px;
+  min-height: 116px;
+  padding: 12px;
+  border: 1px solid #dfe6d6;
+  border-radius: 8px;
+  background: #f9fbf6;
+}
+
+.weatherSlot span,
+.weatherSlot small,
+.weatherSlot em {
+  color: #66746a;
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.weatherSlot strong {
+  color: #17231e;
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 .progressTrack {

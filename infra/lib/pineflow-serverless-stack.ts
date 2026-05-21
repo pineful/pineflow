@@ -91,7 +91,7 @@ export class PineflowServerlessStack extends cdk.Stack {
               "img-src 'self' data:",
               "script-src 'self'",
               "style-src 'self' 'unsafe-inline'",
-              `connect-src 'self' https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com https://*.execute-api.${cdk.Stack.of(this).region}.amazonaws.com https://api.open-meteo.com`
+              `connect-src 'self' https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com https://*.execute-api.${cdk.Stack.of(this).region}.amazonaws.com https://api.open-meteo.com https://api.bigdatacloud.net`
             ].join("; "),
             override: true
           },

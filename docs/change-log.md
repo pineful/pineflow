@@ -30,3 +30,11 @@
 - CDK가 배포 진행 상황을 읽을 수 있도록 GitHub OIDC Role에 `cloudformation:DescribeStackEvents` 조회 권한을 추가했습니다.
 - 사용자 화면에서 네이밍 메모와 내부 시스템명을 제거하고, 오늘 날씨 카드를 추가했습니다.
 - 날씨 정보 모듈 문서를 추가하고 CloudFront CSP에 Open-Meteo 연결 허용을 반영했습니다.
+
+## 2026-05-21
+
+- 날씨 위치 표시를 도시 단위보다 세밀한 행정/생활권 표시로 보강했습니다.
+- 오늘 날씨 카드에 앞으로 2일의 3시간 간격 시간대별 날씨 흐름을 추가했습니다.
+- 브라우저 favicon용 Pineflow 아이콘을 추가했습니다.
+- 파인애플 로고를 더 귀여운 동물형 캐릭터 방향으로 수정했습니다.
+- CloudFront CSP와 guardrail 검증에 reverse geocoding API 도메인을 반영했습니다.

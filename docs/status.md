@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-05-20
+마지막 업데이트: 2026-05-21
 
 ## 현재 상태 요약
 
@@ -34,6 +34,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - CDK bootstrap CloudFormation execution role에 대한 제한된 PassRole 권한을 GitHub OIDC 배포 Role에 추가.
 - CDK 배포 모니터링을 위한 CloudFormation stack event 조회 권한을 GitHub OIDC 배포 Role에 추가.
 - 사용자 화면에서 내부 시스템명을 제거하고 오늘 날씨 카드를 추가.
+- 날씨 카드에 세밀한 위치 표시와 2일 시간대별 예보 흐름을 추가.
+- Pineflow 앱 아이콘과 귀여운 동물형 파인애플 로고를 추가.
 
 ## 검증됨
 

@@ -1,6 +1,6 @@
 # LLM 작업 컨텍스트
 
-마지막 업데이트: 2026-05-20
+마지막 업데이트: 2026-05-21
 
 ## 목적
 
@@ -111,3 +111,4 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - `infra` npm audit에는 CDK 도구 체인의 moderate `brace-expansion` transitive issue가 남아 있다. Lambda asset에는 포함되지 않는다.
 - 실제 AWS 배포 전 Budget 알림 이메일 구독을 승인해야 한다.
 - 배포 후 첫 사용자는 Cognito에서 관리자가 생성해야 한다.
+- 날씨 카드는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 직접 호출한다. 위치 좌표는 Pineflow 서버에 저장하지 않는다. BigDataCloud reverse geocoding은 브라우저 위치 권한으로 얻은 현재 좌표에만 사용하고, fallback 좌표에는 사용하지 않는다.
