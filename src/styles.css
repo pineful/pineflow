@@ -925,6 +925,18 @@ h1 {
   border: 1px solid #dfe6d6;
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 250, 244, 0.96));
+  animation: boardReveal 420ms ease both;
+}
+
+.timeFlowGraph::before {
+  position: absolute;
+  top: 0;
+  left: 18px;
+  width: 58px;
+  height: 4px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, #2f6f5e, #e9b44c);
+  content: "";
 }
 
 .heroFlow {
@@ -994,6 +1006,19 @@ h1 {
   text-align: right;
 }
 
+.flowMessage {
+  display: grid;
+  gap: 3px;
+  color: #53645b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.flowMessage strong {
+  color: #2f6f5e;
+  font-size: 0.86rem;
+}
+
 .timeFlowHeader span,
 .timeFlowFooter span {
   color: #66746a;
@@ -1014,11 +1039,11 @@ h1 {
 
 .timeFlowCanvas {
   position: relative;
-  height: 112px;
+  height: 132px;
   overflow: hidden;
   border-radius: 8px;
   background:
-    linear-gradient(90deg, rgba(68, 184, 131, 0.1), rgba(246, 194, 71, 0.12)),
+    linear-gradient(90deg, rgba(47, 111, 94, 0.08), rgba(127, 179, 213, 0.09), rgba(233, 180, 76, 0.1)),
     #eef5ea;
 }
 
@@ -1063,35 +1088,66 @@ h1 {
   stroke-linecap: round;
 }
 
-.timeFlowBase,
+.timeGoalLine,
+.timeNowLine,
+.timeFlowArea,
 .timeFlowPulse {
-  fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.timeFlowBase {
-  stroke: rgba(39, 113, 92, 0.22);
-  stroke-width: 8;
+.timeGoalLine {
+  stroke: rgba(233, 180, 76, 0.68);
+  stroke-dasharray: 5 8;
+  stroke-width: 2;
+}
+
+.timeNowLine {
+  stroke: rgba(47, 111, 94, 0.45);
+  stroke-dasharray: 3 7;
+  stroke-width: 2;
+}
+
+.timeFlowArea {
+  fill: rgba(47, 111, 94, 0.16);
+  stroke: none;
 }
 
 .timeFlowPulse {
-  stroke: #27715c;
-  stroke-dasharray: 48 22;
+  fill: none;
+  stroke: #2f6f5e;
   stroke-width: 5;
-  animation: flowDash 3.4s linear infinite;
+  animation: chartDraw 620ms ease both;
 }
 
 .timeFlowGraph.active .timeFlowPulse {
-  stroke: #44b883;
-  animation-duration: 2.4s;
+  stroke: #3f9d78;
 }
 
 .timeFlowMarker {
-  fill: #f6c247;
+  fill: #f9fbf6;
+  stroke: #2f6f5e;
+  stroke-width: 3;
+  filter: drop-shadow(0 5px 12px rgba(39, 113, 92, 0.18));
+}
+
+.timeFlowMarker.check-out {
+  stroke: #e9b44c;
+}
+
+.timeFlowMarker.now {
+  fill: #e9b44c;
   stroke: #f9fbf6;
   stroke-width: 4;
-  filter: drop-shadow(0 5px 12px rgba(39, 113, 92, 0.24));
+  animation: livePoint 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.timeAxisLabel {
+  fill: #66746a;
+  font-size: 9px;
+  font-weight: 850;
 }
 
 .accountPopover,
@@ -1157,6 +1213,35 @@ h1 {
   }
 }
 
+@keyframes boardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chartDraw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes livePoint {
+  50% {
+    transform: scale(1.08);
+    transform-origin: center;
+  }
+}
+
 @keyframes softPop {
   from {
     opacity: 0;
@@ -1172,9 +1257,12 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   .timeFlowFill::after,
   .timeFlowPulse,
+  .timeFlowMarker.now,
+  .timeFlowGraph,
   .accountPopover,
   .goalEditor,
-  .timeEditor {
+  .timeEditor,
+  .toastMessage {
     animation: none;
   }
 
@@ -1431,6 +1519,35 @@ h1 {
   background: rgba(255, 245, 245, 0.9);
   font-size: 0.88rem;
   font-weight: 700;
+}
+
+.toastMessage {
+  position: fixed;
+  right: max(16px, calc((100vw - 440px) / 2 + 16px));
+  bottom: 18px;
+  z-index: 40;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border: 1px solid rgba(47, 111, 94, 0.18);
+  border-radius: 999px;
+  color: #173126;
+  background: rgba(249, 251, 246, 0.96);
+  box-shadow: 0 16px 36px rgba(23, 49, 38, 0.18);
+  font-size: 0.86rem;
+  font-weight: 900;
+  animation: toastRise 180ms ease both;
+}
+
+@keyframes toastRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (min-width: 760px) {

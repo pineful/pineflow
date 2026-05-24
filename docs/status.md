@@ -49,6 +49,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - 열린 탭에서 Cognito access token을 30분 주기로 refresh하고, refresh token validity를 1일로 제한.
 - Chrome 암호 관리자/Windows Hello 자동 입력이 늦게 반영되는 경우를 위해 로그인 form 값을 submit 시점에 다시 읽도록 개선.
 - UX/디자인 리서치 결과를 반영해 상단 그래프를 `Calm Live Board` 성격의 조용한 시간 계기판으로 보강.
+- 추상 곡선이던 상단 그래프를 실제 오늘 기록 기반의 누적 면적 그래프, 현재 시각선, 목표선, 출근/퇴근 기록점으로 교체.
+- 출근/퇴근/저장 성공 toast와 조작 유형별 선택형 효과음을 보강.
 
 ## 검증됨
 

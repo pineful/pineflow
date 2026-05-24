@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type SyntheticEvent } from "react";
 import {
   clearSession,
   completeNewPassword,
@@ -17,7 +17,7 @@ import {
   updateRecordTime
 } from "./api";
 import { modeDescriptions, modeLabels, modePlans, productName, tagline } from "./brand";
-import { formatDate, formatDuration, formatTime, summarizeToday } from "./date";
+import { formatDate, formatDuration, formatTime, minutesBetween, summarizeToday } from "./date";
 import type { CommuteRecord, CommuteState, WorkMode } from "./types";
 
 const workModes = Object.keys(modeLabels) as WorkMode[];
@@ -52,7 +52,17 @@ type HourlyWeather = {
   condition: string;
 };
 
-type FeedbackSound = "tap" | "open" | "success";
+type FeedbackSound = "tap" | "open" | "start" | "finish" | "success";
+
+type FlowChartPoint = {
+  x: number;
+  y: number;
+};
+
+type FlowChartRecordPoint = FlowChartPoint & {
+  id: string;
+  type: "check-in" | "check-out" | "now";
+};
 
 type ReverseGeocodeResult = {
   localityName?: string;
@@ -195,11 +205,99 @@ function fromDateTimeLocalValue(value: string) {
   return date.toISOString();
 }
 
+function dashboardGreeting(now: Date) {
+  const hour = now.getHours();
+  if (hour < 11) return "오전 흐름";
+  if (hour < 17) return "오후 흐름";
+  return "저녁 정리";
+}
+
 function readLoginForm(form: HTMLFormElement, fallbackEmail: string, fallbackPassword: string) {
   const formData = new FormData(form);
   return {
     email: String(formData.get("email") ?? fallbackEmail).trim(),
     password: String(formData.get("password") ?? fallbackPassword)
+  };
+}
+
+function buildFlowChart(records: CommuteRecord[], now: Date, activeCheckInAt: string | undefined, goalMinutes: number) {
+  const chart = {
+    left: 22,
+    right: 298,
+    top: 18,
+    bottom: 94
+  };
+  const width = chart.right - chart.left;
+  const height = chart.bottom - chart.top;
+  const dayStart = new Date(now);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayStart.getDate() + 1);
+  const maxMinutes = Math.max(goalMinutes, 60);
+
+  const xFor = (value: string | Date) => {
+    const date = new Date(value);
+    const ratio = Math.max(0, Math.min((date.getTime() - dayStart.getTime()) / (dayEnd.getTime() - dayStart.getTime()), 1));
+    return chart.left + ratio * width;
+  };
+  const yFor = (minutes: number) => {
+    const ratio = Math.max(0, Math.min(minutes / maxMinutes, 1.12));
+    return chart.bottom - ratio * height;
+  };
+
+  const sorted = records
+    .filter((record) => record.type === "check-in" || record.type === "check-out")
+    .sort((left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime());
+
+  const points: FlowChartPoint[] = [
+    { x: chart.left, y: yFor(0) }
+  ];
+  const recordPoints: FlowChartRecordPoint[] = [];
+  let totalMinutes = 0;
+  let openCheckIn = "";
+
+  for (const record of sorted) {
+    if (record.type === "check-in") {
+      openCheckIn = record.timestamp;
+      const point = { x: xFor(record.timestamp), y: yFor(totalMinutes) };
+      points.push(point);
+      recordPoints.push({ ...point, id: record.id, type: "check-in" });
+      continue;
+    }
+
+    if (openCheckIn) {
+      totalMinutes += minutesBetween(openCheckIn, record.timestamp);
+      const point = { x: xFor(record.timestamp), y: yFor(totalMinutes) };
+      points.push(point);
+      recordPoints.push({ ...point, id: record.id, type: "check-out" });
+      openCheckIn = "";
+    }
+  }
+
+  if (activeCheckInAt) {
+    const activeStart = { x: xFor(activeCheckInAt), y: yFor(totalMinutes) };
+    const activeNow = {
+      x: xFor(now),
+      y: yFor(totalMinutes + minutesBetween(activeCheckInAt, now.toISOString()))
+    };
+    points.push(activeStart, activeNow);
+    recordPoints.push({ ...activeNow, id: "now", type: "now" });
+  }
+
+  const lastPoint = points[points.length - 1];
+  if (lastPoint.x < xFor(now)) {
+    points.push({ x: xFor(now), y: lastPoint.y });
+  }
+
+  const line = points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const area = `${chart.left},${chart.bottom} ${line} ${points[points.length - 1].x.toFixed(1)},${chart.bottom}`;
+
+  return {
+    line,
+    area,
+    recordPoints,
+    nowX: xFor(now),
+    goalY: yFor(goalMinutes)
   };
 }
 
@@ -232,7 +330,17 @@ function playPineSound(kind: FeedbackSound) {
   master.connect(context.destination);
 
   const notes =
-    kind === "success"
+    kind === "start"
+      ? [
+          { frequency: 540, offset: 0 },
+          { frequency: 720, offset: 0.055 }
+        ]
+      : kind === "finish"
+        ? [
+            { frequency: 760, offset: 0 },
+            { frequency: 620, offset: 0.06 }
+          ]
+        : kind === "success"
       ? [
           { frequency: 660, offset: 0 },
           { frequency: 880, offset: 0.045 },
@@ -252,7 +360,7 @@ function playPineSound(kind: FeedbackSound) {
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     const start = now + note.offset;
-    oscillator.type = kind === "success" ? "triangle" : "sine";
+    oscillator.type = kind === "success" || kind === "start" ? "triangle" : "sine";
     oscillator.frequency.setValueAtTime(note.frequency, start);
     oscillator.frequency.exponentialRampToValueAtTime(note.frequency * 1.035, start + 0.08);
     gain.gain.setValueAtTime(0.0001, start);
@@ -342,9 +450,13 @@ function TimeFlowGraph({
   progress,
   isActive,
   currentSessionMinutes,
+  records,
+  now,
+  activeCheckInAt,
   firstCheckIn,
   lastCheckOut,
   modeLabel,
+  greeting,
   className = ""
 }: {
   minutes: number;
@@ -352,17 +464,31 @@ function TimeFlowGraph({
   progress: number;
   isActive: boolean;
   currentSessionMinutes: number;
+  records: CommuteRecord[];
+  now: Date;
+  activeCheckInAt?: string;
   firstCheckIn?: string;
   lastCheckOut?: string;
   modeLabel: string;
+  greeting: string;
   className?: string;
 }) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
-  const ratio = safeProgress / 100;
-  const markerX = 22 + ratio * 276;
-  const markerY = 76 - Math.sin(ratio * Math.PI) * 22;
   const remainingMinutes = Math.max(goalMinutes - minutes, 0);
+  const overtimeMinutes = Math.max(minutes - goalMinutes, 0);
   const lastMarker = isActive ? "진행 중" : lastCheckOut ? formatTime(lastCheckOut) : "--:--";
+  const chart = buildFlowChart(records, now, isActive ? activeCheckInAt : undefined, goalMinutes);
+  const flowMessage = isActive
+    ? `${modeLabel} 흐름이 ${formatDuration(currentSessionMinutes)}째 이어지고 있어요.`
+    : firstCheckIn
+      ? "오늘 기록은 잠시 쉬는 중입니다."
+      : "첫 기록을 시작하면 오늘의 흐름이 채워집니다.";
+  const goalMessage =
+    remainingMinutes > 0
+      ? `${formatDuration(remainingMinutes)}만 더 쌓으면 목표에 닿습니다.`
+      : overtimeMinutes > 0
+        ? `목표보다 ${formatDuration(overtimeMinutes)} 더 쌓았습니다.`
+        : "오늘 목표에 닿았습니다.";
 
   return (
     <div
@@ -372,7 +498,7 @@ function TimeFlowGraph({
     >
       <div className="timeFlowKicker">
         <span className={isActive ? "live" : ""}>{isActive ? `${modeLabel} 진행 중` : "기록 대기"}</span>
-        <small>라이브 시간 보드</small>
+        <small>{greeting}</small>
       </div>
       <div className="timeFlowHeader">
         <div>
@@ -384,19 +510,45 @@ function TimeFlowGraph({
           <strong>{remainingMinutes > 0 ? formatDuration(remainingMinutes) : "완료"}</strong>
         </div>
       </div>
+      <p className="flowMessage">
+        <span>{flowMessage}</span>
+        <strong>{goalMessage}</strong>
+      </p>
       <div className="timeFlowCanvas" aria-hidden="true">
         <div className="timeFlowFill" />
-        <svg viewBox="0 0 320 112" role="img">
-          <path className="timeFlowGrid" d="M22 82H298M22 54H298M22 26H298" />
-          <path className="timeFlowBase" d="M22 76C66 30 106 32 144 62S210 92 242 56 280 38 298 48" />
-          <path className="timeFlowPulse" d="M22 76C66 30 106 32 144 62S210 92 242 56 280 38 298 48" />
-          <circle className="timeFlowMarker" cx={markerX} cy={markerY} r="7" />
+        <svg viewBox="0 0 320 122" role="img">
+          <path className="timeFlowGrid" d="M22 18V94M114 18V94M206 18V94M298 18V94M22 94H298M22 56H298" />
+          <line className="timeGoalLine" x1="22" x2="298" y1={chart.goalY} y2={chart.goalY} />
+          <line className="timeNowLine" x1={chart.nowX} x2={chart.nowX} y1="16" y2="98" />
+          <polygon className="timeFlowArea" points={chart.area} />
+          <polyline className="timeFlowPulse" points={chart.line} />
+          {chart.recordPoints.map((point) => (
+            <circle
+              className={`timeFlowMarker ${point.type}`}
+              key={point.id}
+              cx={point.x}
+              cy={point.y}
+              r={point.type === "now" ? 6.8 : 4.8}
+            />
+          ))}
+          <text className="timeAxisLabel" x="22" y="116" textAnchor="middle">
+            00
+          </text>
+          <text className="timeAxisLabel" x="114" y="116" textAnchor="middle">
+            08
+          </text>
+          <text className="timeAxisLabel" x="206" y="116" textAnchor="middle">
+            16
+          </text>
+          <text className="timeAxisLabel" x="298" y="116" textAnchor="middle">
+            24
+          </text>
         </svg>
       </div>
       <div className="timeFlowFooter">
-        <span>시작</span>
+        <span>0%</span>
         <strong>{safeProgress}%</strong>
-        <span>목표 {formatDuration(goalMinutes)}</span>
+        <span>목표</span>
       </div>
       <div className="flowInsights" aria-label="오늘 시간 요약">
         <div>
@@ -451,6 +603,7 @@ function App() {
   const [editingTimestamp, setEditingTimestamp] = useState("");
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
+  const [toastMessage, setToastMessage] = useState("");
   const [weather, setWeather] = useState<WeatherState>({
     status: "loading",
     locationLabel: seoulCoordinates.label
@@ -466,6 +619,7 @@ function App() {
   const [soundEnabled, setSoundEnabled] = useState(getStoredSoundEnabled);
   const requestInFlightRef = useRef(false);
   const actionCooldownTimerRef = useRef<number | undefined>(undefined);
+  const toastTimerRef = useRef<number | undefined>(undefined);
 
   function expireSession(message = "로그인 시간이 만료되었습니다. 다시 로그인해주세요.") {
     clearSession();
@@ -484,6 +638,7 @@ function App() {
     setState(initialState);
     setEditingRecordId("");
     setEditingTimestamp("");
+    setToastMessage("");
     setErrorMessage(message);
   }
 
@@ -513,13 +668,31 @@ function App() {
     }
   }
 
+  function handleAccountToggle(event: SyntheticEvent<HTMLDetailsElement>) {
+    if (event.currentTarget.open) {
+      playFeedback("open");
+    }
+  }
+
   function toggleSound() {
     const next = !soundEnabled;
     setSoundEnabled(next);
     window.localStorage.setItem(soundStorageKey, next ? "on" : "off");
     if (next) {
       playPineSound("success");
+      flashToast("효과음이 켜졌어요");
     }
+  }
+
+  function flashToast(message: string) {
+    setToastMessage(message);
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastMessage("");
+      toastTimerRef.current = undefined;
+    }, 1600);
   }
 
   useEffect(() => {
@@ -547,6 +720,9 @@ function App() {
     return () => {
       if (actionCooldownTimerRef.current) {
         window.clearTimeout(actionCooldownTimerRef.current);
+      }
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
       }
     };
   }, []);
@@ -759,7 +935,8 @@ function App() {
       setState(serverState);
       setMode(serverState.activeSession?.mode ?? mode);
       setNote(serverState.activeSession?.note ?? note);
-      playFeedback("success");
+      playFeedback("start");
+      flashToast("출근 기록이 저장됐어요");
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "출근 기록에 실패했습니다.");
@@ -783,7 +960,8 @@ function App() {
       setNote("");
       setEditingRecordId("");
       setEditingTimestamp("");
-      playFeedback("success");
+      playFeedback("finish");
+      flashToast("퇴근 기록이 저장됐어요");
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "퇴근 기록에 실패했습니다.");
@@ -801,6 +979,7 @@ function App() {
       setState(await saveDailyGoal(value));
       setIsGoalEditing(false);
       playFeedback("success");
+      flashToast("목표 시간이 저장됐어요");
     } catch (error) {
       handleAppError(error, "목표 시간 저장에 실패했습니다.");
     }
@@ -837,6 +1016,7 @@ function App() {
       setEditingRecordId("");
       setEditingTimestamp("");
       playFeedback("success");
+      flashToast("기록 시간이 수정됐어요");
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "기록 시간 수정에 실패했습니다.");
@@ -865,6 +1045,7 @@ function App() {
     setEditingTimestamp("");
     setIsGoalEditing(false);
     setDraftGoalMinutes(initialState.dailyGoalMinutes);
+    setToastMessage("");
     setErrorMessage("");
   }
 
@@ -945,7 +1126,7 @@ function App() {
             <p className="eyebrow">개인 출퇴근 기록</p>
             <h1>{productName}</h1>
           </div>
-          <details className="accountMenu">
+          <details className="accountMenu" onToggle={handleAccountToggle}>
             <summary aria-label="계정 메뉴">
               <span className="accountAvatar">{accountInitial(accountEmail)}</span>
               <span className="accountChevron" aria-hidden="true">
@@ -985,9 +1166,13 @@ function App() {
           progress={progress}
           isActive={isActive}
           currentSessionMinutes={currentSessionMinutes}
+          records={today.records}
+          now={now}
+          activeCheckInAt={state.activeSession?.checkInAt}
           firstCheckIn={today.firstCheckIn}
           lastCheckOut={today.lastCheckOut}
           modeLabel={modeLabels[mode]}
+          greeting={dashboardGreeting(now)}
         />
 
         <div className="clockBlock">
@@ -1084,6 +1269,11 @@ function App() {
       </section>
 
       {errorMessage && <p className="errorBanner">{errorMessage}</p>}
+      {toastMessage && (
+        <div className="toastMessage" role="status">
+          {toastMessage}
+        </div>
+      )}
 
       <section className="sectionBand recentBand">
         <div className="sectionTitle">
