@@ -119,3 +119,4 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 최근 기록은 상단 패널 바로 아래에 두고, 각 기록에서 시간 수정이 가능해야 한다. 시간 수정 API를 바꾸면 `docs/api-contract.md`, `docs/modules/recording.md`, `docs/modules/serverless-storage.md`를 함께 갱신한다.
 - 만료된 Cognito access token은 API 요청 전, 30초 주기, 창 포커스 복귀 시점에 감지해 로그인 화면으로 돌려보낸다. 만료 상태에서 버튼을 누를 때 일반 request failure만 보이는 UX로 되돌리지 않는다.
 - 오늘 요약은 읽기 중심이다. 목표 시간 슬라이더를 상시 노출하지 말고, `목표 수정` 같은 명시적 보조 동작 뒤에만 표시한다.
+- 오늘 누적 시간은 흐름 그래프 카드로 표현한다. 숫자만 나열하거나 단순 막대만 두는 방식으로 되돌리지 말고, 움직임은 `prefers-reduced-motion`을 존중한다.

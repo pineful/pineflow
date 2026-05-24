@@ -259,6 +259,57 @@ function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
   );
 }
 
+function TimeFlowGraph({
+  minutes,
+  goalMinutes,
+  progress,
+  isActive
+}: {
+  minutes: number;
+  goalMinutes: number;
+  progress: number;
+  isActive: boolean;
+}) {
+  const safeProgress = Math.max(0, Math.min(progress, 100));
+  const ratio = safeProgress / 100;
+  const markerX = 22 + ratio * 276;
+  const markerY = 76 - Math.sin(ratio * Math.PI) * 22;
+  const remainingMinutes = Math.max(goalMinutes - minutes, 0);
+
+  return (
+    <div
+      className={`timeFlowGraph ${isActive ? "active" : ""}`}
+      style={{ "--progress": `${safeProgress}%` } as CSSProperties}
+      aria-label={`오늘 누적 ${formatDuration(minutes)}, 목표 대비 ${safeProgress}%`}
+    >
+      <div className="timeFlowHeader">
+        <div>
+          <span>흐른 시간</span>
+          <strong>{formatDuration(minutes)}</strong>
+        </div>
+        <div>
+          <span>{remainingMinutes > 0 ? "목표까지" : "목표 달성"}</span>
+          <strong>{remainingMinutes > 0 ? formatDuration(remainingMinutes) : "완료"}</strong>
+        </div>
+      </div>
+      <div className="timeFlowCanvas" aria-hidden="true">
+        <div className="timeFlowFill" />
+        <svg viewBox="0 0 320 112" role="img">
+          <path className="timeFlowGrid" d="M22 82H298M22 54H298M22 26H298" />
+          <path className="timeFlowBase" d="M22 76C66 30 106 32 144 62S210 92 242 56 280 38 298 48" />
+          <path className="timeFlowPulse" d="M22 76C66 30 106 32 144 62S210 92 242 56 280 38 298 48" />
+          <circle className="timeFlowMarker" cx={markerX} cy={markerY} r="7" />
+        </svg>
+      </div>
+      <div className="timeFlowFooter">
+        <span>시작</span>
+        <strong>{safeProgress}%</strong>
+        <span>목표 {formatDuration(goalMinutes)}</span>
+      </div>
+    </div>
+  );
+}
+
 function Logo() {
   return (
     <div className="logoMark" aria-label="Pineflow logo">
@@ -949,9 +1000,12 @@ function App() {
             <strong>{today.lastCheckOut ? formatTime(today.lastCheckOut) : "--:--"}</strong>
           </div>
         </div>
-        <div className="progressTrack" aria-label={`목표 대비 ${progress}%`}>
-          <div style={{ width: `${progress}%` }} />
-        </div>
+        <TimeFlowGraph
+          minutes={today.totalMinutes}
+          goalMinutes={state.dailyGoalMinutes}
+          progress={progress}
+          isActive={isActive}
+        />
         <div className="goalReadout">
           <div>
             <span>하루 목표</span>
