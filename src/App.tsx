@@ -292,6 +292,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const [editingRecordId, setEditingRecordId] = useState("");
   const [editingTimestamp, setEditingTimestamp] = useState("");
+  const [isGoalEditing, setIsGoalEditing] = useState(false);
+  const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
   const [weather, setWeather] = useState<WeatherState>({
     status: "loading",
     locationLabel: seoulCoordinates.label
@@ -577,9 +579,15 @@ function App() {
 
     try {
       setState(await saveDailyGoal(value));
+      setIsGoalEditing(false);
     } catch (error) {
       handleAppError(error, "목표 시간 저장에 실패했습니다.");
     }
+  }
+
+  function openGoalEditor() {
+    setDraftGoalMinutes(state.dailyGoalMinutes);
+    setIsGoalEditing(true);
   }
 
   function startEditRecord(record: CommuteRecord) {
@@ -631,6 +639,8 @@ function App() {
     setState(initialState);
     setEditingRecordId("");
     setEditingTimestamp("");
+    setIsGoalEditing(false);
+    setDraftGoalMinutes(initialState.dailyGoalMinutes);
     setErrorMessage("");
   }
 
@@ -942,18 +952,48 @@ function App() {
         <div className="progressTrack" aria-label={`목표 대비 ${progress}%`}>
           <div style={{ width: `${progress}%` }} />
         </div>
-        <div className="goalRow">
-          <span>목표 {formatDuration(state.dailyGoalMinutes)}</span>
-          <input
-            aria-label="하루 목표 시간"
-            type="range"
-            min={120}
-            max={720}
-            step={30}
-            value={state.dailyGoalMinutes}
-            onChange={(event) => updateGoal(Number(event.target.value))}
-          />
+        <div className="goalReadout">
+          <div>
+            <span>하루 목표</span>
+            <strong>{formatDuration(state.dailyGoalMinutes)}</strong>
+            <small>목표 대비 {progress}%</small>
+          </div>
+          <button type="button" disabled={isSaving} onClick={openGoalEditor}>
+            목표 수정
+          </button>
         </div>
+        {isGoalEditing && (
+          <div className="goalEditor">
+            <div className="goalEditorHeader">
+              <span>새 목표</span>
+              <strong>{formatDuration(draftGoalMinutes)}</strong>
+            </div>
+            <input
+              aria-label="하루 목표 시간"
+              type="range"
+              min={120}
+              max={720}
+              step={30}
+              value={draftGoalMinutes}
+              onChange={(event) => setDraftGoalMinutes(Number(event.target.value))}
+            />
+            <div className="goalEditorActions">
+              <button type="button" disabled={isSaving} onClick={() => updateGoal(draftGoalMinutes)}>
+                저장
+              </button>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => {
+                  setIsGoalEditing(false);
+                  setDraftGoalMinutes(state.dailyGoalMinutes);
+                }}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
     </main>

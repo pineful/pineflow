@@ -514,7 +514,9 @@ h1 {
 }
 
 .metricCard span,
-.goalRow,
+.goalReadout span,
+.goalReadout small,
+.goalEditorHeader span,
 .timelineItem p,
 .timelineItem small,
 .noteField span,
@@ -825,16 +827,80 @@ h1 {
   transition: width 180ms ease;
 }
 
-.goalRow {
+.goalReadout {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  margin-top: 12px;
 }
 
-.goalRow input {
+.goalReadout div {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.goalReadout strong {
+  color: #17231e;
+  font-size: 0.96rem;
+}
+
+.goalReadout button,
+.goalEditorActions button {
+  min-height: 34px;
+  padding: 0 11px;
+  border-radius: 8px;
+  color: #173126;
+  background: #e7ede2;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.goalReadout button:hover:not(:disabled),
+.goalEditorActions button:hover:not(:disabled) {
+  background: #d8e5d2;
+}
+
+.goalReadout button:disabled,
+.goalEditorActions button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.goalEditor {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #dfe6d6;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.goalEditorHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.goalEditorHeader strong {
+  color: #27715c;
+}
+
+.goalEditor input {
   width: 100%;
   accent-color: #27715c;
+}
+
+.goalEditorActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .controlsBand {
@@ -1108,6 +1174,14 @@ h1 {
 
   .timeEditor {
     grid-template-columns: 1fr;
+  }
+
+  .goalReadout {
+    grid-template-columns: 1fr;
+  }
+
+  .goalReadout button {
+    justify-self: start;
   }
 
   .weatherGrid {
