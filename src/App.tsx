@@ -493,7 +493,6 @@ function TimeFlowGraph({
   return (
     <div
       className={`timeFlowGraph ${className} ${isActive ? "active" : ""}`}
-      style={{ "--progress": `${safeProgress}%` } as CSSProperties}
       aria-label={`오늘 누적 ${formatDuration(minutes)}, 목표 대비 ${safeProgress}%`}
     >
       <div className="timeFlowKicker">
@@ -515,13 +514,12 @@ function TimeFlowGraph({
         <strong>{goalMessage}</strong>
       </p>
       <div className="timeFlowCanvas" aria-hidden="true">
-        <div className="timeFlowFill" />
         <svg viewBox="0 0 320 122" role="img">
           <path className="timeFlowGrid" d="M22 18V94M114 18V94M206 18V94M298 18V94M22 94H298M22 56H298" />
           <line className="timeGoalLine" x1="22" x2="298" y1={chart.goalY} y2={chart.goalY} />
           <line className="timeNowLine" x1={chart.nowX} x2={chart.nowX} y1="16" y2="98" />
           <polygon className="timeFlowArea" points={chart.area} />
-          <polyline className="timeFlowPulse" points={chart.line} />
+          <polyline className="timeFlowLine" points={chart.line} />
           {chart.recordPoints.map((point) => (
             <circle
               className={`timeFlowMarker ${point.type}`}
@@ -572,19 +570,12 @@ function Logo() {
   return (
     <div className="logoMark" aria-label="Pineflow logo">
       <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
-        <path className="logoLeaf logoLeafBack" d="M31 5c4 6 4 12 1 17-4-5-4-11-1-17Z" />
-        <path className="logoLeaf logoLeafLeft" d="M20 11c7 1 11 4 13 10-6 0-10-4-13-10Z" />
-        <path className="logoLeaf logoLeafRight" d="M44 11c-7 1-11 4-13 10 6 0 10-4 13-10Z" />
-        <path className="logoEar" d="M16 28c-5 2-7 7-5 11 5 0 8-3 9-8Z" />
-        <path className="logoEar logoEarRight" d="M48 28c5 2 7 7 5 11-5 0-8-3-9-8Z" />
-        <path className="logoBody" d="M17 30c0-8 6-14 15-14s15 6 15 14v10c0 11-6 19-15 19s-15-8-15-19V30Z" />
-        <path className="logoPattern" d="M22 32l20 14M42 32 22 46M25 25l16 11M39 25 23 36" />
-        <circle className="logoEye" cx="26" cy="37" r="2.2" />
-        <circle className="logoEye" cx="38" cy="37" r="2.2" />
-        <path className="logoMouth" d="M29 43c2 2 4 2 6 0" />
-        <circle className="logoCheek" cx="23" cy="42" r="2.4" />
-        <circle className="logoCheek" cx="41" cy="42" r="2.4" />
-        <path className="logoPaw" d="M15 43c-3 2-4 5-2 7 4 0 6-2 7-5M49 43c3 2 4 5 2 7-4 0-6-2-7-5" />
+        <path className="logoLeaf logoLeafBack" d="M32 4c5.8 7.6 6.1 15.1.8 21.9C26.8 19.7 26.6 12.2 32 4Z" />
+        <path className="logoLeaf logoLeafLeft" d="M18.4 12.2c9.6.8 16.1 5.6 18 13.6-8.8.3-15-4.1-18-13.6Z" />
+        <path className="logoLeaf logoLeafRight" d="M45.6 12.2c-9.6.8-16.1 5.6-18 13.6 8.8.3 15-4.1 18-13.6Z" />
+        <path className="logoBody" d="M17.6 31.6c0-9.9 6.2-16.5 14.4-16.5s14.4 6.6 14.4 16.5v9.2c0 11.9-5.6 19-14.4 19s-14.4-7.1-14.4-19v-9.2Z" />
+        <path className="logoFlow" d="M23.1 36.7c5.2-6.1 12.5-6.7 17.8-2.1 3.1 2.7 1.7 7.7-2.4 8.3-4.5.7-8.1-3.2-5.8-7.1M22.4 48.4c7.8-1.7 16.1-1.2 23.1 1.8" />
+        <path className="logoShine" d="M27.2 24.1c-2.6 2-4 5-4 8.9" />
       </svg>
     </div>
   );
