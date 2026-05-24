@@ -29,6 +29,15 @@ input {
 
 button {
   border: 0;
+  transition:
+    transform 140ms ease,
+    background-color 140ms ease,
+    box-shadow 180ms ease,
+    opacity 140ms ease;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .appShell {
@@ -165,6 +174,13 @@ h1 {
   background: rgba(255, 255, 255, 0.1);
   cursor: pointer;
   list-style: none;
+  transition:
+    transform 140ms ease,
+    background-color 160ms ease;
+}
+
+.accountMenu summary:active {
+  transform: scale(0.97);
 }
 
 .accountMenu summary::-webkit-details-marker {
@@ -468,6 +484,7 @@ h1 {
 
 .sectionBand {
   margin-top: 16px;
+  min-width: 0;
   padding: 18px 2px 4px;
 }
 
@@ -511,6 +528,9 @@ h1 {
   display: grid;
   gap: 6px;
   padding: 14px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .metricCard span,
@@ -705,6 +725,15 @@ h1 {
   border: 1px solid #dfe6d6;
   border-radius: 8px;
   background: #f9fbf6;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.weatherSlot:active,
+.timelineItem:active,
+.metricCard:active {
+  transform: translateY(1px);
 }
 
 .weatherSlot span {
@@ -900,6 +929,12 @@ h1 {
     radial-gradient(circle at 82% 12%, rgba(246, 194, 71, 0.18), transparent 12rem);
 }
 
+.heroFlow {
+  margin-top: 0;
+  color: #17231e;
+  box-shadow: 0 18px 42px rgba(5, 17, 12, 0.18);
+}
+
 .timeFlowHeader,
 .timeFlowFooter {
   display: flex;
@@ -1018,6 +1053,12 @@ h1 {
   filter: drop-shadow(0 5px 12px rgba(39, 113, 92, 0.24));
 }
 
+.accountPopover,
+.goalEditor,
+.timeEditor {
+  animation: softPop 180ms ease both;
+}
+
 .timeFlowFooter strong {
   color: #27715c;
   font-size: 0.9rem;
@@ -1039,10 +1080,36 @@ h1 {
   }
 }
 
+@keyframes softPop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .timeFlowFill::after,
-  .timeFlowPulse {
+  .timeFlowPulse,
+  .accountPopover,
+  .goalEditor,
+  .timeEditor {
     animation: none;
+  }
+
+  button {
+    transition: none;
+  }
+
+  .accountMenu summary,
+  .metricCard,
+  .timelineItem,
+  .weatherSlot {
+    transition: none;
   }
 }
 
@@ -1189,6 +1256,9 @@ h1 {
   align-items: center;
   gap: 12px;
   padding: 13px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .timelineItem.editable {
@@ -1284,6 +1354,102 @@ h1 {
   background: rgba(255, 245, 245, 0.9);
   font-size: 0.88rem;
   font-weight: 700;
+}
+
+@media (min-width: 760px) {
+  .appShell {
+    width: min(100%, 1120px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+    gap: 16px;
+    align-items: start;
+    padding: 24px;
+  }
+
+  .heroPanel,
+  .errorBanner {
+    grid-column: 1 / -1;
+  }
+
+  .heroPanel {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .topBar {
+    grid-column: 1 / -1;
+  }
+
+  .heroFlow {
+    grid-column: 1;
+    grid-row: 2 / span 3;
+    min-height: 100%;
+    padding: 18px;
+  }
+
+  .heroFlow .timeFlowCanvas {
+    height: 178px;
+  }
+
+  .heroFlow .timeFlowHeader strong {
+    font-size: 1.68rem;
+  }
+
+  .heroFlow .timeFlowHeader div:first-child strong {
+    font-size: 2.05rem;
+  }
+
+  .clockBlock,
+  .recordSetup,
+  .actionPanel {
+    grid-column: 2;
+  }
+
+  .clockBlock strong {
+    font-size: clamp(3rem, 6vw, 4.4rem);
+  }
+
+  .recordSetup {
+    gap: 12px;
+  }
+
+  .modeControl.compact {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .recentBand {
+    grid-column: 1;
+  }
+
+  .weatherBand {
+    grid-column: 2;
+    margin-top: 16px;
+  }
+
+  .summaryBand {
+    grid-column: 1 / -1;
+  }
+
+  .summaryBand .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .weatherGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .weatherMain,
+  .weatherDetails,
+  .weatherChart,
+  .weatherTimeline {
+    grid-column: 1;
+  }
+
+  .weatherTimeline {
+    grid-auto-columns: minmax(96px, 1fr);
+  }
 }
 
 @media (max-width: 360px) {

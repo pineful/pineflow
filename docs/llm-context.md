@@ -106,6 +106,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - GitHub OIDC/IAM 변경: `docs/aws-iam-oidc.md`, `infra/bootstrap/github-oidc-deploy-role.template.yaml`, `docs/adr/`
 - 제품/브랜드 변경: `docs/product-plan.md`, `docs/brand.md`, `docs/modules/branding.md`
 - 날씨 정보 변경: `docs/modules/weather.md`, `src/App.tsx`, `infra/lib/pineflow-serverless-stack.ts`
+- 모션/효과음/터치 피드백 변경: `docs/modules/microinteractions.md`, `src/App.tsx`, `src/styles.css`
 
 ## 현재 주의사항
 
@@ -119,4 +120,6 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 최근 기록은 상단 패널 바로 아래에 두고, 각 기록에서 시간 수정이 가능해야 한다. 시간 수정 API를 바꾸면 `docs/api-contract.md`, `docs/modules/recording.md`, `docs/modules/serverless-storage.md`를 함께 갱신한다.
 - 만료된 Cognito access token은 API 요청 전, 30초 주기, 창 포커스 복귀 시점에 감지해 로그인 화면으로 돌려보낸다. 만료 상태에서 버튼을 누를 때 일반 request failure만 보이는 UX로 되돌리지 않는다.
 - 오늘 요약은 읽기 중심이다. 목표 시간 슬라이더를 상시 노출하지 말고, `목표 수정` 같은 명시적 보조 동작 뒤에만 표시한다.
-- 오늘 누적 시간은 흐름 그래프 카드로 표현한다. 숫자만 나열하거나 단순 막대만 두는 방식으로 되돌리지 말고, 움직임은 `prefers-reduced-motion`을 존중한다.
+- 오늘 누적 시간은 흐름 그래프 카드로 표현하고, 로그인 후 첫 화면의 최상단 우선 정보로 둔다. 사용자가 Pineflow를 켜 둔 채 일한다고 가정하면 볼 때마다 가장 궁금한 정보는 현재 누적 시간, 목표 대비 진행률, 남은 시간이다. 숫자만 나열하거나 단순 막대만 두는 방식으로 되돌리지 말고, 움직임은 `prefers-reduced-motion`을 존중한다.
+- 태블릿 이상 화면에서는 상단 패널을 가로형 대시보드로 구성한다. 왼쪽에는 큰 흐름 그래프, 오른쪽에는 현재 시각, 기록 메모/모드, 출근/퇴근 CTA를 둬서 그래프 확인과 기록 조작이 같은 시야 안에 들어와야 한다.
+- 효과음은 외부 음원 파일을 쓰지 않고 Web Audio API로 짧고 조용하게 생성한다. 기본값은 꺼짐이며, 계정 메뉴에서 사용자가 켠 뒤 사용자 조작에 대해서만 재생한다. 자동 재생, 백그라운드 업데이트, 날씨 갱신에는 소리를 내지 않는다.

@@ -26,6 +26,8 @@ const initialState: CommuteState = {
   dailyGoalMinutes: 8 * 60
 };
 
+const soundStorageKey = "pineflow.sound-enabled";
+
 type WeatherState = {
   status: "loading" | "ready" | "unavailable";
   locationLabel: string;
@@ -46,6 +48,8 @@ type HourlyWeather = {
   precipitationProbability: number;
   condition: string;
 };
+
+type FeedbackSound = "tap" | "open" | "success";
 
 type ReverseGeocodeResult = {
   localityName?: string;
@@ -188,6 +192,68 @@ function fromDateTimeLocalValue(value: string) {
   return date.toISOString();
 }
 
+function getStoredSoundEnabled() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(soundStorageKey) === "on";
+}
+
+let pineAudioContext: AudioContext | undefined;
+
+function playPineSound(kind: FeedbackSound) {
+  if (typeof window === "undefined") return;
+
+  const AudioContextConstructor =
+    window.AudioContext ??
+    (window as Window & typeof globalThis & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextConstructor) return;
+
+  pineAudioContext ??= new AudioContextConstructor();
+  const context = pineAudioContext;
+  const now = context.currentTime;
+  if (context.state === "suspended") {
+    void context.resume();
+  }
+
+  const master = context.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(kind === "success" ? 0.085 : 0.055, now + 0.012);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+  master.connect(context.destination);
+
+  const notes =
+    kind === "success"
+      ? [
+          { frequency: 660, offset: 0 },
+          { frequency: 880, offset: 0.045 },
+          { frequency: 1175, offset: 0.09 }
+        ]
+      : kind === "open"
+        ? [
+            { frequency: 520, offset: 0 },
+            { frequency: 760, offset: 0.055 }
+          ]
+        : [
+            { frequency: 720, offset: 0 },
+            { frequency: 940, offset: 0.04 }
+          ];
+
+  for (const note of notes) {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const start = now + note.offset;
+    oscillator.type = kind === "success" ? "triangle" : "sine";
+    oscillator.frequency.setValueAtTime(note.frequency, start);
+    oscillator.frequency.exponentialRampToValueAtTime(note.frequency * 1.035, start + 0.08);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.45, start + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.11);
+    oscillator.connect(gain);
+    gain.connect(master);
+    oscillator.start(start);
+    oscillator.stop(start + 0.13);
+  }
+}
+
 function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
   if (hourly.length < 2) return null;
 
@@ -263,12 +329,14 @@ function TimeFlowGraph({
   minutes,
   goalMinutes,
   progress,
-  isActive
+  isActive,
+  className = ""
 }: {
   minutes: number;
   goalMinutes: number;
   progress: number;
   isActive: boolean;
+  className?: string;
 }) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
   const ratio = safeProgress / 100;
@@ -278,7 +346,7 @@ function TimeFlowGraph({
 
   return (
     <div
-      className={`timeFlowGraph ${isActive ? "active" : ""}`}
+      className={`timeFlowGraph ${className} ${isActive ? "active" : ""}`}
       style={{ "--progress": `${safeProgress}%` } as CSSProperties}
       aria-label={`오늘 누적 ${formatDuration(minutes)}, 목표 대비 ${safeProgress}%`}
     >
@@ -357,6 +425,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() =>
     typeof window === "undefined" ? false : Boolean(getStoredAccessToken())
   );
+  const [soundEnabled, setSoundEnabled] = useState(getStoredSoundEnabled);
   const requestInFlightRef = useRef(false);
   const actionCooldownTimerRef = useRef<number | undefined>(undefined);
 
@@ -398,6 +467,21 @@ function App() {
       setIsActionCoolingDown(false);
       actionCooldownTimerRef.current = undefined;
     }, 1300);
+  }
+
+  function playFeedback(kind: FeedbackSound) {
+    if (soundEnabled) {
+      playPineSound(kind);
+    }
+  }
+
+  function toggleSound() {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    window.localStorage.setItem(soundStorageKey, next ? "on" : "off");
+    if (next) {
+      playPineSound("success");
+    }
   }
 
   useEffect(() => {
@@ -592,6 +676,7 @@ function App() {
       setState(serverState);
       setMode(serverState.activeSession?.mode ?? mode);
       setNote(serverState.activeSession?.note ?? note);
+      playFeedback("success");
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "출근 기록에 실패했습니다.");
@@ -615,6 +700,7 @@ function App() {
       setNote("");
       setEditingRecordId("");
       setEditingTimestamp("");
+      playFeedback("success");
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "퇴근 기록에 실패했습니다.");
@@ -631,17 +717,20 @@ function App() {
     try {
       setState(await saveDailyGoal(value));
       setIsGoalEditing(false);
+      playFeedback("success");
     } catch (error) {
       handleAppError(error, "목표 시간 저장에 실패했습니다.");
     }
   }
 
   function openGoalEditor() {
+    playFeedback("open");
     setDraftGoalMinutes(state.dailyGoalMinutes);
     setIsGoalEditing(true);
   }
 
   function startEditRecord(record: CommuteRecord) {
+    playFeedback("open");
     setEditingRecordId(record.id);
     setEditingTimestamp(toDateTimeLocalValue(record.timestamp));
     setErrorMessage("");
@@ -664,6 +753,7 @@ function App() {
       setState(await updateRecordTime(recordId, timestamp));
       setEditingRecordId("");
       setEditingTimestamp("");
+      playFeedback("success");
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "기록 시간 수정에 실패했습니다.");
@@ -792,12 +882,23 @@ function App() {
               <button type="button" disabled>
                 암호 변경
               </button>
+              <button type="button" aria-pressed={soundEnabled} onClick={toggleSound}>
+                효과음 {soundEnabled ? "끄기" : "켜기"}
+              </button>
               <button type="button" onClick={signOut}>
                 로그아웃
               </button>
             </div>
           </details>
         </header>
+
+        <TimeFlowGraph
+          className="heroFlow"
+          minutes={today.totalMinutes}
+          goalMinutes={state.dailyGoalMinutes}
+          progress={progress}
+          isActive={isActive}
+        />
 
         <div className="clockBlock">
           <p>{formatDate(now)}</p>
@@ -834,6 +935,7 @@ function App() {
                     className={mode === workMode ? "selected" : ""}
                     type="button"
                     onClick={() => {
+                      playFeedback("tap");
                       setMode(workMode);
                       setNote("");
                     }}
@@ -849,7 +951,10 @@ function App() {
                     key={plan}
                     className={note === plan ? "selected" : ""}
                     type="button"
-                    onClick={() => setNote(plan)}
+                    onClick={() => {
+                      playFeedback("tap");
+                      setNote(plan);
+                    }}
                   >
                     {plan}
                   </button>
@@ -985,7 +1090,7 @@ function App() {
         )}
       </section>
 
-      <section className="sectionBand">
+      <section className="sectionBand summaryBand">
         <div className="sectionTitle">
           <h2>오늘의 흐름</h2>
           <span>{formatDuration(today.totalMinutes)}</span>
@@ -1000,12 +1105,6 @@ function App() {
             <strong>{today.lastCheckOut ? formatTime(today.lastCheckOut) : "--:--"}</strong>
           </div>
         </div>
-        <TimeFlowGraph
-          minutes={today.totalMinutes}
-          goalMinutes={state.dailyGoalMinutes}
-          progress={progress}
-          isActive={isActive}
-        />
         <div className="goalReadout">
           <div>
             <span>하루 목표</span>
