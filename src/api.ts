@@ -1,5 +1,5 @@
 import type { CommuteState, WorkMode } from "./types";
-import { getStoredAccessToken } from "./auth";
+import { getValidAccessToken, refreshSession } from "./auth";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -14,8 +14,8 @@ export function isSessionExpiredError(error: unknown) {
   return error instanceof SessionExpiredError;
 }
 
-async function requestState(path: string, init?: RequestInit): Promise<CommuteState> {
-  const token = getStoredAccessToken();
+async function requestState(path: string, init?: RequestInit, didRetry = false): Promise<CommuteState> {
+  const token = await getValidAccessToken();
   if (!token) {
     throw new SessionExpiredError();
   }
@@ -28,6 +28,13 @@ async function requestState(path: string, init?: RequestInit): Promise<CommuteSt
     },
     ...init,
   });
+
+  if ((response.status === 401 || response.status === 403) && !didRetry) {
+    const refreshedToken = await refreshSession(true);
+    if (refreshedToken) {
+      return requestState(path, init, true);
+    }
+  }
 
   if (response.status === 401 || response.status === 403) {
     throw new SessionExpiredError();

@@ -53,7 +53,7 @@ export class PineflowServerlessStack extends cdk.Stack {
       },
       accessTokenValidity: cdk.Duration.hours(1),
       idTokenValidity: cdk.Duration.hours(1),
-      refreshTokenValidity: cdk.Duration.days(30)
+      refreshTokenValidity: cdk.Duration.days(1)
     });
 
     const table = new dynamodb.Table(this, "Table", {

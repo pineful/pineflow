@@ -26,8 +26,8 @@ Lambda 코드는 Node.js 20 Lambda 런타임에 포함된 AWS SDK for JavaScript
 - Lambda는 JWT claim의 `sub`를 기준으로 `USER#<sub>` partition에만 접근한다.
 - GitHub Actions는 장기 AWS Access Key를 저장하지 않고 OIDC로 AWS IAM Role을 assume하는 구조를 사용한다.
 - CloudFront는 CSP, HSTS, frame deny, no-referrer 등 기본 보안 응답 헤더를 적용한다.
-- 브라우저에는 API용 access token만 `sessionStorage`에 저장한다. 브라우저 종료 후 토큰은 유지하지 않는다.
-- 브라우저에 열린 탭에서 access token이 만료되면 프론트엔드가 세션을 정리하고 로그인 화면으로 복귀한다.
+- 브라우저에는 API용 access token과 refresh token을 `sessionStorage`에만 저장한다. 브라우저 종료 후 장기 토큰은 유지하지 않는다.
+- Cognito refresh token validity는 1일로 제한한다. 열린 탭에서는 30분 주기로 access token을 refresh하고, refresh 실패 시 프론트엔드가 세션을 정리하고 로그인 화면으로 복귀한다.
 - 모든 API route는 `/api/health`까지 JWT authorizer를 요구한다.
 - Lambda IAM 권한은 필요한 DynamoDB item 작업으로 제한하고 `Scan`, `BatchWriteItem`은 허용하지 않는다.
 - dependency audit 기준 애플리케이션에는 취약점이 없고, `infra`에는 high 이상 취약점이 없다. `infra`의 moderate `brace-expansion` 이슈는 CDK 도구 체인의 transitive dependency이며 Lambda 배포 asset에는 포함되지 않는다.

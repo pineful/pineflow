@@ -4,6 +4,8 @@ import {
   completeNewPassword,
   getStoredAccessToken,
   getStoredEmail,
+  getStoredRefreshToken,
+  refreshSession,
   signIn
 } from "./auth";
 import {
@@ -27,6 +29,7 @@ const initialState: CommuteState = {
 };
 
 const soundStorageKey = "pineflow.sound-enabled";
+const sessionRefreshIntervalMs = 30 * 60 * 1000;
 
 type WeatherState = {
   status: "loading" | "ready" | "unavailable";
@@ -192,6 +195,14 @@ function fromDateTimeLocalValue(value: string) {
   return date.toISOString();
 }
 
+function readLoginForm(form: HTMLFormElement, fallbackEmail: string, fallbackPassword: string) {
+  const formData = new FormData(form);
+  return {
+    email: String(formData.get("email") ?? fallbackEmail).trim(),
+    password: String(formData.get("password") ?? fallbackPassword)
+  };
+}
+
 function getStoredSoundEnabled() {
   if (typeof window === "undefined") return false;
   return window.localStorage.getItem(soundStorageKey) === "on";
@@ -330,12 +341,20 @@ function TimeFlowGraph({
   goalMinutes,
   progress,
   isActive,
+  currentSessionMinutes,
+  firstCheckIn,
+  lastCheckOut,
+  modeLabel,
   className = ""
 }: {
   minutes: number;
   goalMinutes: number;
   progress: number;
   isActive: boolean;
+  currentSessionMinutes: number;
+  firstCheckIn?: string;
+  lastCheckOut?: string;
+  modeLabel: string;
   className?: string;
 }) {
   const safeProgress = Math.max(0, Math.min(progress, 100));
@@ -343,6 +362,7 @@ function TimeFlowGraph({
   const markerX = 22 + ratio * 276;
   const markerY = 76 - Math.sin(ratio * Math.PI) * 22;
   const remainingMinutes = Math.max(goalMinutes - minutes, 0);
+  const lastMarker = isActive ? "진행 중" : lastCheckOut ? formatTime(lastCheckOut) : "--:--";
 
   return (
     <div
@@ -350,9 +370,13 @@ function TimeFlowGraph({
       style={{ "--progress": `${safeProgress}%` } as CSSProperties}
       aria-label={`오늘 누적 ${formatDuration(minutes)}, 목표 대비 ${safeProgress}%`}
     >
+      <div className="timeFlowKicker">
+        <span className={isActive ? "live" : ""}>{isActive ? `${modeLabel} 진행 중` : "기록 대기"}</span>
+        <small>라이브 시간 보드</small>
+      </div>
       <div className="timeFlowHeader">
         <div>
-          <span>흐른 시간</span>
+          <span>오늘 누적</span>
           <strong>{formatDuration(minutes)}</strong>
         </div>
         <div>
@@ -373,6 +397,20 @@ function TimeFlowGraph({
         <span>시작</span>
         <strong>{safeProgress}%</strong>
         <span>목표 {formatDuration(goalMinutes)}</span>
+      </div>
+      <div className="flowInsights" aria-label="오늘 시간 요약">
+        <div>
+          <span>이번 흐름</span>
+          <strong>{isActive ? formatDuration(currentSessionMinutes) : "대기 중"}</strong>
+        </div>
+        <div>
+          <span>첫 출근</span>
+          <strong>{firstCheckIn ? formatTime(firstCheckIn) : "--:--"}</strong>
+        </div>
+        <div>
+          <span>마지막 퇴근</span>
+          <strong>{lastMarker}</strong>
+        </div>
       </div>
     </div>
   );
@@ -423,7 +461,7 @@ function App() {
   const [newPasswordSession, setNewPasswordSession] = useState("");
   const [newPasswordUsername, setNewPasswordUsername] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(() =>
-    typeof window === "undefined" ? false : Boolean(getStoredAccessToken())
+    typeof window === "undefined" ? false : Boolean(getStoredAccessToken() || getStoredRefreshToken())
   );
   const [soundEnabled, setSoundEnabled] = useState(getStoredSoundEnabled);
   const requestInFlightRef = useRef(false);
@@ -516,20 +554,35 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const checkSession = () => {
-      if (!getStoredAccessToken()) {
+    const refreshOpenSession = async () => {
+      try {
+        const token = await refreshSession();
+        if (!token && !getStoredAccessToken()) {
+          expireSession();
+        }
+      } catch {
         expireSession();
       }
     };
 
-    const interval = window.setInterval(checkSession, 30000);
-    window.addEventListener("focus", checkSession);
-    document.addEventListener("visibilitychange", checkSession);
+    const refreshOnFocus = () => {
+      void refreshOpenSession();
+    };
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible") {
+        void refreshOpenSession();
+      }
+    };
+
+    void refreshOpenSession();
+    const interval = window.setInterval(refreshOpenSession, sessionRefreshIntervalMs);
+    window.addEventListener("focus", refreshOnFocus);
+    document.addEventListener("visibilitychange", refreshOnVisible);
 
     return () => {
       window.clearInterval(interval);
-      window.removeEventListener("focus", checkSession);
-      document.removeEventListener("visibilitychange", checkSession);
+      window.removeEventListener("focus", refreshOnFocus);
+      document.removeEventListener("visibilitychange", refreshOnVisible);
     };
   }, [isAuthenticated]);
 
@@ -619,15 +672,36 @@ function App() {
   const selectedModePlan = modePlans[mode];
   const activeIntent = state.activeSession?.note || note;
   const activeCheckInAt = state.activeSession ? new Date(state.activeSession.checkInAt) : null;
+  const activeCheckInTime = activeCheckInAt?.getTime();
+  const currentSessionMinutes =
+    activeCheckInTime !== undefined && Number.isFinite(activeCheckInTime)
+      ? Math.max(0, Math.round((now.getTime() - activeCheckInTime) / 60000))
+    : 0;
   const isRecordActionDisabled = isLoading || isSaving || isActionCoolingDown;
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
+    let credentials = readLoginForm(form, email, password);
+
+    if (!credentials.email || !credentials.password) {
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
+      credentials = readLoginForm(form, email, password);
+    }
+
+    setEmail(credentials.email);
+    setPassword(credentials.password);
+
+    if (!credentials.email || !credentials.password) {
+      setErrorMessage("이메일과 비밀번호가 아직 입력되지 않았습니다. 암호 관리자가 뜬 뒤 다시 시도해주세요.");
+      return;
+    }
+
     setIsSaving(true);
     setErrorMessage("");
 
     try {
-      const result = await signIn(email.trim(), password);
+      const result = await signIn(credentials.email, credentials.password);
       if (result.type === "new-password-required") {
         setNewPasswordSession(result.session);
         setNewPasswordUsername(result.username);
@@ -646,11 +720,20 @@ function App() {
 
   async function submitNewPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const submittedNewPassword = String(formData.get("newPassword") ?? newPassword);
+    setNewPassword(submittedNewPassword);
+
+    if (!submittedNewPassword) {
+      setErrorMessage("새 비밀번호를 입력해주세요.");
+      return;
+    }
+
     setIsSaving(true);
     setErrorMessage("");
 
     try {
-      await completeNewPassword(email.trim(), newPasswordUsername, newPasswordSession, newPassword);
+      await completeNewPassword(email.trim(), newPasswordUsername, newPasswordSession, submittedNewPassword);
       setPassword("");
       setNewPassword("");
       setNewPasswordSession("");
@@ -806,6 +889,7 @@ function App() {
               </div>
               <input
                 type="password"
+                name="newPassword"
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
                 placeholder="새 비밀번호"
@@ -825,6 +909,7 @@ function App() {
               </div>
               <input
                 type="email"
+                name="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="이메일"
@@ -832,6 +917,7 @@ function App() {
               />
               <input
                 type="password"
+                name="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="비밀번호"
@@ -898,6 +984,10 @@ function App() {
           goalMinutes={state.dailyGoalMinutes}
           progress={progress}
           isActive={isActive}
+          currentSessionMinutes={currentSessionMinutes}
+          firstCheckIn={today.firstCheckIn}
+          lastCheckOut={today.lastCheckOut}
+          modeLabel={modeLabels[mode]}
         />
 
         <div className="clockBlock">

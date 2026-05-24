@@ -22,6 +22,17 @@ function resourcesOf(type) {
 const userPool = resourcesOf("AWS::Cognito::UserPool")[0];
 assert(userPool?.Properties?.AdminCreateUserConfig?.AllowAdminCreateUserOnly === true, "Cognito self sign-up must stay disabled.");
 
+const userPoolClient = resourcesOf("AWS::Cognito::UserPoolClient")[0];
+assert(
+  userPoolClient?.Properties?.ExplicitAuthFlows?.includes("ALLOW_REFRESH_TOKEN_AUTH"),
+  "Cognito app client must allow refresh token auth for open-tab sessions."
+);
+assert(userPoolClient?.Properties?.AccessTokenValidity === 60, "Cognito access tokens must stay limited to 60 minutes.");
+assert(
+  userPoolClient?.Properties?.RefreshTokenValidity === 1440,
+  "Cognito refresh tokens must expire after one day for browser sessions."
+);
+
 const routes = resourcesOf("AWS::ApiGatewayV2::Route");
 const routeKeys = routes.map((route) => route.Properties.RouteKey);
 assert(routes.length >= 6, "Expected all Pineflow API routes to be synthesized.");

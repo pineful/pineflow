@@ -46,6 +46,9 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - 최근 기록에서 잘못 누른 출근/퇴근 시간을 보정하는 `PATCH /api/records/{recordId}` API와 UI를 추가.
 - 오늘 누적 시간 그래프를 로그인 후 상단 우선 정보로 이동하고, 태블릿 가로형 대시보드 배치를 추가.
 - 계정 메뉴에서 켤 수 있는 선택형 효과음과 터치/팝업 중심의 작은 모션 피드백을 추가.
+- 열린 탭에서 Cognito access token을 30분 주기로 refresh하고, refresh token validity를 1일로 제한.
+- Chrome 암호 관리자/Windows Hello 자동 입력이 늦게 반영되는 경우를 위해 로그인 form 값을 submit 시점에 다시 읽도록 개선.
+- UX/디자인 리서치 결과를 반영해 상단 그래프를 `Calm Live Board` 성격의 조용한 시간 계기판으로 보강.
 
 ## 검증됨
 
