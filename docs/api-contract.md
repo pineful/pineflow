@@ -1,6 +1,6 @@
 # API 계약
 
-마지막 업데이트: 2026-05-20
+마지막 업데이트: 2026-05-24
 
 모든 API는 API Gateway HTTP API 뒤에 있으며, Cognito JWT authorizer를 통과해야 한다. 클라이언트는 `Authorization: Bearer <access_token>` 헤더를 보낸다.
 
@@ -108,6 +108,32 @@
 제약:
 
 - 활성 세션이 없으면 `409`.
+
+응답: `GET /api/state`와 같은 형태.
+
+## PATCH /api/records/{recordId}
+
+목적: 잘못 누른 출근/퇴근 기록의 시간을 보정한다. 기록 삭제가 아니라 원본 세션의 시각만 수정하며, 응답은 수정 후의 최신 상태다.
+
+경로 파라미터:
+
+- `recordId`: `GET /api/state`의 `records[].id`. 예: `session-id:in`, `session-id:out`
+
+요청:
+
+```json
+{
+  "timestamp": "2026-05-20T09:10:00.000Z"
+}
+```
+
+제약:
+
+- `timestamp`는 유효한 ISO 시간이어야 한다.
+- 수정 가능 범위는 현재 시각 기준 과거 366일에서 미래 5분까지다.
+- 출근 시각은 퇴근 시각보다 빨라야 한다.
+- 퇴근 시각은 출근 시각보다 늦어야 하며, 아직 퇴근하지 않은 세션의 퇴근 기록은 수정할 수 없다.
+- 출근 시각을 수정하면 `SESSION#<ISO 시간>#<session-id>` 정렬 키도 함께 이동한다.
 
 응답: `GET /api/state`와 같은 형태.
 

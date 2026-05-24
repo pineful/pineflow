@@ -217,6 +217,7 @@ export class PineflowServerlessStack extends cdk.Stack {
       { path: "/api/state", method: apigwv2.HttpMethod.GET },
       { path: "/api/check-in", method: apigwv2.HttpMethod.POST },
       { path: "/api/check-out", method: apigwv2.HttpMethod.POST },
+      { path: "/api/records/{recordId}", method: apigwv2.HttpMethod.PATCH },
       { path: "/api/settings", method: apigwv2.HttpMethod.PATCH }
     ]) {
       httpApi.addRoutes({

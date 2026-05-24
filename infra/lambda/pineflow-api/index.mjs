@@ -108,6 +108,47 @@ function toRecords(session) {
   ];
 }
 
+function parseRecordId(recordId) {
+  if (typeof recordId !== "string") return null;
+
+  const match = recordId.match(/^(.+):(in|out)$/);
+  if (!match) return null;
+
+  return { sessionId: match[1], kind: match[2] };
+}
+
+function normalizeTimestamp(value) {
+  if (typeof value !== "string") return null;
+
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) return null;
+
+  const now = Date.now();
+  const oneYearAgo = now - 366 * 24 * 60 * 60 * 1000;
+  const fiveMinutesFromNow = now + 5 * 60 * 1000;
+  if (timestamp.getTime() < oneYearAgo || timestamp.getTime() > fiveMinutesFromNow) return null;
+
+  return timestamp.toISOString();
+}
+
+async function findSessionById(pk, sessionId) {
+  const result = await dynamodb.send(
+    new QueryCommand({
+      TableName: tableName,
+      KeyConditionExpression: "pk = :pk and begins_with(sk, :sessionPrefix)",
+      ExpressionAttributeValues: {
+        ":pk": { S: pk },
+        ":sessionPrefix": { S: "SESSION#" }
+      },
+      ScanIndexForward: false,
+      Limit: 120
+    })
+  );
+
+  const session = (result.Items ?? []).map(itemToObject).find((item) => item?.sessionId === sessionId);
+  return session ?? null;
+}
+
 async function loadState(pk) {
   const [settingsResult, activeResult, sessionsResult] = await Promise.all([
     dynamodb.send(
@@ -152,6 +193,146 @@ async function loadState(pk) {
       : null,
     dailyGoalMinutes: Number(settings?.dailyGoalMinutes ?? defaultDailyGoalMinutes)
   };
+}
+
+async function updateRecordTime(pk, recordId, body) {
+  const parsed = parseRecordId(recordId);
+  if (!parsed) {
+    return json(400, { error: "Invalid record id." });
+  }
+
+  const timestamp = normalizeTimestamp(body.timestamp);
+  if (!timestamp) {
+    return json(400, { error: "Timestamp must be a valid ISO time within the editable range." });
+  }
+
+  const session = await findSessionById(pk, parsed.sessionId);
+  if (!session) {
+    return json(404, { error: "Record was not found." });
+  }
+
+  const activeResult = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk, sk: "ACTIVE_SESSION" })
+    })
+  );
+  const active = itemToObject(activeResult.Item);
+  const isActiveSession = active?.sessionId === session.sessionId;
+  const updatedAt = new Date().toISOString();
+
+  if (parsed.kind === "in") {
+    if (session.checkOutAt && new Date(timestamp).getTime() >= new Date(session.checkOutAt).getTime()) {
+      return json(400, { error: "Check-in time must be earlier than check-out time." });
+    }
+
+    const nextSk = `SESSION#${timestamp}#${session.sessionId}`;
+    const nextSession = {
+      ...session,
+      sk: nextSk,
+      checkInAt: timestamp,
+      updatedAt
+    };
+
+    if (nextSk === session.sk) {
+      const transactItems = [
+        {
+          Update: {
+            TableName: tableName,
+            Key: objectToItem({ pk, sk: session.sk }),
+            UpdateExpression: "set checkInAt = :timestamp, updatedAt = :updatedAt",
+            ConditionExpression: "attribute_exists(pk)",
+            ExpressionAttributeValues: {
+              ":timestamp": { S: timestamp },
+              ":updatedAt": { S: updatedAt }
+            }
+          }
+        }
+      ];
+
+      if (isActiveSession) {
+        transactItems.push({
+          Update: {
+            TableName: tableName,
+            Key: objectToItem({ pk, sk: "ACTIVE_SESSION" }),
+            UpdateExpression: "set checkInAt = :timestamp, updatedAt = :updatedAt",
+            ConditionExpression: "attribute_exists(pk)",
+            ExpressionAttributeValues: {
+              ":timestamp": { S: timestamp },
+              ":updatedAt": { S: updatedAt }
+            }
+          }
+        });
+      }
+
+      await dynamodb.send(new TransactWriteItemsCommand({ TransactItems: transactItems }));
+      return json(200, await loadState(pk));
+    }
+
+    const transactItems = [
+      {
+        Delete: {
+          TableName: tableName,
+          Key: objectToItem({ pk, sk: session.sk }),
+          ConditionExpression: "attribute_exists(pk)"
+        }
+      },
+      {
+        Put: {
+          TableName: tableName,
+          Item: objectToItem(nextSession),
+          ConditionExpression: "attribute_not_exists(pk)"
+        }
+      }
+    ];
+
+    if (isActiveSession) {
+      transactItems.push({
+        Put: {
+          TableName: tableName,
+          Item: objectToItem({
+            ...nextSession,
+            sk: "ACTIVE_SESSION",
+            sessionSk: nextSk,
+            entityType: "ACTIVE_SESSION"
+          }),
+          ConditionExpression: "attribute_exists(pk)"
+        }
+      });
+    }
+
+    await dynamodb.send(new TransactWriteItemsCommand({ TransactItems: transactItems }));
+    return json(200, await loadState(pk));
+  }
+
+  if (!session.checkOutAt) {
+    return json(400, { error: "Check-out time can be edited after check-out is recorded." });
+  }
+
+  if (new Date(timestamp).getTime() <= new Date(session.checkInAt).getTime()) {
+    return json(400, { error: "Check-out time must be later than check-in time." });
+  }
+
+  await dynamodb.send(
+    new TransactWriteItemsCommand({
+      TransactItems: [
+        {
+          Update: {
+            TableName: tableName,
+            Key: objectToItem({ pk, sk: session.sk }),
+            UpdateExpression: "set checkOutAt = :timestamp, updatedAt = :updatedAt",
+            ConditionExpression: "attribute_exists(pk) and attribute_exists(checkOutAt)",
+            ExpressionAttributeValues: {
+              ":timestamp": { S: timestamp },
+              ":updatedAt": { S: updatedAt }
+            }
+          }
+        }
+      ]
+    })
+  );
+
+  return json(200, await loadState(pk));
 }
 
 async function checkIn(pk, body) {
@@ -318,6 +499,10 @@ export async function handler(event) {
     if (method === "GET" && path === "/api/state") return json(200, await loadState(pk));
     if (method === "POST" && path === "/api/check-in") return checkIn(pk, body.value);
     if (method === "POST" && path === "/api/check-out") return checkOut(pk);
+    if (method === "PATCH" && path.startsWith("/api/records/")) {
+      const recordId = decodeURIComponent(path.slice("/api/records/".length));
+      return updateRecordTime(pk, recordId, body.value);
+    }
     if (method === "PATCH" && path === "/api/settings") return updateSettings(pk, body.value);
 
     return json(404, { error: "Not found." });

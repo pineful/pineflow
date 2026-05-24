@@ -3,8 +3,23 @@ import { getStoredAccessToken } from "./auth";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
+export class SessionExpiredError extends Error {
+  constructor(message = "로그인 시간이 만료되었습니다. 다시 로그인해주세요.") {
+    super(message);
+    this.name = "SessionExpiredError";
+  }
+}
+
+export function isSessionExpiredError(error: unknown) {
+  return error instanceof SessionExpiredError;
+}
+
 async function requestState(path: string, init?: RequestInit): Promise<CommuteState> {
   const token = getStoredAccessToken();
+  if (!token) {
+    throw new SessionExpiredError();
+  }
+
   const response = await fetch(`${apiBaseUrl}${path}`, {
     headers: {
       "Content-Type": "application/json",
@@ -13,6 +28,10 @@ async function requestState(path: string, init?: RequestInit): Promise<CommuteSt
     },
     ...init,
   });
+
+  if (response.status === 401 || response.status === 403) {
+    throw new SessionExpiredError();
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({ error: "Request failed." }));
@@ -43,5 +62,12 @@ export function saveDailyGoal(dailyGoalMinutes: number) {
   return requestState("/api/settings", {
     method: "PATCH",
     body: JSON.stringify({ dailyGoalMinutes }),
+  });
+}
+
+export function updateRecordTime(recordId: string, timestamp: string) {
+  return requestState(`/api/records/${encodeURIComponent(recordId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ timestamp }),
   });
 }

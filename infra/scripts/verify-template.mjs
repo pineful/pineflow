@@ -23,7 +23,9 @@ const userPool = resourcesOf("AWS::Cognito::UserPool")[0];
 assert(userPool?.Properties?.AdminCreateUserConfig?.AllowAdminCreateUserOnly === true, "Cognito self sign-up must stay disabled.");
 
 const routes = resourcesOf("AWS::ApiGatewayV2::Route");
-assert(routes.length >= 5, "Expected all Pineflow API routes to be synthesized.");
+const routeKeys = routes.map((route) => route.Properties.RouteKey);
+assert(routes.length >= 6, "Expected all Pineflow API routes to be synthesized.");
+assert(routeKeys.includes("PATCH /api/records/{recordId}"), "Record time correction route must be synthesized.");
 assert(
   routes.every((route) => route.Properties.AuthorizationType === "JWT"),
   "Every API route, including health, must require JWT authorization."

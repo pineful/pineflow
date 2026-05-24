@@ -23,6 +23,14 @@
 - Cognito 사용자 `sub`와 기존 owner key를 매핑한 뒤 DynamoDB item 형식으로 변환한다.
 - import 후 record count와 표본 기록을 검증한다.
 
+## 기록 시간 보정
+
+- 최근 기록의 출근/퇴근 시각 보정은 세션 item을 직접 갱신한다.
+- 퇴근 시각 보정은 기존 `SESSION#...` item의 `checkOutAt`만 갱신한다.
+- 출근 시각 보정은 최근 기록 정렬이 틀어지지 않도록 `SESSION#<ISO 시간>#<session-id>` 정렬 키를 새 시간으로 이동한다. 구현은 기존 item 삭제와 새 item 생성을 하나의 DynamoDB transaction으로 묶는다.
+- 활성 세션의 출근 시각을 보정하는 경우 `ACTIVE_SESSION.sessionSk`와 `ACTIVE_SESSION.checkInAt`도 같은 transaction에서 맞춘다.
+- 이 기능은 GSI 없이 최근 세션 query 결과에서 `sessionId`를 찾는다. 개인 사용과 낮은 기록량을 전제로 한 선택이며, 검색/통계 패턴이 명확해지기 전에는 인덱스를 추가하지 않는다.
+
 ## 변경 시 주의점
 
 - 조회 패턴이 늘어나기 전에는 GSI를 추가하지 않는다.

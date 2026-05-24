@@ -9,6 +9,7 @@
 - PostgreSQL 컨테이너가 데이터를 저장합니다.
 - 데이터 위치는 Docker named volume `pineflow_postgres`입니다.
 - 백업 파일은 repository 루트의 `backups/` 디렉터리에 bind mount됩니다.
+- 운영 본선은 DynamoDB single-table입니다. EC2/PostgreSQL 내용은 PoC 복구 계획으로만 유지합니다.
 
 Docker volume은 장애 복구 수단이 아닙니다. 인스턴스나 EBS 볼륨이 삭제되면 volume도 사라질 수 있습니다.
 
@@ -98,3 +99,9 @@ docker compose -p pineflow -f compose.deploy.yml logs --tail=100 app
 - 복구 리허설 주기화.
 - migration 도구 도입.
 - RDS 이전 시 automated backup과 point-in-time recovery 사용.
+
+## Serverless 운영 메모
+
+- DynamoDB 기록 보정은 schema migration이 아니라 item 갱신입니다.
+- 출근 시각 보정은 `SESSION#<ISO 시간>#<session-id>` sort key를 이동하므로, 대량 import/export 도구를 만들 때 동일한 규칙을 따라야 합니다.
+- DynamoDB export/import 절차를 구현할 때는 `SETTINGS`, `ACTIVE_SESSION`, `SESSION#...` item의 관계와 `ACTIVE_SESSION.sessionSk` 참조를 검증 항목에 포함합니다.

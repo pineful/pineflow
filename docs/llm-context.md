@@ -1,6 +1,6 @@
 # LLM 작업 컨텍스트
 
-마지막 업데이트: 2026-05-21
+마지막 업데이트: 2026-05-24
 
 ## 목적
 
@@ -81,6 +81,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - `GET /api/state`
 - `POST /api/check-in`
 - `POST /api/check-out`
+- `PATCH /api/records/{recordId}`
 - `PATCH /api/settings`
 
 현재 모든 route는 JWT가 필요하다.
@@ -114,3 +115,6 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 날씨 카드는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 직접 호출한다. 위치 좌표는 Pineflow 서버에 저장하지 않는다. BigDataCloud reverse geocoding은 브라우저 위치 권한으로 얻은 현재 좌표에만 사용하고, fallback 좌표에는 사용하지 않는다.
 - 로그인 후 로그아웃, 계정 표시, 향후 계정 기능은 상단 계정 메뉴를 확장하는 방향을 유지한다.
 - 기록 설정은 이번 세션이 최근 기록에 어떻게 남을지 정하는 영역이다. 모드 수는 적게 유지하고, 구체 작업명은 자주 쓰는 메모 후보나 직접 입력 메모로 남긴다. 활성 세션 중에는 종류/메모/시작 시간 요약만 보여주고 비어 있는 입력창을 노출하지 않는다.
+- 기록 입력은 출근/퇴근 CTA와 같은 상단 패널 안에 둔다. 메모 작성 후 버튼을 찾아 다시 이동하는 구조로 되돌리지 않는다.
+- 최근 기록은 상단 패널 바로 아래에 두고, 각 기록에서 시간 수정이 가능해야 한다. 시간 수정 API를 바꾸면 `docs/api-contract.md`, `docs/modules/recording.md`, `docs/modules/serverless-storage.md`를 함께 갱신한다.
+- 만료된 Cognito access token은 API 요청 전, 30초 주기, 창 포커스 복귀 시점에 감지해 로그인 화면으로 돌려보낸다. 만료 상태에서 버튼을 누를 때 일반 request failure만 보이는 UX로 되돌리지 않는다.

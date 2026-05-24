@@ -39,10 +39,11 @@ button {
 }
 
 .heroPanel {
-  min-height: 390px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 18px;
+  justify-content: flex-start;
   padding: 20px;
   color: #f9fff9;
   background:
@@ -288,6 +289,108 @@ h1 {
   color: #f4f8ee;
   background: rgba(255, 255, 255, 0.08);
   font-size: 0.83rem;
+}
+
+.recordSetup {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.recordSetupTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.recordSetupTitle strong {
+  color: #f9fff9;
+  font-size: 0.98rem;
+}
+
+.recordSetupTitle span {
+  color: #cce8d6;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.recordSetup .modeControl.compact {
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.recordSetup .modeControl.compact button {
+  min-height: 62px;
+  padding: 10px;
+  color: #eaf7ed;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recordSetup .modeControl.compact button.selected {
+  color: #173126;
+  background: #b9f3d3;
+}
+
+.recordSetup .modeControl.compact button span {
+  color: #cce8d6;
+}
+
+.recordSetup .modeControl.compact button.selected span {
+  color: rgba(23, 49, 38, 0.76);
+}
+
+.recordSetup .planChips.compact {
+  padding-bottom: 0;
+}
+
+.recordSetup .planChips.compact button {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f4f8ee;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recordSetup .planChips.compact button.selected {
+  border-color: #f6c247;
+  color: #173126;
+  background: #f6c247;
+}
+
+.recordSetup .noteField.compact span {
+  color: #cce8d6;
+}
+
+.recordSetup .noteField.compact input {
+  min-height: 44px;
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #f9fff9;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recordSetup .noteField.compact input::placeholder {
+  color: rgba(249, 255, 249, 0.58);
+}
+
+.recordSetup .noteField.compact input:focus {
+  border-color: #f6c247;
+  box-shadow: 0 0 0 3px rgba(246, 194, 71, 0.14);
+}
+
+.recordSetup .activePlan.compact {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recordSetup .activePlan.compact span {
+  color: #cce8d6;
+}
+
+.recordSetup .activePlan.compact strong {
+  color: #f9fff9;
 }
 
 .actionPanel {
@@ -879,6 +982,10 @@ h1 {
   padding: 13px;
 }
 
+.timelineItem.editable {
+  align-items: start;
+}
+
 .timelineItem strong {
   display: block;
   margin-bottom: 3px;
@@ -887,6 +994,54 @@ h1 {
 .timelineItem small {
   justify-self: end;
   font-weight: 800;
+}
+
+.timelineActions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.timelineActions button,
+.timeEditor button {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: #173126;
+  background: #e7ede2;
+  font-size: 0.76rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.timelineActions button:hover:not(:disabled),
+.timeEditor button:hover:not(:disabled) {
+  background: #d8e5d2;
+}
+
+.timelineActions button:disabled,
+.timeEditor button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.timeEditor {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.timeEditor input {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid #d3ddcf;
+  border-radius: 8px;
+  color: #17231e;
+  background: #fff;
+  font-size: 0.78rem;
 }
 
 .dot {
@@ -942,6 +1097,17 @@ h1 {
   .timelineItem small {
     grid-column: 2;
     justify-self: start;
+  }
+
+  .timelineActions {
+    grid-column: 2;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    justify-items: start;
+  }
+
+  .timeEditor {
+    grid-template-columns: 1fr;
   }
 
   .weatherGrid {

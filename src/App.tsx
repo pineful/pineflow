@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import {
   clearSession,
   completeNewPassword,
@@ -6,10 +6,17 @@ import {
   getStoredEmail,
   signIn
 } from "./auth";
-import { createCheckIn, createCheckOut, fetchState, saveDailyGoal } from "./api";
+import {
+  createCheckIn,
+  createCheckOut,
+  fetchState,
+  isSessionExpiredError,
+  saveDailyGoal,
+  updateRecordTime
+} from "./api";
 import { modeDescriptions, modeLabels, modePlans, productName, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, summarizeToday } from "./date";
-import type { CommuteState, WorkMode } from "./types";
+import type { CommuteRecord, CommuteState, WorkMode } from "./types";
 
 const workModes = Object.keys(modeLabels) as WorkMode[];
 
@@ -166,6 +173,21 @@ function accountInitial(value: string) {
   return visibleName.slice(0, 1).toUpperCase();
 }
 
+function toDateTimeLocalValue(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function fromDateTimeLocalValue(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toISOString();
+}
+
 function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
   if (hourly.length < 2) return null;
 
@@ -266,7 +288,10 @@ function App() {
   const [now, setNow] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isActionCoolingDown, setIsActionCoolingDown] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [editingRecordId, setEditingRecordId] = useState("");
+  const [editingTimestamp, setEditingTimestamp] = useState("");
   const [weather, setWeather] = useState<WeatherState>({
     status: "loading",
     locationLabel: seoulCoordinates.label
@@ -279,6 +304,48 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() =>
     typeof window === "undefined" ? false : Boolean(getStoredAccessToken())
   );
+  const requestInFlightRef = useRef(false);
+  const actionCooldownTimerRef = useRef<number | undefined>(undefined);
+
+  function expireSession(message = "로그인 시간이 만료되었습니다. 다시 로그인해주세요.") {
+    clearSession();
+    requestInFlightRef.current = false;
+    if (actionCooldownTimerRef.current) {
+      window.clearTimeout(actionCooldownTimerRef.current);
+    }
+    setPassword("");
+    setNewPassword("");
+    setNewPasswordSession("");
+    setNewPasswordUsername("");
+    setIsSaving(false);
+    setIsLoading(false);
+    setIsActionCoolingDown(false);
+    setIsAuthenticated(false);
+    setState(initialState);
+    setEditingRecordId("");
+    setEditingTimestamp("");
+    setErrorMessage(message);
+  }
+
+  function handleAppError(error: unknown, fallback: string) {
+    if (isSessionExpiredError(error)) {
+      expireSession();
+      return;
+    }
+
+    setErrorMessage(error instanceof Error ? error.message : fallback);
+  }
+
+  function startActionCooldown() {
+    setIsActionCoolingDown(true);
+    if (actionCooldownTimerRef.current) {
+      window.clearTimeout(actionCooldownTimerRef.current);
+    }
+    actionCooldownTimerRef.current = window.setTimeout(() => {
+      setIsActionCoolingDown(false);
+      actionCooldownTimerRef.current = undefined;
+    }, 1300);
+  }
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -292,7 +359,7 @@ function App() {
         setMode(serverState.activeSession?.mode ?? "focus");
         setNote(serverState.activeSession?.note ?? "");
       })
-      .catch((error: Error) => setErrorMessage(error.message))
+      .catch((error: unknown) => handleAppError(error, "기록을 불러오지 못했습니다."))
       .finally(() => setIsLoading(false));
   }, [isAuthenticated]);
 
@@ -300,6 +367,34 @@ function App() {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (actionCooldownTimerRef.current) {
+        window.clearTimeout(actionCooldownTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const checkSession = () => {
+      if (!getStoredAccessToken()) {
+        expireSession();
+      }
+    };
+
+    const interval = window.setInterval(checkSession, 30000);
+    window.addEventListener("focus", checkSession);
+    document.addEventListener("visibilitychange", checkSession);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", checkSession);
+      document.removeEventListener("visibilitychange", checkSession);
+    };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     let isMounted = true;
@@ -387,6 +482,7 @@ function App() {
   const selectedModePlan = modePlans[mode];
   const activeIntent = state.activeSession?.note || note;
   const activeCheckInAt = state.activeSession ? new Date(state.activeSession.checkInAt) : null;
+  const isRecordActionDisabled = isLoading || isSaving || isActionCoolingDown;
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -432,6 +528,9 @@ function App() {
   }
 
   async function checkIn() {
+    if (requestInFlightRef.current || isActionCoolingDown) return;
+
+    requestInFlightRef.current = true;
     setIsSaving(true);
     setErrorMessage("");
 
@@ -440,16 +539,20 @@ function App() {
       setState(serverState);
       setMode(serverState.activeSession?.mode ?? mode);
       setNote(serverState.activeSession?.note ?? note);
+      startActionCooldown();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "출근 기록에 실패했습니다.");
+      handleAppError(error, "출근 기록에 실패했습니다.");
     } finally {
+      requestInFlightRef.current = false;
       setIsSaving(false);
     }
   }
 
   async function checkOut() {
     if (!state.activeSession) return;
+    if (requestInFlightRef.current || isActionCoolingDown) return;
 
+    requestInFlightRef.current = true;
     setIsSaving(true);
     setErrorMessage("");
 
@@ -457,9 +560,13 @@ function App() {
       const serverState = await createCheckOut();
       setState(serverState);
       setNote("");
+      setEditingRecordId("");
+      setEditingTimestamp("");
+      startActionCooldown();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "퇴근 기록에 실패했습니다.");
+      handleAppError(error, "퇴근 기록에 실패했습니다.");
     } finally {
+      requestInFlightRef.current = false;
       setIsSaving(false);
     }
   }
@@ -471,18 +578,59 @@ function App() {
     try {
       setState(await saveDailyGoal(value));
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "목표 시간 저장에 실패했습니다.");
+      handleAppError(error, "목표 시간 저장에 실패했습니다.");
+    }
+  }
+
+  function startEditRecord(record: CommuteRecord) {
+    setEditingRecordId(record.id);
+    setEditingTimestamp(toDateTimeLocalValue(record.timestamp));
+    setErrorMessage("");
+  }
+
+  async function saveRecordTime(recordId: string) {
+    if (requestInFlightRef.current) return;
+
+    const timestamp = fromDateTimeLocalValue(editingTimestamp);
+    if (!timestamp) {
+      setErrorMessage("수정할 시간을 다시 확인해주세요.");
+      return;
+    }
+
+    requestInFlightRef.current = true;
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      setState(await updateRecordTime(recordId, timestamp));
+      setEditingRecordId("");
+      setEditingTimestamp("");
+      startActionCooldown();
+    } catch (error) {
+      handleAppError(error, "기록 시간 수정에 실패했습니다.");
+    } finally {
+      requestInFlightRef.current = false;
+      setIsSaving(false);
     }
   }
 
   function signOut() {
     clearSession();
+    requestInFlightRef.current = false;
+    if (actionCooldownTimerRef.current) {
+      window.clearTimeout(actionCooldownTimerRef.current);
+    }
     setPassword("");
     setNewPassword("");
     setNewPasswordSession("");
     setNewPasswordUsername("");
+    setIsSaving(false);
+    setIsLoading(false);
+    setIsActionCoolingDown(false);
     setIsAuthenticated(false);
     setState(initialState);
+    setEditingRecordId("");
+    setEditingTimestamp("");
     setErrorMessage("");
   }
 
@@ -596,11 +744,73 @@ function App() {
           <span>{tagline}</span>
         </div>
 
+        <div className="recordSetup">
+          <div className="recordSetupTitle">
+            <strong>{isActive ? "진행 중인 기록" : "기록하고 바로 시작"}</strong>
+            <span>{isActive ? "현재 세션 내용" : "버튼 누르기 전에 여기서 끝냅니다"}</span>
+          </div>
+          {isActive ? (
+            <div className="activePlan compact">
+              <div>
+                <span>종류</span>
+                <strong>{modeLabels[mode]}</strong>
+              </div>
+              <div>
+                <span>메모</span>
+                <strong>{activeIntent || "메모 없음"}</strong>
+              </div>
+              <div>
+                <span>시작</span>
+                <strong>{activeCheckInAt ? formatTime(activeCheckInAt) : "--:--"}</strong>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="modeControl compact" role="tablist" aria-label="기록 유형">
+                {workModes.map((workMode) => (
+                  <button
+                    key={workMode}
+                    className={mode === workMode ? "selected" : ""}
+                    type="button"
+                    onClick={() => {
+                      setMode(workMode);
+                      setNote("");
+                    }}
+                  >
+                    <strong>{modeLabels[workMode]}</strong>
+                    <span>{modeDescriptions[workMode]}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="planChips compact" aria-label="자주 쓰는 메모">
+                {selectedModePlan.map((plan) => (
+                  <button
+                    key={plan}
+                    className={note === plan ? "selected" : ""}
+                    type="button"
+                    onClick={() => setNote(plan)}
+                  >
+                    {plan}
+                  </button>
+                ))}
+              </div>
+              <label className="noteField compact">
+                <span>기록에 남길 메모</span>
+                <input
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  placeholder="예: Pineflow 화면 정리"
+                />
+              </label>
+            </>
+          )}
+        </div>
+
         <div className="actionPanel">
           <button
             className="primaryAction"
             type="button"
-            disabled={isLoading || isSaving}
+            disabled={isRecordActionDisabled}
             onClick={isActive ? checkOut : checkIn}
           >
             <span>{isActive ? "퇴근 기록" : "출근 기록"}</span>
@@ -618,6 +828,58 @@ function App() {
       </section>
 
       {errorMessage && <p className="errorBanner">{errorMessage}</p>}
+
+      <section className="sectionBand recentBand">
+        <div className="sectionTitle">
+          <h2>최근 기록</h2>
+          <span>실수하면 시간 수정</span>
+        </div>
+        <div className="timeline">
+          {state.records.slice(0, 8).map((record) => (
+            <article className="timelineItem editable" key={record.id}>
+              <span className={record.type === "check-in" ? "dot in" : "dot out"} />
+              <div>
+                <strong>{record.type === "check-in" ? "출근" : "퇴근"}</strong>
+                <p>
+                  {formatDate(record.timestamp)} · {formatTime(record.timestamp)}
+                </p>
+                {editingRecordId === record.id && (
+                  <div className="timeEditor">
+                    <input
+                      type="datetime-local"
+                      value={editingTimestamp}
+                      onChange={(event) => setEditingTimestamp(event.target.value)}
+                      aria-label="수정할 기록 시간"
+                    />
+                    <button type="button" disabled={isSaving} onClick={() => saveRecordTime(record.id)}>
+                      저장
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={() => {
+                        setEditingRecordId("");
+                        setEditingTimestamp("");
+                      }}
+                    >
+                      취소
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="timelineActions">
+                <small>{modeLabels[record.mode]}</small>
+                <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
+                  수정
+                </button>
+              </div>
+            </article>
+          ))}
+          {state.records.length === 0 && (
+            <p className="emptyState">아직 기록이 없습니다. 오늘 첫 기록을 남겨보세요.</p>
+          )}
+        </div>
+      </section>
 
       <section className="sectionBand weatherBand">
         <div className="sectionTitle">
@@ -694,95 +956,6 @@ function App() {
         </div>
       </section>
 
-      <section className="sectionBand controlsBand">
-        <div className="sectionTitle">
-          <h2>{isActive ? "이번 기록" : "이번 기록 내용"}</h2>
-          <span>{isActive ? "기록 중" : "최근 기록에 남음"}</span>
-        </div>
-        {isActive ? (
-          <div className="activePlan">
-            <div>
-              <span>종류</span>
-              <strong>{modeLabels[mode]}</strong>
-            </div>
-            <div>
-              <span>메모</span>
-              <strong>{activeIntent || "메모 없음"}</strong>
-            </div>
-            <div>
-              <span>시작</span>
-              <strong>{activeCheckInAt ? formatTime(activeCheckInAt) : "--:--"}</strong>
-            </div>
-          </div>
-        ) : (
-          <>
-            <span className="controlLabel">기록 종류</span>
-            <div className="modeControl" role="tablist" aria-label="기록 유형">
-              {workModes.map((workMode) => (
-                <button
-                  key={workMode}
-                  className={mode === workMode ? "selected" : ""}
-                  type="button"
-                  disabled={isActive}
-                  onClick={() => {
-                    setMode(workMode);
-                    setNote("");
-                  }}
-                >
-                  <strong>{modeLabels[workMode]}</strong>
-                  <span>{modeDescriptions[workMode]}</span>
-                </button>
-              ))}
-            </div>
-            <span className="controlLabel">자주 쓰는 메모</span>
-            <div className="planChips" aria-label="오늘의 의도 빠른 선택">
-              {selectedModePlan.map((plan) => (
-                <button
-                  key={plan}
-                  className={note === plan ? "selected" : ""}
-                  type="button"
-                  onClick={() => setNote(plan)}
-                >
-                  {plan}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-        {!isActive && (
-          <label className="noteField">
-            <span>기록에 남길 메모</span>
-            <input
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="예: Pineflow 화면 정리"
-            />
-          </label>
-        )}
-      </section>
-
-      <section className="sectionBand">
-        <div className="sectionTitle">
-          <h2>최근 기록</h2>
-        </div>
-        <div className="timeline">
-          {state.records.slice(0, 8).map((record) => (
-            <article className="timelineItem" key={record.id}>
-              <span className={record.type === "check-in" ? "dot in" : "dot out"} />
-              <div>
-                <strong>{record.type === "check-in" ? "출근" : "퇴근"}</strong>
-                <p>
-                  {formatDate(record.timestamp)} · {formatTime(record.timestamp)}
-                </p>
-              </div>
-              <small>{modeLabels[record.mode]}</small>
-            </article>
-          ))}
-          {state.records.length === 0 && (
-            <p className="emptyState">아직 기록이 없습니다. 첫 출근을 남겨보세요.</p>
-          )}
-        </div>
-      </section>
     </main>
   );
 }

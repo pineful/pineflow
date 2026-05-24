@@ -1,6 +1,6 @@
 # Serverless 구현 현황
 
-마지막 업데이트: 2026-05-20
+마지막 업데이트: 2026-05-24
 
 ## 이번 단계의 목표
 
@@ -27,6 +27,7 @@ Lambda 코드는 Node.js 20 Lambda 런타임에 포함된 AWS SDK for JavaScript
 - GitHub Actions는 장기 AWS Access Key를 저장하지 않고 OIDC로 AWS IAM Role을 assume하는 구조를 사용한다.
 - CloudFront는 CSP, HSTS, frame deny, no-referrer 등 기본 보안 응답 헤더를 적용한다.
 - 브라우저에는 API용 access token만 `sessionStorage`에 저장한다. 브라우저 종료 후 토큰은 유지하지 않는다.
+- 브라우저에 열린 탭에서 access token이 만료되면 프론트엔드가 세션을 정리하고 로그인 화면으로 복귀한다.
 - 모든 API route는 `/api/health`까지 JWT authorizer를 요구한다.
 - Lambda IAM 권한은 필요한 DynamoDB item 작업으로 제한하고 `Scan`, `BatchWriteItem`은 허용하지 않는다.
 - dependency audit 기준 애플리케이션에는 취약점이 없고, `infra`에는 high 이상 취약점이 없다. `infra`의 moderate `brace-expansion` 이슈는 CDK 도구 체인의 transitive dependency이며 Lambda 배포 asset에는 포함되지 않는다.
@@ -49,6 +50,8 @@ DynamoDB single-table 구조를 사용한다.
 - `sk`: `SETTINGS`, `ACTIVE_SESSION`, `SESSION#<iso-time>#<session-id>`
 
 이 구조는 사용자별 최근 기록 조회, 현재 활성 세션 조회, 설정 조회를 단순한 key 기반 접근으로 처리하기 위해 선택했다. 초기 버전에서는 GSI를 만들지 않는다. 사용량이 적은 개인 서비스이므로 불필요한 capacity 축을 늘리지 않는 편이 비용 방어에 유리하다.
+
+기록 시간 보정은 최근 세션 query 결과에서 `sessionId`를 찾아 처리한다. 퇴근 시각은 item update로 끝나지만, 출근 시각은 최근 기록 정렬 기준이므로 `SESSION#<iso-time>#<session-id>` 정렬 키를 새 시간으로 옮긴다. 이 이동은 delete/put transaction으로 처리하고, 활성 세션이면 `ACTIVE_SESSION.sessionSk`도 같이 갱신한다.
 
 ## 배포 흐름
 
