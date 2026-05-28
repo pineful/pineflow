@@ -694,6 +694,15 @@ function Logo() {
   );
 }
 
+function BrandWordmark() {
+  return (
+    <h1 className="brandWordmark" aria-label={productName}>
+      <span className="brandWordmarkPine">pine</span>
+      <span className="brandWordmarkFlow">flow</span>
+    </h1>
+  );
+}
+
 type RecordTimeEditorProps = {
   value: string;
   recordType: CommuteRecord["type"];
@@ -1331,7 +1340,7 @@ function App() {
             <Logo />
             <div>
               <p className="eyebrow">개인 출퇴근 기록</p>
-              <h1>{productName}</h1>
+              <BrandWordmark />
             </div>
           </header>
 
@@ -1398,7 +1407,7 @@ function App() {
           <Logo />
           <div>
             <p className="eyebrow">개인 출퇴근 기록</p>
-            <h1>{productName}</h1>
+            <BrandWordmark />
           </div>
           <details className="accountMenu" onToggle={handleAccountToggle}>
             <summary aria-label="계정 메뉴">
