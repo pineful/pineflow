@@ -1,33 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
   <title id="title">Pineflow app icon</title>
-  <desc id="desc">A pineapple-inspired mark with a green progress ribbon passing behind the crown.</desc>
+  <desc id="desc">A pineapple-inspired mark with a leafy crown, gold body silhouette, diamond texture, and green flow ribbon.</desc>
   <defs>
     <linearGradient id="ribbon" x1="14" y1="96" x2="118" y2="14" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#36bb86"/>
       <stop offset="0.52" stop-color="#1f7a5c"/>
       <stop offset="1" stop-color="#14573e"/>
     </linearGradient>
+    <radialGradient id="tileGlow" cx="36%" cy="24%" r="54%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#edf5e8"/>
+    </radialGradient>
   </defs>
-  <rect width="128" height="128" rx="26" fill="#f7fbf4"/>
-  <g transform="translate(64 59) scale(.38)">
-    <path d="M-130 96 C-139.57 51.74 -123.74 -10.06 -86.14 -56.21" fill="none" stroke="url(#ribbon)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M49.75 -118.77 C100.3 -113.3 135.66 -75.07 139 -25" fill="none" stroke="url(#ribbon)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
-    <g transform="translate(0 -42) scale(1.25)">
-      <path fill="#11161c" d="M-33 -7 L-63 -40 L-27 -27 Z"/>
-      <path fill="#11161c" d="M-16 -14 L-33 -61 L-3 -31 Z"/>
-      <path fill="#11161c" d="M2 -18 L8 -68 L21 -30 Z"/>
-      <path fill="#11161c" d="M17 -12 L46 -45 L30 -23 Z"/>
-      <path fill="#43c78d" d="M-4 -15 L0 -55 L11 -27 Z"/>
-      <path fill="#9fee57" d="M8 -18 L35 -45 L18 -22 Z"/>
-      <path fill="#11161c" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 10)"/>
-      <path fill="#11161c" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-22 36) rotate(-3.5)"/>
-      <path fill="#11161c" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(22 36) rotate(3)"/>
-      <path fill="#11161c" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-44 62) rotate(4)"/>
-      <path fill="#11161c" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 62) rotate(-2)"/>
-      <path fill="#2f6f54" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(44 62) rotate(4.5)"/>
-      <path fill="#11161c" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-22 88) rotate(-3)"/>
-      <path fill="#43c78d" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(22 88) rotate(2)"/>
-      <path fill="#11161c" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 114) rotate(.5)"/>
-    </g>
-  </g>
+  <rect width="128" height="128" rx="26" fill="url(#tileGlow)"/>
+  <path d="M64 35 C45 36 33 54 33 78 C33 100 47 115 64 119 C81 115 95 100 95 78 C95 54 83 36 64 35 Z" fill="#f2c64d" opacity=".9"/>
+  <path d="M25 92 C21 70 29 50 46 39" fill="none" stroke="url(#ribbon)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M84 40 C97 49 102 63 98 78" fill="none" stroke="url(#ribbon)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path fill="#166545" d="M47 42 C40 35 36 27 35 18 C46 22 54 31 58 43 C54 42 51 42 47 42 Z"/>
+  <path fill="#43c78d" d="M59 39 C57 28 59 18 64 10 C70 21 70 32 65 41 C63 40 61 40 59 39 Z"/>
+  <path fill="#166545" d="M68 40 C73 29 81 20 90 15 C90 29 81 40 70 44 C70 43 69 41 68 40 Z"/>
+  <path fill="#9fee57" d="M76 46 C86 41 95 36 102 29 C100 43 89 51 76 50 Z"/>
+  <path fill="#43c78d" d="M52 46 C42 44 33 45 25 50 C31 38 43 37 55 44 Z"/>
+  <path fill="#2f6f54" d="M41 45 C50 36 58 36 64 41 C70 36 79 37 88 45 C78 47 70 47 64 52 C58 47 51 47 41 45 Z"/>
+  <path fill="#11161c" d="M64 47 L72 55 L64 63 L56 55 Z"/>
+  <path fill="#11161c" d="M49 62 L57 70 L49 78 L41 70 Z"/>
+  <path fill="#11161c" d="M79 62 L87 70 L79 78 L71 70 Z"/>
+  <path fill="#11161c" d="M49 84 L57 92 L49 100 L41 92 Z"/>
+  <path fill="#11161c" d="M64 73 L72 81 L64 89 L56 81 Z"/>
+  <path fill="#2f6f54" d="M79 84 L87 92 L79 100 L71 92 Z"/>
+  <path fill="#11161c" d="M64 101 L72 109 L64 117 L56 109 Z"/>
+  <path fill="#43c78d" d="M92 75 L99 82 L92 89 L85 82 Z"/>
 </svg>

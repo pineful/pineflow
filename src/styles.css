@@ -149,6 +149,10 @@ button:active:not(:disabled) {
   fill: #166545;
 }
 
+.logoLeafBase {
+  fill: #2f6f54;
+}
+
 .logoLeafMint,
 .logoFacetLive {
   fill: #43c78d;

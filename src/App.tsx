@@ -684,11 +684,12 @@ function Logo() {
         <path className="logoBodyFill" d="M64 35 C45 36 33 54 33 78 C33 100 47 115 64 119 C81 115 95 100 95 78 C95 54 83 36 64 35 Z" />
         <path className="logoRibbon" d="M25 92 C21 70 29 50 46 39" stroke="url(#pineflowLogoRibbon)" />
         <path className="logoRibbon short" d="M84 40 C97 49 102 63 98 78" stroke="url(#pineflowLogoRibbon)" />
-        <path className="logoLeafDeep" d="M48 37 L34 21 L54 29 Z" />
-        <path className="logoLeafMint" d="M58 34 L53 10 L68 31 Z" />
-        <path className="logoLeafDeep" d="M69 32 L81 10 L80 34 Z" />
-        <path className="logoLeafGold" d="M79 37 L98 23 L88 42 Z" />
-        <path className="logoLeafMint" d="M64 36 L67 17 L75 36 Z" />
+        <path className="logoLeafDeep" d="M47 42 C40 35 36 27 35 18 C46 22 54 31 58 43 C54 42 51 42 47 42 Z" />
+        <path className="logoLeafMint" d="M59 39 C57 28 59 18 64 10 C70 21 70 32 65 41 C63 40 61 40 59 39 Z" />
+        <path className="logoLeafDeep" d="M68 40 C73 29 81 20 90 15 C90 29 81 40 70 44 C70 43 69 41 68 40 Z" />
+        <path className="logoLeafGold" d="M76 46 C86 41 95 36 102 29 C100 43 89 51 76 50 Z" />
+        <path className="logoLeafMint" d="M52 46 C42 44 33 45 25 50 C31 38 43 37 55 44 Z" />
+        <path className="logoLeafBase" d="M41 45 C50 36 58 36 64 41 C70 36 79 37 88 45 C78 47 70 47 64 52 C58 47 51 47 41 45 Z" />
         <path className="logoFacet" d="M64 47 L72 55 L64 63 L56 55 Z" />
         <path className="logoFacet" d="M49 62 L57 70 L49 78 L41 70 Z" />
         <path className="logoFacet" d="M79 62 L87 70 L79 78 L71 70 Z" />
