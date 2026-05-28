@@ -16,7 +16,7 @@ import {
   saveDailyGoal,
   updateRecord
 } from "./api";
-import { modeDescriptions, modeLabels, modePlans, productName, tagline } from "./brand";
+import { modeDescriptions, modeIcons, modeLabels, modePlans, productName, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
 import type { CommuteRecord, CommuteState, WorkMode } from "./types";
 
@@ -151,19 +151,27 @@ function uniqueFilled(values: Array<string | undefined>) {
   return [...new Set(values.map((value) => value?.trim()).filter(Boolean))] as string[];
 }
 
+function hasKoreanText(value?: string) {
+  return Boolean(value && /[가-힣]/.test(value));
+}
+
 function locationLabelFromGeocode(data: ReverseGeocodeResult, fallback: string) {
-  const finerAdministrativeNames = data.localityInfo?.administrative
-    ?.filter((item) => item.name && item.order && item.order >= 6)
+  const localityNames = uniqueFilled([data.localityName, data.locality]).filter(hasKoreanText);
+  if (localityNames.length === 0) return fallback;
+
+  const broaderAdministrativeNames = data.localityInfo?.administrative
+    ?.filter((item) => item.name && item.order && item.order >= 4 && item.order <= 7 && hasKoreanText(item.name))
     .sort((left, right) => (right.order ?? 0) - (left.order ?? 0))
     .map((item) => item.name);
 
   const parts = uniqueFilled([
-    data.localityName,
-    data.locality,
-    ...(finerAdministrativeNames ?? []),
+    ...localityNames,
+    ...(broaderAdministrativeNames ?? []),
     data.city,
     data.principalSubdivision
-  ]).slice(0, 3);
+  ])
+    .filter(hasKoreanText)
+    .slice(0, 3);
 
   return parts.length > 0 ? `${parts.join(" · ")} 기준` : fallback;
 }
@@ -673,22 +681,22 @@ function Logo() {
             <stop offset="1" stopColor="#14573e" />
           </linearGradient>
         </defs>
-        <path className="logoRibbon" d="M22 88 C24 54 42 28 66 25 C88 22 104 37 104 58" stroke="url(#pineflowLogoRibbon)" />
-        <path className="logoLeafInk" d="M46 36 L29 20 L49 26 Z" />
-        <path className="logoLeafInk" d="M58 31 L50 8 L66 25 Z" />
-        <path className="logoLeafInk" d="M70 30 L78 8 L82 29 Z" />
-        <path className="logoLeafInk" d="M81 36 L101 20 L88 35 Z" />
-        <path className="logoLeafMint" d="M60 31 L60 12 L69 28 Z" />
-        <path className="logoLeafGold" d="M73 31 L91 17 L81 34 Z" />
-        <path className="logoFacet" d="M64 39 L72 48 L64 57 L56 48 Z" />
-        <path className="logoFacet" d="M51 54 L59 63 L51 72 L43 63 Z" />
-        <path className="logoFacet" d="M77 54 L85 63 L77 72 L69 63 Z" />
-        <path className="logoFacet" d="M39 70 L47 79 L39 88 L31 79 Z" />
-        <path className="logoFacet" d="M64 70 L72 79 L64 88 L56 79 Z" />
-        <path className="logoFacet logoFacetDeep" d="M89 70 L97 79 L89 88 L81 79 Z" />
-        <path className="logoFacet" d="M51 86 L59 95 L51 104 L43 95 Z" />
-        <path className="logoFacet logoFacetLive" d="M77 86 L85 95 L77 104 L69 95 Z" />
-        <path className="logoFacet" d="M64 101 L72 110 L64 119 L56 110 Z" />
+        <path className="logoBodyFill" d="M64 35 C45 36 33 54 33 78 C33 100 47 115 64 119 C81 115 95 100 95 78 C95 54 83 36 64 35 Z" />
+        <path className="logoRibbon" d="M25 92 C21 70 29 50 46 39" stroke="url(#pineflowLogoRibbon)" />
+        <path className="logoRibbon short" d="M84 40 C97 49 102 63 98 78" stroke="url(#pineflowLogoRibbon)" />
+        <path className="logoLeafDeep" d="M48 37 L34 21 L54 29 Z" />
+        <path className="logoLeafMint" d="M58 34 L53 10 L68 31 Z" />
+        <path className="logoLeafDeep" d="M69 32 L81 10 L80 34 Z" />
+        <path className="logoLeafGold" d="M79 37 L98 23 L88 42 Z" />
+        <path className="logoLeafMint" d="M64 36 L67 17 L75 36 Z" />
+        <path className="logoFacet" d="M64 47 L72 55 L64 63 L56 55 Z" />
+        <path className="logoFacet" d="M49 62 L57 70 L49 78 L41 70 Z" />
+        <path className="logoFacet" d="M79 62 L87 70 L79 78 L71 70 Z" />
+        <path className="logoFacet" d="M49 84 L57 92 L49 100 L41 92 Z" />
+        <path className="logoFacet" d="M64 73 L72 81 L64 89 L56 81 Z" />
+        <path className="logoFacet logoFacetDeep" d="M79 84 L87 92 L79 100 L71 92 Z" />
+        <path className="logoFacet" d="M64 101 L72 109 L64 117 L56 109 Z" />
+        <path className="logoFacet logoFacetLive" d="M92 75 L99 82 L92 89 L85 82 Z" />
       </svg>
     </div>
   );
@@ -1105,7 +1113,7 @@ function App() {
         void loadWeather(position.coords.latitude, position.coords.longitude, "현재 위치 기준");
       },
       loadDefaultWeather,
-      { enableHighAccuracy: false, maximumAge: 0, timeout: 5000 }
+      { enableHighAccuracy: true, maximumAge: 10 * 60 * 1000, timeout: 10000 }
     );
 
     return () => {
@@ -1576,7 +1584,18 @@ function App() {
                     <p>
                       {formatDate(record.timestamp)} · {formatTime(record.timestamp)}
                     </p>
-                    <span className="timelineMode">{modeLabels[record.mode]}</span>
+                    <span className="timelineMode">
+                      <span aria-hidden="true">{modeIcons[record.mode]}</span>
+                      {modeLabels[record.mode]}
+                    </span>
+                    {record.note.trim() && (
+                      <p className="timelineNote">
+                        <span className="timelineNoteIcon" aria-hidden="true">
+                          {modeIcons[record.mode]}
+                        </span>
+                        <span>{record.note}</span>
+                      </p>
+                    )}
                   </div>
                   {editingRecordId !== record.id && (
                     <div className="timelineActions">

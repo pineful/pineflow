@@ -10,6 +10,13 @@ export const modeLabels: Record<WorkMode, string> = {
   project: "개인 프로젝트"
 };
 
+export const modeIcons: Record<WorkMode, string> = {
+  focus: "🎯",
+  remote: "📍",
+  study: "📘",
+  project: "✨"
+};
+
 export const modeDescriptions: Record<WorkMode, string> = {
   focus: "혼자 깊게 하는 일",
   remote: "장소가 중요한 일",

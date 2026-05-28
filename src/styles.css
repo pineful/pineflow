@@ -127,14 +127,26 @@ button:active:not(:disabled) {
 
 .logoRibbon {
   fill: none;
-  stroke-width: 8;
+  stroke-width: 7;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.logoLeafInk,
+.logoRibbon.short {
+  stroke-width: 6;
+}
+
+.logoBodyFill {
+  fill: #f2c64d;
+  opacity: 0.9;
+}
+
 .logoFacet {
   fill: #11161c;
+}
+
+.logoLeafDeep {
+  fill: #166545;
 }
 
 .logoLeafMint,
@@ -1441,6 +1453,8 @@ h1 {
 
 .timelineMode {
   display: inline-flex;
+  align-items: center;
+  gap: 5px;
   width: fit-content;
   margin-top: 7px;
   padding: 4px 8px;
@@ -1449,6 +1463,34 @@ h1 {
   background: #eef5ed;
   font-size: 0.72rem;
   font-weight: 850;
+}
+
+.timelineNote {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 7px;
+  max-width: 100%;
+  margin-top: 8px;
+  color: #243b31;
+  font-size: 0.86rem;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.timelineNoteIcon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #eef5ed;
+  font-size: 0.82rem;
+}
+
+.timelineNote span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .timelineItem small {
