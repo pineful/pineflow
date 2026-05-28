@@ -1566,13 +1566,45 @@ function App() {
         </div>
         <div className="timeline">
           {state.records.slice(0, 8).map((record) => (
-            <article className="timelineItem editable" key={record.id}>
+            <article className={editingRecordId === record.id ? "timelineItem editing" : "timelineItem"} key={record.id}>
               <span className={record.type === "check-in" ? "dot in" : "dot out"} />
-              <div>
-                <strong>{record.type === "check-in" ? "출근" : "퇴근"}</strong>
-                <p>
-                  {formatDate(record.timestamp)} · {formatTime(record.timestamp)}
-                </p>
+              <div className="timelineBody">
+                <div className="timelineRecordHeader">
+                  <div>
+                    <strong>{record.type === "check-in" ? "출근" : "퇴근"}</strong>
+                    <p>
+                      {formatDate(record.timestamp)} · {formatTime(record.timestamp)}
+                    </p>
+                  </div>
+                  <div className={editingRecordId === record.id ? "timelineActions editActions" : "timelineActions"}>
+                    {editingRecordId === record.id ? (
+                      <>
+                        <button className="save" type="button" disabled={isSaving} onClick={() => saveRecordEdit(record.id)}>
+                          저장
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isSaving}
+                          onClick={() => {
+                            setEditingRecordId("");
+                            setEditingTimestamp("");
+                            setEditingMode("focus");
+                            setEditingNote("");
+                          }}
+                        >
+                          취소
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <small>{modeLabels[record.mode]}</small>
+                        <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
+                          수정
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
                 {editingRecordId === record.id && (
                   <RecordTimeEditor
                     value={editingTimestamp}
@@ -1584,34 +1616,6 @@ function App() {
                     onModeChange={setEditingMode}
                     onNoteChange={setEditingNote}
                   />
-                )}
-              </div>
-              <div className={editingRecordId === record.id ? "timelineActions editActions" : "timelineActions"}>
-                {editingRecordId === record.id ? (
-                  <>
-                    <button className="save" type="button" disabled={isSaving} onClick={() => saveRecordEdit(record.id)}>
-                      저장
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isSaving}
-                      onClick={() => {
-                        setEditingRecordId("");
-                        setEditingTimestamp("");
-                        setEditingMode("focus");
-                        setEditingNote("");
-                      }}
-                    >
-                      취소
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <small>{modeLabels[record.mode]}</small>
-                    <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
-                      수정
-                    </button>
-                  </>
                 )}
               </div>
             </article>

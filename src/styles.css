@@ -1400,7 +1400,7 @@ h1 {
 
 .timelineItem {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   padding: 13px;
@@ -1409,13 +1409,28 @@ h1 {
     box-shadow 160ms ease;
 }
 
-.timelineItem.editable {
+.timelineItem.editing {
+  align-items: start;
+}
+
+.timelineBody {
+  min-width: 0;
+}
+
+.timelineRecordHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: start;
 }
 
 .timelineItem strong {
   display: block;
   margin-bottom: 3px;
+}
+
+.timelineItem p {
+  min-width: 0;
 }
 
 .timelineItem small {
@@ -1427,6 +1442,13 @@ h1 {
   display: grid;
   justify-items: end;
   gap: 8px;
+}
+
+.timelineActions.editActions {
+  grid-template-columns: auto auto;
+  align-content: start;
+  justify-content: end;
+  justify-items: stretch;
 }
 
 .timelineActions button,
@@ -1457,7 +1479,6 @@ h1 {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
-  max-width: 780px;
   margin-top: 12px;
   padding: 16px;
   border: 1px solid #c9d8c4;
@@ -1595,7 +1616,7 @@ h1 {
 
 .timeEditorControls {
   display: grid;
-  grid-template-columns: minmax(132px, 0.72fr) minmax(92px, 1fr) minmax(92px, 1fr);
+  grid-template-columns: minmax(150px, 0.84fr) minmax(108px, 1fr) minmax(108px, 1fr);
   grid-column: 1;
   gap: 8px;
   align-items: end;
@@ -1693,15 +1714,11 @@ h1 {
 
 .timeNudges button {
   min-height: 38px;
-  padding-inline: 6px;
+  padding-inline: 4px;
   color: #2f4038;
   background: #edf3e8;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   line-height: 1;
-}
-
-.timelineActions.editActions {
-  align-content: start;
 }
 
 .timelineActions .save {
