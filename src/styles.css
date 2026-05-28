@@ -48,11 +48,17 @@ button {
   user-select: none;
   -webkit-user-select: none;
   caret-color: transparent;
+  outline: none;
   transition:
     transform var(--motion-fast) var(--ease-out),
     background-color var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-ui) var(--ease-out),
     opacity var(--motion-fast) var(--ease-out);
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(103, 180, 142, 0.45);
+  outline-offset: 2px;
 }
 
 input,
@@ -1433,6 +1439,18 @@ h1 {
   min-width: 0;
 }
 
+.timelineMode {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 7px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #436154;
+  background: #eef5ed;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
 .timelineItem small {
   justify-self: end;
   font-weight: 800;
@@ -1442,13 +1460,6 @@ h1 {
   display: grid;
   justify-items: end;
   gap: 8px;
-}
-
-.timelineActions.editActions {
-  grid-template-columns: auto auto;
-  align-content: start;
-  justify-content: end;
-  justify-items: stretch;
 }
 
 .timelineActions button,
@@ -1478,12 +1489,14 @@ h1 {
 .timeEditor {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
+  gap: 12px;
   margin-top: 12px;
-  padding: 16px;
+  padding: 16px 18px 18px;
   border: 1px solid #c9d8c4;
   border-radius: 8px;
-  background: #fbfcf8;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(251, 252, 248, 0.96)),
+    #fbfcf8;
   box-shadow: 0 14px 30px rgba(47, 64, 56, 0.06);
 }
 
@@ -1493,7 +1506,7 @@ h1 {
   justify-content: space-between;
   gap: 10px;
   grid-column: 1 / -1;
-  padding-bottom: 3px;
+  padding-bottom: 8px;
   border-bottom: 1px solid #e3ebdd;
 }
 
@@ -1510,15 +1523,21 @@ h1 {
 }
 
 .editorGroupLabel {
+  margin-top: 2px;
   color: #2f4038;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 950;
+  letter-spacing: 0.02em;
 }
 
 .editorGroupLabel.timeLabel {
   grid-column: 1;
   grid-row: auto;
-  margin-top: 2px;
+  margin-top: 6px;
+}
+
+.editorGroupLabel.nudgeLabel {
+  margin-top: 0;
 }
 
 .dateRail {
@@ -1536,13 +1555,17 @@ h1 {
 }
 
 .recordEditModes button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-width: 0;
   min-height: 44px;
   padding: 6px 8px;
   border: 1px solid #d7e2d2;
   border-radius: 8px;
-  color: #2f4038;
-  background: #fff;
+  color: #344b40;
+  background: rgba(255, 255, 255, 0.66);
   font-size: 0.78rem;
   font-weight: 900;
   line-height: 1;
@@ -1553,8 +1576,22 @@ h1 {
 
 .recordEditModes button.selected {
   border-color: #27715c;
+  color: #1f624e;
+  background: #e6f5eb;
+  box-shadow: inset 0 0 0 1px rgba(39, 113, 92, 0.18);
+}
+
+.recordEditModes button.selected::before {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
   color: #f9fff9;
   background: #27715c;
+  font-size: 0.62rem;
+  line-height: 1;
+  content: "✓";
 }
 
 .dateRail button {
@@ -1566,8 +1603,8 @@ h1 {
   padding: 6px 4px;
   border: 1px solid #d7e2d2;
   border-radius: 8px;
-  color: #2f4038;
-  background: #fff;
+  color: #344b40;
+  background: rgba(255, 255, 255, 0.66);
 }
 
 .dateRail button span {
@@ -1661,7 +1698,7 @@ h1 {
   min-width: 0;
   min-height: 42px;
   padding: 0 10px;
-  border: 1px solid #b9cbb2;
+  border: 1px solid #aac2a6;
   border-radius: 8px;
   color: #17231e;
   background: #fff;
@@ -1691,7 +1728,7 @@ h1 {
 .recordEditNote input {
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid #b9cbb2;
+  border: 1px solid #aac2a6;
   border-radius: 8px;
   color: #17231e;
   background: #fff;
@@ -1713,21 +1750,58 @@ h1 {
 }
 
 .timeNudges button {
-  min-height: 38px;
+  min-height: 34px;
   padding-inline: 4px;
-  color: #2f4038;
-  background: #edf3e8;
+  border: 1px solid transparent;
+  color: #2d6e58;
+  background: transparent;
   font-size: 0.72rem;
   line-height: 1;
 }
 
-.timelineActions .save {
-  color: #f9fff9;
-  background: #27715c;
+.timeNudges button:hover:not(:disabled),
+.timeNudges button:focus-visible {
+  border-color: #d5e2d0;
+  background: #eef5ed;
 }
 
-.timelineActions .save:hover:not(:disabled) {
+.timelineEditFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e3ebdd;
+}
+
+.timelineEditFooter button {
+  min-height: 40px;
+  min-width: 82px;
+  padding-inline: 14px;
+  border-radius: 8px;
+  color: #173126;
+  background: #e7ede2;
+  font-size: 0.8rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.timelineEditFooter button:hover:not(:disabled) {
+  background: #d8e5d2;
+}
+
+.timelineEditFooter .save:hover:not(:disabled) {
   background: #1f624e;
+}
+
+.timelineEditFooter button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.timelineEditFooter .save {
+  color: #f9fff9;
+  background: #27715c;
 }
 
 .dot {

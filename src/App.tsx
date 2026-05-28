@@ -740,8 +740,8 @@ function RecordTimeEditor({
           {editorMonthFormatter.format(date)} · {weekdayLabel(date, "long")}
         </strong>
       </div>
-      <span className="editorGroupLabel">시간의 성격</span>
-      <div className="recordEditModes" aria-label="기록 종류 수정">
+      <span className="editorGroupLabel">업무 유형 선택</span>
+      <div className="recordEditModes" aria-label="업무 유형 선택">
         {workModes.map((workMode) => (
           <button
             key={workMode}
@@ -822,6 +822,7 @@ function RecordTimeEditor({
           />
         </label>
       </div>
+      <span className="editorGroupLabel nudgeLabel">빠른 시간 보정</span>
       <div className="timeNudges" aria-label="시간 빠른 보정">
         {[-15, -5].map((minutes) => (
           <button
@@ -1575,47 +1576,46 @@ function App() {
                     <p>
                       {formatDate(record.timestamp)} · {formatTime(record.timestamp)}
                     </p>
+                    <span className="timelineMode">{modeLabels[record.mode]}</span>
                   </div>
-                  <div className={editingRecordId === record.id ? "timelineActions editActions" : "timelineActions"}>
-                    {editingRecordId === record.id ? (
-                      <>
-                        <button className="save" type="button" disabled={isSaving} onClick={() => saveRecordEdit(record.id)}>
-                          저장
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isSaving}
-                          onClick={() => {
-                            setEditingRecordId("");
-                            setEditingTimestamp("");
-                            setEditingMode("focus");
-                            setEditingNote("");
-                          }}
-                        >
-                          취소
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <small>{modeLabels[record.mode]}</small>
-                        <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
-                          수정
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  {editingRecordId !== record.id && (
+                    <div className="timelineActions">
+                      <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
+                        수정
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {editingRecordId === record.id && (
-                  <RecordTimeEditor
-                    value={editingTimestamp}
-                    recordType={record.type}
-                    mode={editingMode}
-                    note={editingNote}
-                    disabled={isSaving}
-                    onChange={setEditingTimestamp}
-                    onModeChange={setEditingMode}
-                    onNoteChange={setEditingNote}
-                  />
+                  <>
+                    <RecordTimeEditor
+                      value={editingTimestamp}
+                      recordType={record.type}
+                      mode={editingMode}
+                      note={editingNote}
+                      disabled={isSaving}
+                      onChange={setEditingTimestamp}
+                      onModeChange={setEditingMode}
+                      onNoteChange={setEditingNote}
+                    />
+                    <div className="timelineEditFooter">
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => {
+                          setEditingRecordId("");
+                          setEditingTimestamp("");
+                          setEditingMode("focus");
+                          setEditingNote("");
+                        }}
+                      >
+                        취소
+                      </button>
+                      <button className="save" type="button" disabled={isSaving} onClick={() => saveRecordEdit(record.id)}>
+                        저장
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
             </article>
