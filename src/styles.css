@@ -1438,6 +1438,7 @@ h1 {
   background: #e7ede2;
   font-size: 0.76rem;
   font-weight: 900;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -1454,11 +1455,11 @@ h1 {
 
 .timeEditor {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(230px, 0.64fr);
-  gap: 8px 12px;
-  max-width: 680px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  max-width: 780px;
   margin-top: 12px;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid #c9d8c4;
   border-radius: 8px;
   background: #fbfcf8;
@@ -1488,44 +1489,45 @@ h1 {
 }
 
 .editorGroupLabel {
-  align-self: end;
   color: #2f4038;
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 950;
 }
 
 .editorGroupLabel.timeLabel {
-  grid-column: 2;
-  grid-row: 4;
+  grid-column: 1;
+  grid-row: auto;
+  margin-top: 2px;
 }
 
 .dateRail {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(58px, 1fr));
   grid-column: 1;
-  gap: 5px;
+  gap: 8px;
 }
 
 .recordEditModes {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-column: 1 / -1;
-  gap: 7px;
+  grid-column: 1;
+  gap: 8px;
 }
 
 .recordEditModes button {
   min-width: 0;
-  min-height: 36px;
+  min-height: 44px;
   padding: 6px 8px;
   border: 1px solid #d7e2d2;
   border-radius: 8px;
   color: #2f4038;
   background: #fff;
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   font-weight: 900;
-  line-height: 1.1;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recordEditModes button.selected {
@@ -1539,8 +1541,8 @@ h1 {
   place-items: center;
   gap: 2px;
   min-width: 0;
-  min-height: 50px;
-  padding: 5px 3px;
+  min-height: 58px;
+  padding: 6px 4px;
   border: 1px solid #d7e2d2;
   border-radius: 8px;
   color: #2f4038;
@@ -1561,7 +1563,7 @@ h1 {
 .dateRail button strong {
   margin: 0;
   color: inherit;
-  font-size: 0.96rem;
+  font-size: 1.04rem;
 }
 
 .dateRail button small {
@@ -1593,16 +1595,16 @@ h1 {
 
 .timeEditorControls {
   display: grid;
-  grid-template-columns: auto minmax(66px, 1fr) minmax(66px, 1fr);
-  grid-column: 2;
-  gap: 6px;
+  grid-template-columns: minmax(132px, 0.72fr) minmax(92px, 1fr) minmax(92px, 1fr);
+  grid-column: 1;
+  gap: 8px;
   align-items: end;
 }
 
 .periodControl {
-  display: inline-grid;
+  display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 38px;
+  min-height: 42px;
   padding: 3px;
   border: 1px solid #c9d8c4;
   border-radius: 8px;
@@ -1610,9 +1612,11 @@ h1 {
 }
 
 .periodControl button {
-  min-height: 30px;
+  min-height: 34px;
+  padding-inline: 10px;
   border-radius: 6px;
   background: transparent;
+  line-height: 1;
 }
 
 .periodControl button.selected {
@@ -1622,7 +1626,7 @@ h1 {
 
 .timeNumberField {
   display: grid;
-  gap: 4px;
+  gap: 5px;
 }
 
 .timeNumberField span {
@@ -1634,7 +1638,7 @@ h1 {
 .timeNumberField input {
   width: 100%;
   min-width: 0;
-  min-height: 38px;
+  min-height: 42px;
   padding: 0 10px;
   border: 1px solid #b9cbb2;
   border-radius: 8px;
@@ -1683,16 +1687,17 @@ h1 {
 .timeNudges {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  grid-column: 2;
-  gap: 6px;
+  grid-column: 1;
+  gap: 8px;
 }
 
 .timeNudges button {
-  min-height: 32px;
+  min-height: 38px;
   padding-inline: 6px;
   color: #2f4038;
   background: #edf3e8;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
+  line-height: 1;
 }
 
 .timelineActions.editActions {
@@ -1882,6 +1887,24 @@ h1 {
   .recordEditModes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .dateRail {
+    grid-template-columns: repeat(7, minmax(34px, 1fr));
+    gap: 4px;
+  }
+
+  .dateRail button {
+    min-height: 54px;
+    padding-inline: 2px;
+  }
+
+  .timeEditorControls {
+    grid-template-columns: minmax(96px, 1fr) minmax(72px, 1fr) minmax(72px, 1fr);
+  }
+
+  .timeNudges {
+    gap: 5px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -1905,16 +1928,6 @@ h1 {
   .recordEditModes,
   .timeEditorControls {
     grid-template-columns: 1fr;
-  }
-
-  .dateRail {
-    grid-template-columns: repeat(7, minmax(34px, 1fr));
-    gap: 3px;
-  }
-
-  .dateRail button {
-    min-height: 50px;
-    padding-inline: 2px;
   }
 
   .timelineItem small {
