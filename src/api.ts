@@ -72,9 +72,9 @@ export function saveDailyGoal(dailyGoalMinutes: number) {
   });
 }
 
-export function updateRecordTime(recordId: string, timestamp: string) {
+export function updateRecord(recordId: string, patch: { timestamp: string; mode: WorkMode; note: string }) {
   return requestState(`/api/records/${encodeURIComponent(recordId)}`, {
     method: "PATCH",
-    body: JSON.stringify({ timestamp }),
+    body: JSON.stringify(patch),
   });
 }

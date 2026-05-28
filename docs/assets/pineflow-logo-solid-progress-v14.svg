@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow solid progress v14</title>
+  <desc id="desc">Final refined Pineflow logo candidate with a bold solid single progress arc and compact diamond pineapple body.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .ink { fill: #11161c; }
+      .accent { fill: #4f7cff; }
+      .muted { fill: #68766c; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #0a241a; }
+      .panel { fill: #f1f6ef; stroke: #d8e3d1; stroke-width: 1; }
+      .title { font: 800 52px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 24px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 700 24px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .body { font: 400 23px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .caption { font: 400 24px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .word-pine { font: 800 76px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow { font: 400 76px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .word-pine-small { font: 800 38px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow-small { font: 400 38px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .arc { fill: none; stroke: #1f7a5c; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <g id="diamond">
+      <path d="M0 -14 L14 0 L0 14 L-14 0 Z"/>
+    </g>
+    <g id="pine-grid">
+      <g class="ink">
+        <use href="#diamond" x="0" y="10"/>
+        <use href="#diamond" x="-23" y="36"/>
+        <use href="#diamond" x="23" y="36"/>
+        <use href="#diamond" x="-46" y="62"/>
+        <use href="#diamond" x="0" y="62"/>
+        <use href="#diamond" x="46" y="62"/>
+        <use href="#diamond" x="-23" y="88"/>
+        <use href="#diamond" x="23" y="88"/>
+        <use href="#diamond" x="0" y="114"/>
+      </g>
+      <use href="#diamond" x="0" y="62" class="accent"/>
+      <path class="ink" d="M-28 -16 L-54 -58 L-18 -32 Z"/>
+      <path class="ink" d="M-13 -22 L-28 -76 L4 -35 Z"/>
+      <path class="ink" d="M4 -23 L10 -82 L22 -34 Z"/>
+      <path class="ink" d="M17 -18 L48 -62 L31 -27 Z"/>
+      <path fill="#43c78d" d="M-7 -21 L-3 -70 L10 -28 Z"/>
+      <path fill="#9fee57" d="M7 -23 L34 -57 L19 -24 Z"/>
+    </g>
+    <g id="symbol">
+      <path class="arc" d="M-123 99 C-143 8 -78 -106 24 -118 C102 -127 139 -62 128 -12" stroke-width="20"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-grid"/>
+      </g>
+    </g>
+    <g id="wordmark">
+      <text x="0" y="0" class="word-pine">pine</text>
+      <text x="149" y="0" class="word-flow">flow</text>
+    </g>
+    <g id="wordmark-small">
+      <text x="0" y="0" class="word-pine-small">pine</text>
+      <text x="75" y="0" class="word-flow-small">flow</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1120"/>
+  <text class="title" x="86" y="98">Pineflow solid progress v14</text>
+  <text class="sub" x="88" y="150">Cold decision: thicker single-color arc, no texture, no visible gradient, compact diamond body.</text>
+
+  <g transform="translate(86 225)">
+    <rect class="shadow" x="0" y="18" width="1628" height="520" rx="22"/>
+    <rect class="card" x="0" y="0" width="1628" height="520" rx="22"/>
+    <text class="label" x="42" y="62">Accepted Candidate</text>
+    <g transform="translate(344 268) scale(1.06)">
+      <use href="#symbol"/>
+    </g>
+    <g transform="translate(720 292)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="720" y="386">Bold single progress arc.</text>
+    <text class="body" x="720" y="424">No texture, no marker, no visual noise. Denser diamond body.</text>
+  </g>
+
+  <g transform="translate(86 805)">
+    <rect class="panel" x="0" y="0" width="500" height="180" rx="18"/>
+    <text class="label" x="28" y="44">Header scale</text>
+    <g transform="translate(102 112) scale(.42)">
+      <use href="#symbol"/>
+    </g>
+    <g transform="translate(215 116)">
+      <use href="#wordmark-small"/>
+    </g>
+  </g>
+
+  <g transform="translate(650 805)">
+    <rect class="panel" x="0" y="0" width="500" height="180" rx="18"/>
+    <text class="label" x="28" y="44">App icon scale</text>
+    <g transform="translate(250 118) scale(.62)">
+      <use href="#symbol"/>
+    </g>
+  </g>
+
+  <g transform="translate(1214 805)">
+    <rect x="0" y="0" width="500" height="180" rx="18" fill="#11161c"/>
+    <text x="28" y="44" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#9fee57">Decision</text>
+    <text x="28" y="92" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">No gradient or pattern.</text>
+    <text x="28" y="126" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">Strength comes from weight.</text>
+  </g>
+</svg>

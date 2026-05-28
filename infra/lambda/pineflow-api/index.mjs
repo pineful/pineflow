@@ -81,6 +81,18 @@ function objectToItem(item) {
   );
 }
 
+function updateExpressionFor(attributes) {
+  const entries = Object.entries(attributes).filter(([, value]) => value !== undefined && value !== null);
+
+  return {
+    UpdateExpression: `set ${entries.map(([key]) => `#${key} = :${key}`).join(", ")}`,
+    ExpressionAttributeNames: Object.fromEntries(entries.map(([key]) => [`#${key}`, key])),
+    ExpressionAttributeValues: objectToItem(
+      Object.fromEntries(entries.map(([key, value]) => [`:${key}`, value]))
+    )
+  };
+}
+
 function isConditionalFailure(error) {
   return error?.name === "ConditionalCheckFailedException" || error?.name === "TransactionCanceledException";
 }
@@ -201,9 +213,22 @@ async function updateRecordTime(pk, recordId, body) {
     return json(400, { error: "Invalid record id." });
   }
 
-  const timestamp = normalizeTimestamp(body.timestamp);
-  if (!timestamp) {
+  const wantsTimestampUpdate = Object.prototype.hasOwnProperty.call(body, "timestamp");
+  const timestamp = wantsTimestampUpdate ? normalizeTimestamp(body.timestamp) : null;
+  if (wantsTimestampUpdate && !timestamp) {
     return json(400, { error: "Timestamp must be a valid ISO time within the editable range." });
+  }
+
+  const wantsModeUpdate = Object.prototype.hasOwnProperty.call(body, "mode");
+  if (wantsModeUpdate && (typeof body.mode !== "string" || !allowedModes.has(body.mode))) {
+    return json(400, { error: "Invalid work mode." });
+  }
+
+  const wantsNoteUpdate = Object.prototype.hasOwnProperty.call(body, "note");
+  const note = wantsNoteUpdate ? String(body.note ?? "").slice(0, 300) : undefined;
+
+  if (!wantsTimestampUpdate && !wantsModeUpdate && !wantsNoteUpdate) {
+    return json(400, { error: "At least one record field must be provided." });
   }
 
   const session = await findSessionById(pk, parsed.sessionId);
@@ -220,47 +245,59 @@ async function updateRecordTime(pk, recordId, body) {
   const active = itemToObject(activeResult.Item);
   const isActiveSession = active?.sessionId === session.sessionId;
   const updatedAt = new Date().toISOString();
+  const nextMode = wantsModeUpdate ? body.mode : session.mode;
+  const nextNote = wantsNoteUpdate ? note : session.note;
+  const metadataPatch = {
+    mode: nextMode,
+    note: nextNote,
+    updatedAt
+  };
 
   if (parsed.kind === "in") {
-    if (session.checkOutAt && new Date(timestamp).getTime() >= new Date(session.checkOutAt).getTime()) {
+    const nextCheckInAt = timestamp ?? session.checkInAt;
+    if (session.checkOutAt && new Date(nextCheckInAt).getTime() >= new Date(session.checkOutAt).getTime()) {
       return json(400, { error: "Check-in time must be earlier than check-out time." });
     }
 
-    const nextSk = `SESSION#${timestamp}#${session.sessionId}`;
+    const nextSk = `SESSION#${nextCheckInAt}#${session.sessionId}`;
     const nextSession = {
       ...session,
       sk: nextSk,
-      checkInAt: timestamp,
+      checkInAt: nextCheckInAt,
+      mode: nextMode,
+      note: nextNote,
       updatedAt
     };
 
     if (nextSk === session.sk) {
+      const sessionUpdate = updateExpressionFor({
+        checkInAt: nextCheckInAt,
+        ...metadataPatch
+      });
       const transactItems = [
         {
           Update: {
             TableName: tableName,
             Key: objectToItem({ pk, sk: session.sk }),
-            UpdateExpression: "set checkInAt = :timestamp, updatedAt = :updatedAt",
+            ...sessionUpdate,
             ConditionExpression: "attribute_exists(pk)",
-            ExpressionAttributeValues: {
-              ":timestamp": { S: timestamp },
-              ":updatedAt": { S: updatedAt }
-            }
           }
         }
       ];
 
       if (isActiveSession) {
+        const activeUpdate = updateExpressionFor({
+          checkInAt: nextCheckInAt,
+          mode: nextMode,
+          note: nextNote,
+          updatedAt
+        });
         transactItems.push({
           Update: {
             TableName: tableName,
             Key: objectToItem({ pk, sk: "ACTIVE_SESSION" }),
-            UpdateExpression: "set checkInAt = :timestamp, updatedAt = :updatedAt",
+            ...activeUpdate,
             ConditionExpression: "attribute_exists(pk)",
-            ExpressionAttributeValues: {
-              ":timestamp": { S: timestamp },
-              ":updatedAt": { S: updatedAt }
-            }
           }
         });
       }
@@ -309,9 +346,15 @@ async function updateRecordTime(pk, recordId, body) {
     return json(400, { error: "Check-out time can be edited after check-out is recorded." });
   }
 
-  if (new Date(timestamp).getTime() <= new Date(session.checkInAt).getTime()) {
+  const nextCheckOutAt = timestamp ?? session.checkOutAt;
+  if (new Date(nextCheckOutAt).getTime() <= new Date(session.checkInAt).getTime()) {
     return json(400, { error: "Check-out time must be later than check-in time." });
   }
+
+  const sessionUpdate = updateExpressionFor({
+    checkOutAt: nextCheckOutAt,
+    ...metadataPatch
+  });
 
   await dynamodb.send(
     new TransactWriteItemsCommand({
@@ -320,12 +363,8 @@ async function updateRecordTime(pk, recordId, body) {
           Update: {
             TableName: tableName,
             Key: objectToItem({ pk, sk: session.sk }),
-            UpdateExpression: "set checkOutAt = :timestamp, updatedAt = :updatedAt",
+            ...sessionUpdate,
             ConditionExpression: "attribute_exists(pk) and attribute_exists(checkOutAt)",
-            ExpressionAttributeValues: {
-              ":timestamp": { S: timestamp },
-              ":updatedAt": { S: updatedAt }
-            }
           }
         }
       ]

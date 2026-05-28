@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1080" viewBox="0 0 1440 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow logo candidate board</title>
+  <desc id="desc">Three Pineflow logo lockup candidates: Pine Loop, Flow Needle, and Quiet Canopy.</desc>
+  <defs>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#17231c" flood-opacity=".14"/>
+    </filter>
+    <linearGradient id="mistBg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fbfcf8"/>
+      <stop offset="1" stop-color="#edf4ef"/>
+    </linearGradient>
+    <linearGradient id="pineLoopGradient" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1f5d45"/>
+      <stop offset="1" stop-color="#8fd6b8"/>
+    </linearGradient>
+    <linearGradient id="needleGradient" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#123c3b"/>
+      <stop offset="1" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <linearGradient id="canopyGradient" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1f6b4e"/>
+      <stop offset="1" stop-color="#3d8f87"/>
+    </linearGradient>
+    <style>
+      .bg { fill: url(#mistBg); }
+      .title { fill: #17231c; font: 800 48px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: 0; }
+      .subtitle { fill: #657166; font: 500 22px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: 0; }
+      .card { fill: #fff; stroke: #dde5da; stroke-width: 2; filter: url(#softShadow); }
+      .label { fill: #657166; font: 800 22px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: .08em; }
+      .wordPine { fill: #17231c; font: 760 72px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: -1px; }
+      .wordFlow { fill: #17231c; font: 470 72px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: -1px; }
+      .caption { fill: #657166; font: 500 22px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: 0; }
+      .swatchText { fill: #657166; font: 700 16px Inter, "Segoe UI", Arial, sans-serif; }
+      .darkPanel { fill: #123c3b; }
+      .darkWordPine { fill: #f7faf8; font: 760 56px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: -.6px; }
+      .darkWordFlow { fill: #f7faf8; font: 470 56px Inter, "Segoe UI", Arial, sans-serif; letter-spacing: -.6px; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1440" height="1080"/>
+  <text class="title" x="96" y="98">Pineflow logo candidates</text>
+  <text class="subtitle" x="96" y="136">아이콘과 Pineflow 워드마크를 함께 쓰는 3개 핵심 시안입니다.</text>
+
+  <g transform="translate(80 190)">
+    <rect class="card" width="1280" height="230" rx="28"/>
+    <text class="label" x="48" y="60">01 PINE LOOP</text>
+    <g transform="translate(58 82)">
+      <rect width="116" height="116" rx="28" fill="#f3f7f4"/>
+      <path d="M54 25c-8 18-8 45 0 69" fill="none" stroke="#1f5d45" stroke-width="13" stroke-linecap="round"/>
+      <path d="M55 30c31-2 48 19 35 40-10 16-34 15-44 0-6-10-3-22 9-29" fill="none" stroke="url(#pineLoopGradient)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M48 26c-10 6-19 7-28 2 9-8 18-10 28-2Z" fill="#8fd6b8"/>
+      <circle cx="91" cy="80" r="7" fill="#8fd6b8"/>
+    </g>
+    <text x="212" y="156"><tspan class="wordPine">Pine</tspan><tspan class="wordFlow">flow</tspan></text>
+    <text class="caption" x="212" y="196">P + pine + flow가 가장 바로 읽히는 상업형 기본안</text>
+    <g transform="translate(940 72)">
+      <rect width="250" height="126" rx="20" fill="#f3f7f4"/>
+      <circle cx="36" cy="40" r="14" fill="#1f5d45"/><text class="swatchText" x="58" y="46">#1F5D45</text>
+      <circle cx="36" cy="78" r="14" fill="#8fd6b8"/><text class="swatchText" x="58" y="84">#8FD6B8</text>
+      <circle cx="150" cy="40" r="14" fill="#1f2933"/><text class="swatchText" x="172" y="46">Ink</text>
+      <circle cx="150" cy="78" r="14" fill="#f3f7f4" stroke="#dde5da"/><text class="swatchText" x="172" y="84">Mist</text>
+    </g>
+  </g>
+
+  <g transform="translate(80 462)">
+    <rect class="card" width="1280" height="230" rx="28"/>
+    <text class="label" x="48" y="60">02 FLOW NEEDLE</text>
+    <g transform="translate(58 82)">
+      <rect width="116" height="116" rx="28" fill="#f7faf8"/>
+      <path d="M58 22c-13 19-18 37-15 54 3 18 19 29 37 23 19-6 27-27 18-43-9-16-31-21-48-9" fill="none" stroke="url(#needleGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M58 23v74" fill="none" stroke="#123c3b" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="91" cy="48" r="6.8" fill="#2dd4bf"/>
+      <path d="M48 23c-8 4-16 4-23 0 8-7 15-8 23 0Z" fill="#2dd4bf"/>
+    </g>
+    <text x="212" y="156"><tspan class="wordPine">Pine</tspan><tspan class="wordFlow">flow</tspan></text>
+    <text class="caption" x="212" y="196">가장 쿨한 IT/SaaS 인상, 추상적이지만 세련된 시간 흐름</text>
+    <g transform="translate(940 72)">
+      <rect width="250" height="126" rx="20" fill="#f7faf8"/>
+      <circle cx="36" cy="40" r="14" fill="#123c3b"/><text class="swatchText" x="58" y="46">#123C3B</text>
+      <circle cx="36" cy="78" r="14" fill="#2dd4bf"/><text class="swatchText" x="58" y="84">#2DD4BF</text>
+      <circle cx="150" cy="40" r="14" fill="#1f2937"/><text class="swatchText" x="172" y="46">Ink</text>
+      <circle cx="150" cy="78" r="14" fill="#f7faf8" stroke="#dde5da"/><text class="swatchText" x="172" y="84">Cloud</text>
+    </g>
+  </g>
+
+  <g transform="translate(80 734)">
+    <rect class="card" width="1280" height="230" rx="28"/>
+    <text class="label" x="48" y="60">03 QUIET CANOPY</text>
+    <g transform="translate(58 82)">
+      <rect width="116" height="116" rx="28" fill="#eef5f1"/>
+      <path d="M58 18 25 56c9 5 20 6 33 2 13 4 24 3 33-2L58 18Z" fill="url(#canopyGradient)"/>
+      <path d="M58 42 30 76c8 5 17 6 28 2 11 4 20 3 28-2L58 42Z" fill="#1f6b4e"/>
+      <path d="M39 71c9-8 26-8 35 0" fill="none" stroke="#eef5f1" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="78" cy="71" r="5.8" fill="#f2b84b"/>
+    </g>
+    <text x="212" y="156"><tspan class="wordPine">Pine</tspan><tspan class="wordFlow">flow</tspan></text>
+    <text class="caption" x="212" y="196">보안/신뢰가 가장 강한 보호형 브랜드, 자물쇠 없이 안정감 전달</text>
+    <g transform="translate(940 72)">
+      <rect width="250" height="126" rx="20" fill="#eef5f1"/>
+      <circle cx="36" cy="40" r="14" fill="#1f6b4e"/><text class="swatchText" x="58" y="46">#1F6B4E</text>
+      <circle cx="36" cy="78" r="14" fill="#3d8f87"/><text class="swatchText" x="58" y="84">#3D8F87</text>
+      <circle cx="150" cy="40" r="14" fill="#17211d"/><text class="swatchText" x="172" y="46">Ink</text>
+      <circle cx="150" cy="78" r="14" fill="#f2b84b"/><text class="swatchText" x="172" y="84">Signal</text>
+    </g>
+  </g>
+
+  <g transform="translate(80 995)">
+    <rect class="darkPanel" width="1280" height="1"/>
+  </g>
+</svg>

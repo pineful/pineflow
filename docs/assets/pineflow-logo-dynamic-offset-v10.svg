@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow dynamic offset v10</title>
+  <desc id="desc">Dynamic asymmetric Pineflow logo candidates with a calibrated diamond-only pineapple grid and improved commute curve.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .ink { fill: #11161c; }
+      .accent { fill: #4f7cff; }
+      .muted { fill: #68766c; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #0a241a; }
+      .title { font: 800 52px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 24px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 700 25px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .body { font: 400 23px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .caption { font: 400 24px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .word-pine { font: 800 70px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow { font: 400 70px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .route { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .texture { fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: .62; }
+    </style>
+    <linearGradient id="dynamicFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#3ed08b"/>
+      <stop offset=".25" stop-color="#1f8d66"/>
+      <stop offset=".66" stop-color="#155f48"/>
+      <stop offset="1" stop-color="#e0b532"/>
+    </linearGradient>
+    <linearGradient id="coolFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#52d89c"/>
+      <stop offset=".52" stop-color="#20775b"/>
+      <stop offset=".8" stop-color="#4f7cff"/>
+      <stop offset="1" stop-color="#e0b532"/>
+    </linearGradient>
+    <linearGradient id="quietFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#55c895"/>
+      <stop offset=".7" stop-color="#247457"/>
+      <stop offset="1" stop-color="#c1c99e"/>
+    </linearGradient>
+    <g id="diamond">
+      <path d="M0 -12 L12 0 L0 12 L-12 0 Z"/>
+    </g>
+    <g id="pine-grid-calibrated">
+      <!-- Calibrated diamond-only body: 1-2-3-2-1 lattice, equal x/y rhythm. -->
+      <g class="ink">
+        <use href="#diamond" x="0" y="14"/>
+        <use href="#diamond" x="-24" y="42"/>
+        <use href="#diamond" x="24" y="42"/>
+        <use href="#diamond" x="-48" y="70"/>
+        <use href="#diamond" x="0" y="70"/>
+        <use href="#diamond" x="48" y="70"/>
+        <use href="#diamond" x="-24" y="98"/>
+        <use href="#diamond" x="24" y="98"/>
+        <use href="#diamond" x="0" y="126"/>
+      </g>
+      <use href="#diamond" x="0" y="70" class="accent"/>
+      <path class="ink" d="M-28 -16 L-54 -58 L-18 -32 Z"/>
+      <path class="ink" d="M-13 -22 L-28 -76 L4 -35 Z"/>
+      <path class="ink" d="M4 -23 L10 -82 L22 -34 Z"/>
+      <path class="ink" d="M17 -18 L48 -62 L31 -27 Z"/>
+      <path fill="#43c78d" d="M-7 -21 L-3 -70 L10 -28 Z"/>
+      <path fill="#9fee57" d="M7 -23 L34 -57 L19 -24 Z"/>
+    </g>
+    <g id="wordmark">
+      <text x="0" y="0" class="word-pine">pine</text>
+      <text x="137" y="0" class="word-flow">flow</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1120"/>
+  <text class="title" x="86" y="98">Pineflow dynamic offset v10</text>
+  <text class="sub" x="88" y="150">B direction developed: dynamic open curve, better color movement, calibrated diamond body.</text>
+
+  <g transform="translate(86 235)">
+    <rect class="shadow" x="0" y="18" width="780" height="560" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="560" rx="22"/>
+    <text class="label" x="36" y="58">A. Dynamic Offset Sweep</text>
+    <g transform="translate(226 252)">
+      <path class="route" d="M-112 104 C-154 18 -88 -95 -8 -112 C78 -130 132 -68 126 -4" stroke="#bdd0c4" stroke-width="9" opacity=".48"/>
+      <path class="route" d="M-112 104 C-154 18 -88 -95 -8 -112 C58 -125 111 -90 124 -42" stroke="url(#dynamicFlow)" stroke-width="8"/>
+      <path class="texture" d="M-91 42 C-105 -18 -62 -82 -4 -96" stroke="#8df1bd" stroke-width="3"/>
+      <circle cx="-112" cy="104" r="9" fill="#3ed08b"/>
+      <path fill="#e0b532" d="M111 -56 L135 -42 L121 -22 L98 -35 Z"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-grid-calibrated"/>
+      </g>
+    </g>
+    <g transform="translate(446 260)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="36" y="438">Recommended: more kinetic, but still anchored.</text>
+    <text class="body" x="36" y="474">Check-in, motion, and check-out are visible in one stroke.</text>
+  </g>
+
+  <g transform="translate(934 235)">
+    <rect class="shadow" x="0" y="18" width="780" height="560" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="560" rx="22"/>
+    <text class="label" x="36" y="58">B. Momentum Graph Arc</text>
+    <g transform="translate(226 252)">
+      <path class="route" d="M-108 96 C-126 10 -74 -98 18 -110 C98 -121 137 -58 122 18" stroke="#a8beb3" stroke-width="10" opacity=".45"/>
+      <path class="route" d="M-108 96 C-126 10 -74 -98 18 -110 C72 -118 112 -88 126 -50" stroke="url(#coolFlow)" stroke-width="8"/>
+      <path class="texture" d="M-97 58 C-118 -12 -66 -88 10 -101" stroke="#6ee0ab" stroke-width="3"/>
+      <circle cx="-108" cy="96" r="9" fill="#43c78d"/>
+      <path fill="#e0b532" d="M113 -62 L137 -49 L124 -29 L101 -42 Z"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-grid-calibrated"/>
+      </g>
+    </g>
+    <g transform="translate(446 260)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="36" y="438">Sharper graph feeling, slightly more technical.</text>
+    <text class="body" x="36" y="474">Best if Pineflow should echo the dashboard progress chart.</text>
+  </g>
+
+  <g transform="translate(86 840)">
+    <rect x="0" y="0" width="1628" height="108" rx="18" fill="#11161c"/>
+    <text x="34" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#9fee57">Developed from B</text>
+    <text x="258" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">Use the asymmetric open curve, but improve rhythm, color travel, and endpoint intent.</text>
+    <text x="258" y="80" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">Body grid is rebuilt as a strict 1-2-3-2-1 diamond lattice, no filled shape.</text>
+  </g>
+</svg>

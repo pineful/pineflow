@@ -33,35 +33,109 @@ export function isSameDay(left: Date | string, right: Date | string) {
   );
 }
 
+function startOfLocalDay(value: Date) {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function minDate(left: Date, right: Date) {
+  return left.getTime() <= right.getTime() ? left : right;
+}
+
+function maxDate(left: Date, right: Date) {
+  return left.getTime() >= right.getTime() ? left : right;
+}
+
 export function summarizeToday(records: CommuteRecord[], now: Date, activeCheckIn?: string) {
-  const todays = records
-    .filter((record) => isSameDay(record.timestamp, now))
+  const sorted = records
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  const dayStart = startOfLocalDay(now);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayStart.getDate() + 1);
+  const chartRecords: CommuteRecord[] = [];
 
   let totalMinutes = 0;
-  let openCheckIn: string | null = null;
+  let openCheckIn: CommuteRecord | null = null;
+  let firstCheckIn: string | undefined;
+  let lastCheckOut: string | undefined;
+  let carriedOver = false;
 
-  todays.forEach((record) => {
+  function addSession(checkIn: CommuteRecord, checkOutAt: string | undefined, isActive = false) {
+    const sessionStart = new Date(checkIn.timestamp);
+    const rawSessionEnd = checkOutAt ? new Date(checkOutAt) : now;
+    const sessionEnd = minDate(rawSessionEnd, now);
+
+    if (Number.isNaN(sessionStart.getTime()) || Number.isNaN(sessionEnd.getTime())) return;
+    if (sessionEnd <= dayStart || sessionStart >= dayEnd || sessionEnd <= sessionStart) return;
+
+    const visibleStart = maxDate(sessionStart, dayStart);
+    const visibleEnd = minDate(sessionEnd, dayEnd);
+    if (visibleEnd <= visibleStart) return;
+
+    totalMinutes += minutesBetween(visibleStart.toISOString(), visibleEnd.toISOString());
+    if (!firstCheckIn || sessionStart < new Date(firstCheckIn)) {
+      firstCheckIn = checkIn.timestamp;
+    }
+    if (checkOutAt && (!lastCheckOut || new Date(checkOutAt) > new Date(lastCheckOut))) {
+      lastCheckOut = checkOutAt;
+    }
+    if (sessionStart < dayStart) {
+      carriedOver = true;
+    }
+
+    chartRecords.push({
+      ...checkIn,
+      id: `${checkIn.id}:visible-in`,
+      timestamp: visibleStart.toISOString()
+    });
+
+    if (!isActive) {
+      chartRecords.push({
+        ...checkIn,
+        id: `${checkIn.id}:visible-out`,
+        type: "check-out",
+        timestamp: visibleEnd.toISOString()
+      });
+    }
+  }
+
+  sorted.forEach((record) => {
     if (record.type === "check-in") {
-      openCheckIn = record.timestamp;
+      openCheckIn = record;
       return;
     }
 
     if (openCheckIn) {
-      totalMinutes += minutesBetween(openCheckIn, record.timestamp);
+      addSession(openCheckIn, record.timestamp);
       openCheckIn = null;
     }
   });
 
-  if (activeCheckIn && isSameDay(activeCheckIn, now)) {
-    totalMinutes += minutesBetween(activeCheckIn, now.toISOString());
+  if (activeCheckIn) {
+    addSession(
+      {
+        id: "active-session",
+        type: "check-in",
+        timestamp: activeCheckIn,
+        mode: "focus",
+        note: ""
+      },
+      undefined,
+      true
+    );
   }
 
+  const activeVisibleCheckIn =
+    activeCheckIn && new Date(activeCheckIn) < dayStart ? dayStart.toISOString() : activeCheckIn;
+
   return {
-    records: todays,
+    records: chartRecords.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
     totalMinutes,
-    firstCheckIn: todays.find((record) => record.type === "check-in")?.timestamp ?? activeCheckIn,
-    lastCheckOut: [...todays].reverse().find((record) => record.type === "check-out")?.timestamp
+    firstCheckIn,
+    lastCheckOut,
+    carriedOver,
+    activeVisibleCheckIn
   };
 }
 

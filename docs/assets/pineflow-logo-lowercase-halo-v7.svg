@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1040" viewBox="0 0 1800 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow lowercase halo v7 candidates</title>
+  <desc id="desc">Lowercase pineflow wordmark with diamond-only pineapple grid and refined commute graph line.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .ink { fill: #11161c; }
+      .pine { fill: #2f6f54; }
+      .flow { fill: #1f2933; }
+      .accent { fill: #4f7cff; }
+      .muted { fill: #68766c; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #0a241a; }
+      .title { font: 800 56px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 25px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 700 25px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .body { font: 400 23px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .caption { font: 400 24px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .word-pine { font: 800 64px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow { font: 400 64px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .route { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <linearGradient id="commuteFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#43c78d"/>
+      <stop offset=".58" stop-color="#1f7a5c"/>
+      <stop offset="1" stop-color="#e0b532"/>
+    </linearGradient>
+    <linearGradient id="progressFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#43c78d"/>
+      <stop offset=".72" stop-color="#1f7a5c"/>
+      <stop offset="1" stop-color="#4f7cff"/>
+    </linearGradient>
+    <g id="diamond">
+      <path d="M0 -12 L12 0 L0 12 L-12 0 Z"/>
+    </g>
+    <g id="pine-grid">
+      <g class="ink">
+        <use href="#diamond" x="-18" y="18"/>
+        <use href="#diamond" x="18" y="18"/>
+        <use href="#diamond" x="-38" y="44"/>
+        <use href="#diamond" x="0" y="44"/>
+        <use href="#diamond" x="38" y="44"/>
+        <use href="#diamond" x="-24" y="70"/>
+        <use href="#diamond" x="24" y="70"/>
+        <use href="#diamond" x="0" y="96"/>
+      </g>
+      <use href="#diamond" x="0" y="44" class="accent"/>
+      <path class="ink" d="M-28 -16 L-54 -58 L-18 -32 Z"/>
+      <path class="ink" d="M-13 -22 L-28 -76 L4 -35 Z"/>
+      <path class="ink" d="M4 -23 L10 -82 L22 -34 Z"/>
+      <path class="ink" d="M17 -18 L48 -62 L31 -27 Z"/>
+      <path fill="#43c78d" d="M-7 -21 L-3 -70 L10 -28 Z"/>
+      <path fill="#9fee57" d="M7 -23 L34 -57 L19 -24 Z"/>
+    </g>
+    <g id="wordmark">
+      <text x="0" y="0" class="word-pine">pine</text>
+      <text x="124" y="0" class="word-flow">flow</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1040"/>
+  <text class="title" x="86" y="102">Pineflow lowercase halo v7</text>
+  <text class="sub" x="88" y="154">Updated wordmark direction: lowercase pineflow, green pine + calm dark flow.</text>
+
+  <g transform="translate(86 250)">
+    <rect class="shadow" x="0" y="18" width="780" height="500" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="500" rx="22"/>
+    <text class="label" x="36" y="58">A. Lowercase Split Sweep</text>
+    <g transform="translate(205 232)">
+      <path class="route" d="M-96 98 C-136 24 -108 -58 -42 -92" stroke="#b9cdc1" stroke-width="11"/>
+      <path class="route" d="M66 -92 C122 -50 138 38 94 100" stroke="#b9cdc1" stroke-width="11"/>
+      <path class="route" d="M-96 98 C-136 24 -108 -58 -42 -92" stroke="url(#commuteFlow)" stroke-width="8"/>
+      <path class="route" d="M66 -92 C122 -50 138 38 94 100" stroke="url(#commuteFlow)" stroke-width="8"/>
+      <circle cx="-96" cy="98" r="9" fill="#43c78d"/>
+      <path fill="#e0b532" d="M81 93 h30 a7 7 0 0 1 0 14 h-30 a7 7 0 0 1 0 -14Z"/>
+      <g transform="translate(0 -28) scale(1.34)">
+        <use href="#pine-grid"/>
+      </g>
+    </g>
+    <g transform="translate(424 176)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="body" x="424" y="230">Friendlier and closer to the preferred sample.</text>
+    <text class="body" x="424" y="262">The icon still keeps the Pine Grid structure.</text>
+    <text class="caption" x="36" y="408">Recommended if the service should feel personal, calm, and still technical.</text>
+  </g>
+
+  <g transform="translate(934 250)">
+    <rect class="shadow" x="0" y="18" width="780" height="500" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="500" rx="22"/>
+    <text class="label" x="36" y="58">B. Lowercase Progress Halo</text>
+    <g transform="translate(205 232)">
+      <path class="route" d="M-108 82 C-126 2 -72 -94 14 -102 C88 -109 125 -48 111 20" stroke="#9ebaaa" stroke-width="10" opacity=".44"/>
+      <path class="route" d="M-108 82 C-126 2 -72 -94 14 -102 C66 -106 101 -76 112 -36" stroke="url(#progressFlow)" stroke-width="8"/>
+      <circle cx="-108" cy="82" r="9" fill="#43c78d"/>
+      <path fill="#e0b532" d="M102 -48 L123 -36 L111 -18 L91 -30 Z"/>
+      <g transform="translate(0 -28) scale(1.34)">
+        <use href="#pine-grid"/>
+      </g>
+    </g>
+    <g transform="translate(424 176)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="body" x="424" y="230">More dashboard-like and graph-oriented.</text>
+    <text class="body" x="424" y="262">Softer wordmark reduces the hard-tech feel.</text>
+    <text class="caption" x="36" y="408">Second choice if the commute progress metaphor should be more visible.</text>
+  </g>
+
+  <g transform="translate(86 840)">
+    <rect x="0" y="0" width="1628" height="86" rx="18" fill="#11161c"/>
+    <text x="34" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#9fee57">Updated rule</text>
+    <text x="190" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">Use lowercase pineflow wordmark. Keep diamond-only body and refined asymmetric commute line.</text>
+  </g>
+</svg>

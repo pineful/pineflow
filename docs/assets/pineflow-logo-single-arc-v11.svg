@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow single arc v11</title>
+  <desc id="desc">Single intuitive asymmetric progress arc with no endpoint dots, no extra highlight line, and a calibrated diamond pineapple body.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .ink { fill: #11161c; }
+      .accent { fill: #4f7cff; }
+      .muted { fill: #68766c; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #0a241a; }
+      .title { font: 800 52px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 24px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 700 25px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .body { font: 400 23px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .caption { font: 400 24px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .word-pine { font: 800 70px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow { font: 400 70px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .arc { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <linearGradient id="dayFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#52c893"/>
+      <stop offset=".48" stop-color="#1f7a5c"/>
+      <stop offset="1" stop-color="#a9e85b"/>
+    </linearGradient>
+    <linearGradient id="quietDayFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#73d6a7"/>
+      <stop offset=".55" stop-color="#2f6f54"/>
+      <stop offset="1" stop-color="#d8c45a"/>
+    </linearGradient>
+    <g id="diamond">
+      <path d="M0 -12 L12 0 L0 12 L-12 0 Z"/>
+    </g>
+    <g id="pine-grid">
+      <g class="ink">
+        <use href="#diamond" x="0" y="14"/>
+        <use href="#diamond" x="-24" y="42"/>
+        <use href="#diamond" x="24" y="42"/>
+        <use href="#diamond" x="-48" y="70"/>
+        <use href="#diamond" x="0" y="70"/>
+        <use href="#diamond" x="48" y="70"/>
+        <use href="#diamond" x="-24" y="98"/>
+        <use href="#diamond" x="24" y="98"/>
+        <use href="#diamond" x="0" y="126"/>
+      </g>
+      <use href="#diamond" x="0" y="70" class="accent"/>
+      <path class="ink" d="M-28 -16 L-54 -58 L-18 -32 Z"/>
+      <path class="ink" d="M-13 -22 L-28 -76 L4 -35 Z"/>
+      <path class="ink" d="M4 -23 L10 -82 L22 -34 Z"/>
+      <path class="ink" d="M17 -18 L48 -62 L31 -27 Z"/>
+      <path fill="#43c78d" d="M-7 -21 L-3 -70 L10 -28 Z"/>
+      <path fill="#9fee57" d="M7 -23 L34 -57 L19 -24 Z"/>
+    </g>
+    <g id="wordmark">
+      <text x="0" y="0" class="word-pine">pine</text>
+      <text x="137" y="0" class="word-flow">flow</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1120"/>
+  <text class="title" x="86" y="98">Pineflow single arc v11</text>
+  <text class="sub" x="88" y="150">One curve only: no endpoint dots, no extra highlight line, no unexplained markers.</text>
+
+  <g transform="translate(86 235)">
+    <rect class="shadow" x="0" y="18" width="780" height="560" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="560" rx="22"/>
+    <text class="label" x="36" y="58">A. Single Day Arc</text>
+    <g transform="translate(226 252)">
+      <path class="arc" d="M-108 96 C-128 8 -78 -98 18 -112 C88 -122 126 -62 118 -18" stroke="url(#dayFlow)" stroke-width="11"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-grid"/>
+      </g>
+    </g>
+    <g transform="translate(446 260)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="36" y="438">Recommended: the curve reads as one workday progress arc.</text>
+    <text class="body" x="36" y="474">No dots, no second line, no separate symbol to decode.</text>
+  </g>
+
+  <g transform="translate(934 235)">
+    <rect class="shadow" x="0" y="18" width="780" height="560" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="560" rx="22"/>
+    <text class="label" x="36" y="58">B. Forward-Cut Arc</text>
+    <g transform="translate(226 252)">
+      <path class="arc" d="M-100 92 C-132 12 -72 -96 20 -110 C86 -118 120 -70 116 -28" stroke="url(#quietDayFlow)" stroke-width="11"/>
+      <path d="M106 -41 L126 -30 L110 -16 Z" fill="#d8c45a"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-grid"/>
+      </g>
+    </g>
+    <g transform="translate(446 260)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="36" y="438">More directional, but still avoids dot and diamond markers.</text>
+    <text class="body" x="36" y="474">The small cut cap is the only direction hint.</text>
+  </g>
+
+  <g transform="translate(86 840)">
+    <rect x="0" y="0" width="1628" height="116" rx="18" fill="#11161c"/>
+    <text x="34" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#9fee57">New rule</text>
+    <text x="166" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">A logo line must be understood as a single progress arc. Remove anything users have to ask about.</text>
+    <text x="166" y="82" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">The pineapple body remains a strict 1-2-3-2-1 diamond lattice.</text>
+  </g>
+</svg>

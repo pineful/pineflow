@@ -14,10 +14,10 @@ import {
   fetchState,
   isSessionExpiredError,
   saveDailyGoal,
-  updateRecordTime
+  updateRecord
 } from "./api";
 import { modeDescriptions, modeLabels, modePlans, productName, tagline } from "./brand";
-import { formatDate, formatDuration, formatTime, minutesBetween, summarizeToday } from "./date";
+import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
 import type { CommuteRecord, CommuteState, WorkMode } from "./types";
 
 const workModes = Object.keys(modeLabels) as WorkMode[];
@@ -210,6 +210,94 @@ function dashboardGreeting(now: Date) {
   if (hour < 11) return "오전 흐름";
   if (hour < 17) return "오후 흐름";
   return "저녁 정리";
+}
+
+function formatFlowBoundary(value: string | undefined, now: Date) {
+  if (!value) return "--:--";
+  return isSameDay(value, now) ? formatTime(value) : `${formatDate(value)} ${formatTime(value)}`;
+}
+
+const editorMonthFormatter = new Intl.DateTimeFormat("ko-KR", {
+  year: "numeric",
+  month: "long"
+});
+
+const weekdayShortLabels = ["일", "월", "화", "수", "목", "금", "토"];
+const weekdayLongLabels = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+
+function weekdayLabel(date: Date, format: "short" | "long" = "short") {
+  return format === "long" ? weekdayLongLabels[date.getDay()] : weekdayShortLabels[date.getDay()];
+}
+
+function padNumber(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function formatLocalDateTimeValue(date: Date) {
+  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}T${padNumber(
+    date.getHours()
+  )}:${padNumber(date.getMinutes())}`;
+}
+
+function localDateKey(date: Date) {
+  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`;
+}
+
+function dateFromKey(key: string) {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(year, (month ?? 1) - 1, day ?? 1);
+}
+
+function parseEditorValue(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function dayRailOptions(center: Date) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(center);
+    date.setDate(center.getDate() + index - 3);
+    return date;
+  });
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function setEditorDatePart(value: string, dateKeyValue: string) {
+  const current = parseEditorValue(value);
+  const nextDate = dateFromKey(dateKeyValue);
+  current.setFullYear(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate());
+  return formatLocalDateTimeValue(current);
+}
+
+function setEditorPeriod(value: string, period: "am" | "pm") {
+  const current = parseEditorValue(value);
+  const currentHour = current.getHours();
+  if (period === "am" && currentHour >= 12) current.setHours(currentHour - 12);
+  if (period === "pm" && currentHour < 12) current.setHours(currentHour + 12);
+  return formatLocalDateTimeValue(current);
+}
+
+function setEditorHour(value: string, hourValue: number) {
+  const current = parseEditorValue(value);
+  const hour12 = clampNumber(hourValue || 12, 1, 12);
+  const isPm = current.getHours() >= 12;
+  current.setHours(isPm ? (hour12 === 12 ? 12 : hour12 + 12) : hour12 === 12 ? 0 : hour12);
+  return formatLocalDateTimeValue(current);
+}
+
+function setEditorMinute(value: string, minuteValue: number) {
+  const current = parseEditorValue(value);
+  current.setMinutes(clampNumber(minuteValue || 0, 0, 59));
+  return formatLocalDateTimeValue(current);
+}
+
+function shiftEditorMinutes(value: string, minutes: number) {
+  const current = parseEditorValue(value);
+  current.setMinutes(current.getMinutes() + minutes);
+  return formatLocalDateTimeValue(current);
 }
 
 function readLoginForm(form: HTMLFormElement, fallbackEmail: string, fallbackPassword: string) {
@@ -455,6 +543,7 @@ function TimeFlowGraph({
   activeCheckInAt,
   firstCheckIn,
   lastCheckOut,
+  carriedOver,
   modeLabel,
   greeting,
   className = ""
@@ -469,6 +558,7 @@ function TimeFlowGraph({
   activeCheckInAt?: string;
   firstCheckIn?: string;
   lastCheckOut?: string;
+  carriedOver: boolean;
   modeLabel: string;
   greeting: string;
   className?: string;
@@ -476,14 +566,19 @@ function TimeFlowGraph({
   const safeProgress = Math.max(0, Math.min(progress, 100));
   const remainingMinutes = Math.max(goalMinutes - minutes, 0);
   const overtimeMinutes = Math.max(minutes - goalMinutes, 0);
-  const lastMarker = isActive ? "진행 중" : lastCheckOut ? formatTime(lastCheckOut) : "--:--";
   const chart = buildFlowChart(records, now, isActive ? activeCheckInAt : undefined, goalMinutes);
-  const flowMessage = isActive
-    ? `${modeLabel} 흐름이 ${formatDuration(currentSessionMinutes)}째 이어지고 있어요.`
-    : firstCheckIn
-      ? "오늘 기록은 잠시 쉬는 중입니다."
-      : "첫 기록을 시작하면 오늘의 흐름이 채워집니다.";
-  const goalMessage =
+  const displayLastMarker = isActive ? "진행 중" : formatFlowBoundary(lastCheckOut, now);
+  const statusLabel = carriedOver ? (isActive ? "전날부터 진행" : "이어진 기록 완료") : isActive ? `${modeLabel} 진행 중` : "기록 대기";
+  const displayFlowMessage = carriedOver
+    ? isActive
+      ? `전날부터 이어진 ${modeLabel} 흐름이에요.`
+      : "전날 시작한 흐름이 오늘 마무리됐어요."
+    : isActive
+      ? `${modeLabel} 흐름이 ${formatDuration(currentSessionMinutes)}째 이어지고 있어요.`
+      : firstCheckIn
+        ? "오늘 기록은 잠시 쉬는 중입니다."
+        : "첫 기록을 시작하면 오늘의 흐름이 채워집니다.";
+  const displayGoalMessage =
     remainingMinutes > 0
       ? `${formatDuration(remainingMinutes)}만 더 쌓으면 목표에 닿습니다.`
       : overtimeMinutes > 0
@@ -492,12 +587,13 @@ function TimeFlowGraph({
 
   return (
     <div
-      className={`timeFlowGraph ${className} ${isActive ? "active" : ""}`}
+      className={`timeFlowGraph ${className} ${isActive ? "active" : ""} ${carriedOver ? "carriedOver" : ""}`}
       aria-label={`오늘 누적 ${formatDuration(minutes)}, 목표 대비 ${safeProgress}%`}
     >
       <div className="timeFlowKicker">
         <span className={isActive ? "live" : ""}>{isActive ? `${modeLabel} 진행 중` : "기록 대기"}</span>
-        <small>{greeting}</small>
+        {carriedOver && <span className="flowCarryStatus">{statusLabel}</span>}
+        <small>{carriedOver ? "자정 이후 구간만 오늘 누적" : greeting}</small>
       </div>
       <div className="timeFlowHeader">
         <div>
@@ -510,8 +606,8 @@ function TimeFlowGraph({
         </div>
       </div>
       <p className="flowMessage">
-        <span>{flowMessage}</span>
-        <strong>{goalMessage}</strong>
+        <span>{displayFlowMessage}</span>
+        <strong>{displayGoalMessage}</strong>
       </p>
       <div className="timeFlowCanvas" aria-hidden="true">
         <svg viewBox="0 0 320 122" role="img">
@@ -555,11 +651,11 @@ function TimeFlowGraph({
         </div>
         <div>
           <span>첫 출근</span>
-          <strong>{firstCheckIn ? formatTime(firstCheckIn) : "--:--"}</strong>
+          <strong>{formatFlowBoundary(firstCheckIn, now)}</strong>
         </div>
         <div>
           <span>마지막 퇴근</span>
-          <strong>{lastMarker}</strong>
+          <strong>{displayLastMarker}</strong>
         </div>
       </div>
     </div>
@@ -569,14 +665,200 @@ function TimeFlowGraph({
 function Logo() {
   return (
     <div className="logoMark" aria-label="Pineflow logo">
-      <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
-        <path className="logoLeaf logoLeafBack" d="M32 4c5.8 7.6 6.1 15.1.8 21.9C26.8 19.7 26.6 12.2 32 4Z" />
-        <path className="logoLeaf logoLeafLeft" d="M18.4 12.2c9.6.8 16.1 5.6 18 13.6-8.8.3-15-4.1-18-13.6Z" />
-        <path className="logoLeaf logoLeafRight" d="M45.6 12.2c-9.6.8-16.1 5.6-18 13.6 8.8.3 15-4.1 18-13.6Z" />
-        <path className="logoBody" d="M17.6 31.6c0-9.9 6.2-16.5 14.4-16.5s14.4 6.6 14.4 16.5v9.2c0 11.9-5.6 19-14.4 19s-14.4-7.1-14.4-19v-9.2Z" />
-        <path className="logoFlow" d="M23.1 36.7c5.2-6.1 12.5-6.7 17.8-2.1 3.1 2.7 1.7 7.7-2.4 8.3-4.5.7-8.1-3.2-5.8-7.1M22.4 48.4c7.8-1.7 16.1-1.2 23.1 1.8" />
-        <path className="logoShine" d="M27.2 24.1c-2.6 2-4 5-4 8.9" />
+      <svg viewBox="0 0 128 128" role="img" aria-hidden="true">
+        <defs>
+          <linearGradient id="pineflowLogoRibbon" x1="14" y1="96" x2="118" y2="14" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#36bb86" />
+            <stop offset="0.52" stopColor="#1f7a5c" />
+            <stop offset="1" stopColor="#14573e" />
+          </linearGradient>
+        </defs>
+        <g transform="translate(64 59) scale(.38)">
+          <path
+            className="logoRibbon"
+            d="M-130 96 C-139.57 51.74 -123.74 -10.06 -86.14 -56.21"
+            stroke="url(#pineflowLogoRibbon)"
+          />
+          <path
+            className="logoRibbon"
+            d="M49.75 -118.77 C100.3 -113.3 135.66 -75.07 139 -25"
+            stroke="url(#pineflowLogoRibbon)"
+          />
+          <g transform="translate(0 -42) scale(1.25)">
+            <path className="logoLeafInk" d="M-33 -7 L-63 -40 L-27 -27 Z" />
+            <path className="logoLeafInk" d="M-16 -14 L-33 -61 L-3 -31 Z" />
+            <path className="logoLeafInk" d="M2 -18 L8 -68 L21 -30 Z" />
+            <path className="logoLeafInk" d="M17 -12 L46 -45 L30 -23 Z" />
+            <path className="logoLeafMint" d="M-4 -15 L0 -55 L11 -27 Z" />
+            <path className="logoLeafGold" d="M8 -18 L35 -45 L18 -22 Z" />
+            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 10)" />
+            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-22 36) rotate(-3.5)" />
+            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(22 36) rotate(3)" />
+            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-44 62) rotate(4)" />
+            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 62) rotate(-2)" />
+            <path className="logoFacet logoFacetDeep" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(44 62) rotate(4.5)" />
+            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-22 88) rotate(-3)" />
+            <path className="logoFacet logoFacetLive" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(22 88) rotate(2)" />
+            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 114) rotate(.5)" />
+          </g>
+        </g>
       </svg>
+    </div>
+  );
+}
+
+type RecordTimeEditorProps = {
+  value: string;
+  recordType: CommuteRecord["type"];
+  mode: WorkMode;
+  note: string;
+  disabled: boolean;
+  onChange: (value: string) => void;
+  onModeChange: (value: WorkMode) => void;
+  onNoteChange: (value: string) => void;
+};
+
+function RecordTimeEditor({
+  value,
+  recordType,
+  mode,
+  note,
+  disabled,
+  onChange,
+  onModeChange,
+  onNoteChange
+}: RecordTimeEditorProps) {
+  const date = parseEditorValue(value);
+  const selectedKey = localDateKey(date);
+  const hour24 = date.getHours();
+  const hour12 = hour24 % 12 || 12;
+  const minute = date.getMinutes();
+  const period = hour24 >= 12 ? "pm" : "am";
+  const days = dayRailOptions(date);
+
+  return (
+    <div className="timeEditor" aria-label={`${recordType === "check-in" ? "출근" : "퇴근"} 시간 수정`}>
+      <div className="timeEditorHeader">
+        <span>수정할 날짜와 시간</span>
+        <strong>
+          {editorMonthFormatter.format(date)} · {weekdayLabel(date, "long")}
+        </strong>
+      </div>
+      <span className="editorGroupLabel">어떤 시간을 보냈나요</span>
+      <div className="recordEditModes" aria-label="기록 종류 수정">
+        {workModes.map((workMode) => (
+          <button
+            key={workMode}
+            className={mode === workMode ? "selected" : ""}
+            type="button"
+            disabled={disabled}
+            aria-pressed={mode === workMode}
+            onClick={() => onModeChange(workMode)}
+          >
+            {modeLabels[workMode]}
+          </button>
+        ))}
+      </div>
+      <div className="dateRail" role="listbox" aria-label="수정할 날짜">
+        {days.map((day) => {
+          const key = localDateKey(day);
+          const isSelected = key === selectedKey;
+          return (
+            <button
+              key={key}
+              className={isSelected ? "selected" : ""}
+              type="button"
+              role="option"
+              disabled={disabled}
+              aria-selected={isSelected}
+              onClick={() => onChange(setEditorDatePart(value, key))}
+            >
+              <span>{weekdayLabel(day)}</span>
+              <strong>{day.getDate()}</strong>
+              <small>{day.getMonth() + 1}월</small>
+            </button>
+          );
+        })}
+      </div>
+      <div className="timeEditorControls">
+        <div className="periodControl" aria-label="오전 오후 선택">
+          <button
+            className={period === "am" ? "selected" : ""}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(setEditorPeriod(value, "am"))}
+          >
+            오전
+          </button>
+          <button
+            className={period === "pm" ? "selected" : ""}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(setEditorPeriod(value, "pm"))}
+          >
+            오후
+          </button>
+        </div>
+        <label className="timeNumberField">
+          <span>시</span>
+          <input
+            type="number"
+            min="1"
+            max="12"
+            inputMode="numeric"
+            value={hour12}
+            disabled={disabled}
+            onChange={(event) => onChange(setEditorHour(value, Number(event.target.value)))}
+          />
+        </label>
+        <label className="timeNumberField">
+          <span>분</span>
+          <input
+            type="number"
+            min="0"
+            max="59"
+            inputMode="numeric"
+            value={padNumber(minute)}
+            disabled={disabled}
+            onChange={(event) => onChange(setEditorMinute(value, Number(event.target.value)))}
+          />
+        </label>
+      </div>
+      <div className="timeNudges" aria-label="시간 빠른 보정">
+        {[-15, -5].map((minutes) => (
+          <button
+            key={minutes}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(shiftEditorMinutes(value, minutes))}
+          >
+            {minutes}분
+          </button>
+        ))}
+        <button type="button" disabled={disabled} onClick={() => onChange(formatLocalDateTimeValue(new Date()))}>
+          현재
+        </button>
+        {[5, 15].map((minutes) => (
+          <button
+            key={minutes}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(shiftEditorMinutes(value, minutes))}
+          >
+            +{minutes}분
+          </button>
+        ))}
+      </div>
+      <label className="recordEditNote">
+        <span>메모</span>
+        <input
+          value={note}
+          disabled={disabled}
+          maxLength={300}
+          onChange={(event) => onNoteChange(event.target.value)}
+          placeholder="예: 강의 듣기, 화면 정리"
+        />
+      </label>
     </div>
   );
 }
@@ -592,6 +874,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const [editingRecordId, setEditingRecordId] = useState("");
   const [editingTimestamp, setEditingTimestamp] = useState("");
+  const [editingMode, setEditingMode] = useState<WorkMode>("focus");
+  const [editingNote, setEditingNote] = useState("");
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
   const [toastMessage, setToastMessage] = useState("");
@@ -629,6 +913,8 @@ function App() {
     setState(initialState);
     setEditingRecordId("");
     setEditingTimestamp("");
+    setEditingMode("focus");
+    setEditingNote("");
     setToastMessage("");
     setErrorMessage(message);
   }
@@ -951,6 +1237,8 @@ function App() {
       setNote("");
       setEditingRecordId("");
       setEditingTimestamp("");
+      setEditingMode("focus");
+      setEditingNote("");
       playFeedback("finish");
       flashToast("퇴근 기록이 저장됐어요");
       startActionCooldown();
@@ -986,10 +1274,12 @@ function App() {
     playFeedback("open");
     setEditingRecordId(record.id);
     setEditingTimestamp(toDateTimeLocalValue(record.timestamp));
+    setEditingMode(record.mode);
+    setEditingNote(record.note ?? "");
     setErrorMessage("");
   }
 
-  async function saveRecordTime(recordId: string) {
+  async function saveRecordEdit(recordId: string) {
     if (requestInFlightRef.current) return;
 
     const timestamp = fromDateTimeLocalValue(editingTimestamp);
@@ -1003,14 +1293,16 @@ function App() {
     setErrorMessage("");
 
     try {
-      setState(await updateRecordTime(recordId, timestamp));
+      setState(await updateRecord(recordId, { timestamp, mode: editingMode, note: editingNote }));
       setEditingRecordId("");
       setEditingTimestamp("");
+      setEditingMode("focus");
+      setEditingNote("");
       playFeedback("success");
-      flashToast("기록 시간이 수정됐어요");
+      flashToast("기록이 수정됐어요");
       startActionCooldown();
     } catch (error) {
-      handleAppError(error, "기록 시간 수정에 실패했습니다.");
+      handleAppError(error, "기록 수정에 실패했습니다.");
     } finally {
       requestInFlightRef.current = false;
       setIsSaving(false);
@@ -1034,6 +1326,8 @@ function App() {
     setState(initialState);
     setEditingRecordId("");
     setEditingTimestamp("");
+    setEditingMode("focus");
+    setEditingNote("");
     setIsGoalEditing(false);
     setDraftGoalMinutes(initialState.dailyGoalMinutes);
     setToastMessage("");
@@ -1159,9 +1453,10 @@ function App() {
           currentSessionMinutes={currentSessionMinutes}
           records={today.records}
           now={now}
-          activeCheckInAt={state.activeSession?.checkInAt}
+          activeCheckInAt={today.activeVisibleCheckIn}
           firstCheckIn={today.firstCheckIn}
           lastCheckOut={today.lastCheckOut}
+          carriedOver={today.carriedOver}
           modeLabel={modeLabels[mode]}
           greeting={dashboardGreeting(now)}
         />
@@ -1281,14 +1576,22 @@ function App() {
                   {formatDate(record.timestamp)} · {formatTime(record.timestamp)}
                 </p>
                 {editingRecordId === record.id && (
-                  <div className="timeEditor">
-                    <input
-                      type="datetime-local"
-                      value={editingTimestamp}
-                      onChange={(event) => setEditingTimestamp(event.target.value)}
-                      aria-label="수정할 기록 시간"
-                    />
-                    <button type="button" disabled={isSaving} onClick={() => saveRecordTime(record.id)}>
+                  <RecordTimeEditor
+                    value={editingTimestamp}
+                    recordType={record.type}
+                    mode={editingMode}
+                    note={editingNote}
+                    disabled={isSaving}
+                    onChange={setEditingTimestamp}
+                    onModeChange={setEditingMode}
+                    onNoteChange={setEditingNote}
+                  />
+                )}
+              </div>
+              <div className={editingRecordId === record.id ? "timelineActions editActions" : "timelineActions"}>
+                {editingRecordId === record.id ? (
+                  <>
+                    <button className="save" type="button" disabled={isSaving} onClick={() => saveRecordEdit(record.id)}>
                       저장
                     </button>
                     <button
@@ -1297,18 +1600,21 @@ function App() {
                       onClick={() => {
                         setEditingRecordId("");
                         setEditingTimestamp("");
+                        setEditingMode("focus");
+                        setEditingNote("");
                       }}
                     >
                       취소
                     </button>
-                  </div>
+                  </>
+                ) : (
+                  <>
+                    <small>{modeLabels[record.mode]}</small>
+                    <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
+                      수정
+                    </button>
+                  </>
                 )}
-              </div>
-              <div className="timelineActions">
-                <small>{modeLabels[record.mode]}</small>
-                <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
-                  수정
-                </button>
               </div>
             </article>
           ))}
@@ -1369,11 +1675,11 @@ function App() {
         <div className="summaryGrid">
           <div className="metricCard">
             <span>첫 출근</span>
-            <strong>{today.firstCheckIn ? formatTime(today.firstCheckIn) : "--:--"}</strong>
+            <strong>{formatFlowBoundary(today.firstCheckIn, now)}</strong>
           </div>
           <div className="metricCard">
             <span>마지막 퇴근</span>
-            <strong>{today.lastCheckOut ? formatTime(today.lastCheckOut) : "--:--"}</strong>
+            <strong>{formatFlowBoundary(today.lastCheckOut, now)}</strong>
           </div>
         </div>
         <div className="goalReadout">

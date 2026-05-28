@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1040" viewBox="0 0 1800 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow logo grid halo v6 candidates</title>
+  <desc id="desc">Diamond-only Pine Grid body, unchanged PINEFLOW wordmark, and refined asymmetric commute graph lines.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .ink { fill: #11161c; }
+      .blue { fill: #5278ff; }
+      .muted { fill: #68766c; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #0a241a; }
+      .title { font: 800 56px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 25px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 700 25px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .body { font: 400 23px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .caption { font: 400 24px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .word { font: 800 60px Consolas, Cascadia Mono, Menlo, monospace; letter-spacing: 0; }
+      .leaf-dark { fill: #11161c; }
+      .leaf-green { fill: #54c86c; }
+      .leaf-lime { fill: #9fee57; }
+      .route { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .track { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .node-start { fill: #43c78d; }
+      .node-end { fill: #e0b532; }
+    </style>
+    <linearGradient id="commuteFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#43c78d"/>
+      <stop offset=".58" stop-color="#1f7a5c"/>
+      <stop offset="1" stop-color="#e0b532"/>
+    </linearGradient>
+    <linearGradient id="progressFlow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#43c78d"/>
+      <stop offset=".72" stop-color="#1f7a5c"/>
+      <stop offset="1" stop-color="#5278ff"/>
+    </linearGradient>
+    <g id="diamond">
+      <path d="M0 -12 L12 0 L0 12 L-12 0 Z"/>
+    </g>
+    <g id="pine-grid">
+      <g class="ink">
+        <use href="#diamond" x="-18" y="18"/>
+        <use href="#diamond" x="18" y="18"/>
+        <use href="#diamond" x="-38" y="44"/>
+        <use href="#diamond" x="0" y="44"/>
+        <use href="#diamond" x="38" y="44"/>
+        <use href="#diamond" x="-24" y="70"/>
+        <use href="#diamond" x="24" y="70"/>
+        <use href="#diamond" x="0" y="96"/>
+      </g>
+      <use href="#diamond" x="0" y="44" class="blue"/>
+      <path class="leaf-dark" d="M-28 -16 L-54 -58 L-18 -32 Z"/>
+      <path class="leaf-dark" d="M-13 -22 L-28 -76 L4 -35 Z"/>
+      <path class="leaf-dark" d="M4 -23 L10 -82 L22 -34 Z"/>
+      <path class="leaf-dark" d="M17 -18 L48 -62 L31 -27 Z"/>
+      <path class="leaf-green" d="M-7 -21 L-3 -70 L10 -28 Z"/>
+      <path class="leaf-lime" d="M7 -23 L34 -57 L19 -24 Z"/>
+    </g>
+    <g id="wordmark">
+      <text x="0" y="0" class="word ink">PINE</text>
+      <text x="144" y="0" class="word blue">FLOW</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1040"/>
+  <text class="title" x="86" y="102">Pineflow logo grid halo v6</text>
+  <text class="sub" x="88" y="154">Only high-pass candidates: diamond-only body, unchanged wordmark, no filled pineapple, no lazy circle.</text>
+
+  <g transform="translate(86 220)">
+    <rect class="shadow" x="0" y="18" width="780" height="460" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="460" rx="22"/>
+    <text class="label" x="36" y="58">A. Split Capsule Sweep</text>
+    <g transform="translate(198 214)">
+      <path class="route" d="M-96 98 C-136 24 -108 -58 -42 -92" stroke="#b9cdc1" stroke-width="11"/>
+      <path class="route" d="M66 -92 C122 -50 138 38 94 100" stroke="#b9cdc1" stroke-width="11"/>
+      <path class="route" d="M-96 98 C-136 24 -108 -58 -42 -92" stroke="url(#commuteFlow)" stroke-width="8"/>
+      <path class="route" d="M66 -92 C122 -50 138 38 94 100" stroke="url(#commuteFlow)" stroke-width="8"/>
+      <circle class="node-start" cx="-96" cy="98" r="9"/>
+      <path class="node-end" d="M81 93 h30 a7 7 0 0 1 0 14 h-30 a7 7 0 0 1 0 -14Z"/>
+      <g transform="translate(0 -28) scale(1.34)">
+        <use href="#pine-grid"/>
+      </g>
+    </g>
+    <g transform="translate(410 158)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="body" x="410" y="212">Two separated arcs, not a closed ring.</text>
+    <text class="body" x="410" y="244">Leaves and diamonds stay readable.</text>
+    <text class="caption" x="36" y="372">Recommended. Stronger craft, less decorative, closest to the original Pine Grid spirit.</text>
+  </g>
+
+  <g transform="translate(934 220)">
+    <rect class="shadow" x="0" y="18" width="780" height="460" rx="22"/>
+    <rect class="card" x="0" y="0" width="780" height="460" rx="22"/>
+    <text class="label" x="36" y="58">B. Progress Graph Halo</text>
+    <g transform="translate(198 214)">
+      <path class="track" d="M-108 82 C-126 2 -72 -94 14 -102 C88 -109 125 -48 111 20" stroke="#9ebaaa" stroke-width="10" opacity=".44"/>
+      <path class="route" d="M-108 82 C-126 2 -72 -94 14 -102 C66 -106 101 -76 112 -36" stroke="url(#progressFlow)" stroke-width="8"/>
+      <circle class="node-start" cx="-108" cy="82" r="9"/>
+      <path class="node-end" d="M102 -48 L123 -36 L111 -18 L91 -30 Z"/>
+      <g transform="translate(0 -28) scale(1.34)">
+        <use href="#pine-grid"/>
+      </g>
+    </g>
+    <g transform="translate(410 158)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="body" x="410" y="212">More like a work-progress graph.</text>
+    <text class="body" x="410" y="244">Useful if dashboard language matters.</text>
+    <text class="caption" x="36" y="372">Second choice. Clearer graph metaphor, slightly less iconic than A.</text>
+  </g>
+
+  <g transform="translate(86 760)">
+    <rect x="0" y="0" width="1628" height="86" rx="18" fill="#11161c"/>
+    <text x="34" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700" fill="#9fee57">Locked rules</text>
+    <text x="190" y="54" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">Do not fill the body. Do not change PINEFLOW. Do not show a line that reads as a lazy circle.</text>
+  </g>
+</svg>

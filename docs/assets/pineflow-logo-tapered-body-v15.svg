@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1160" viewBox="0 0 1800 1160" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow tapered body v15</title>
+  <desc id="desc">Pineflow logo candidates with tighter diamond-only pineapple bodies and a single tapered progress ribbon.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .panel { fill: #f1f6ef; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #082e20; }
+      .ink { fill: #10171d; }
+      .pine { fill: #2f6f54; }
+      .lime { fill: #8feb58; }
+      .mint { fill: #44bf88; }
+      .gold { fill: #d7bb49; }
+      .muted { fill: #647268; }
+      .title { font: 800 52px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 24px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 800 25px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .body { font: 400 22px Segoe UI, Arial, sans-serif; fill: #647268; letter-spacing: 0; }
+      .tag { font: 700 19px Segoe UI, Arial, sans-serif; fill: #2f6f54; letter-spacing: 0; }
+      .word-pine { font: 800 74px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow { font: 400 74px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .word-pine-small { font: 800 36px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow-small { font: 400 36px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+    </style>
+    <linearGradient id="ribbon-gradient" x1="-145" y1="94" x2="150" y2="-22" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#42ba83"/>
+      <stop offset="0.50" stop-color="#1e7a5b"/>
+      <stop offset="1" stop-color="#8bdc54"/>
+    </linearGradient>
+    <linearGradient id="ribbon-soft-gradient" x1="-130" y1="100" x2="135" y2="-8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2f8d69"/>
+      <stop offset="1" stop-color="#1f7a5c"/>
+    </linearGradient>
+    <path id="ribbon-taper" d="M-132 103 C-157 23 -98 -118 25 -128 C111 -135 156 -69 145 -5 C138 -8 132 -10 125 -13 C130 -59 97 -102 30 -96 C-62 -88 -116 9 -101 93 C-111 96 -121 100 -132 103 Z"/>
+    <path id="ribbon-deep" d="M-137 106 C-164 19 -98 -126 28 -135 C116 -141 163 -69 151 -2 C141 -6 132 -9 123 -12 C128 -58 95 -101 29 -94 C-66 -84 -121 11 -104 96 C-115 99 -126 103 -137 106 Z"/>
+    <path id="ribbon-quiet" d="M-126 101 C-150 24 -95 -113 23 -122 C104 -128 149 -66 139 -10 C132 -12 126 -14 119 -17 C124 -57 94 -94 29 -90 C-58 -82 -110 12 -96 91 C-105 94 -115 98 -126 101 Z"/>
+
+    <g id="leaf-crown">
+      <path class="ink" d="M-27 -16 L-53 -58 L-17 -32 Z"/>
+      <path class="ink" d="M-12 -22 L-28 -76 L4 -35 Z"/>
+      <path class="ink" d="M4 -23 L10 -82 L22 -34 Z"/>
+      <path class="ink" d="M17 -18 L48 -62 L31 -27 Z"/>
+      <path class="mint" d="M-7 -21 L-3 -70 L10 -28 Z"/>
+      <path class="lime" d="M7 -23 L34 -57 L19 -24 Z"/>
+    </g>
+
+    <g id="body-a">
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(0 10) rotate(-3)"/>
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(-21 35) rotate(4)"/>
+      <path class="pine" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(21 35) rotate(-5)"/>
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(-42 60) rotate(-4)"/>
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(0 60) rotate(3)"/>
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(42 60) rotate(5)"/>
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(-21 85) rotate(5)"/>
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(21 85) rotate(-4)"/>
+      <path class="ink" d="M0 -17 L13.5 0 L0 17 L-13.5 0 Z" transform="translate(0 110) rotate(2)"/>
+    </g>
+
+    <g id="body-b">
+      <path class="ink" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(0 10) rotate(2)"/>
+      <path class="ink" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(-22 34) rotate(-5)"/>
+      <path class="ink" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(22 34) rotate(5)"/>
+      <path class="ink" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(-44 58) rotate(3)"/>
+      <path class="pine" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(0 58) rotate(-3)"/>
+      <path class="gold" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(44 58) rotate(-2)"/>
+      <path class="ink" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(-22 82) rotate(-4)"/>
+      <path class="ink" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(22 82) rotate(4)"/>
+      <path class="ink" d="M0 -16.5 L14 0 L0 16.5 L-14 0 Z" transform="translate(0 106) rotate(-1)"/>
+    </g>
+
+    <g id="body-c">
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(0 9) rotate(0)"/>
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(-21 34) rotate(2)"/>
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(21 34) rotate(-2)"/>
+      <path class="mint" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(-42 59) rotate(-3)"/>
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(0 59) rotate(1)"/>
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(42 59) rotate(3)"/>
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(-21 84) rotate(3)"/>
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(21 84) rotate(-3)"/>
+      <path class="ink" d="M0 -17.5 L13 0 L0 17.5 L-13 0 Z" transform="translate(0 109) rotate(0)"/>
+    </g>
+
+    <g id="pine-a">
+      <use href="#body-a"/>
+      <use href="#leaf-crown"/>
+    </g>
+    <g id="pine-b">
+      <use href="#body-b"/>
+      <use href="#leaf-crown"/>
+    </g>
+    <g id="pine-c">
+      <use href="#body-c"/>
+      <use href="#leaf-crown"/>
+    </g>
+
+    <g id="symbol-a">
+      <use href="#ribbon-taper" fill="url(#ribbon-gradient)"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-a"/>
+      </g>
+    </g>
+    <g id="symbol-b">
+      <use href="#ribbon-deep" fill="#1f7a5c"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-b"/>
+      </g>
+    </g>
+    <g id="symbol-c">
+      <use href="#ribbon-quiet" fill="url(#ribbon-soft-gradient)"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#pine-c"/>
+      </g>
+    </g>
+
+    <g id="wordmark">
+      <text x="0" y="0" class="word-pine">pine</text>
+      <text x="145" y="0" class="word-flow">flow</text>
+    </g>
+    <g id="wordmark-small">
+      <text x="0" y="0" class="word-pine-small">pine</text>
+      <text x="72" y="0" class="word-flow-small">flow</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1160"/>
+  <text class="title" x="84" y="94">Pineflow tapered body v15</text>
+  <text class="sub" x="86" y="146">Diamond-only body, tighter optical grid, one tapered progress ribbon. Wordmark unchanged.</text>
+
+  <g transform="translate(84 218)">
+    <rect class="shadow" x="0" y="18" width="522" height="570" rx="22"/>
+    <rect class="card" x="0" y="0" width="522" height="570" rx="22"/>
+    <text class="tag" x="34" y="46">A / Recommended</text>
+    <text class="label" x="34" y="83">Directional Taper</text>
+    <g transform="translate(260 260) scale(1.04)">
+      <use href="#symbol-a"/>
+    </g>
+    <g transform="translate(140 430)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="body" x="34" y="501">A single ribbon carries motion through shape,</text>
+    <text class="body" x="34" y="532">not markers. Accent moves off-center.</text>
+  </g>
+
+  <g transform="translate(638 218)">
+    <rect class="shadow" x="0" y="18" width="522" height="570" rx="22"/>
+    <rect class="card" x="0" y="0" width="522" height="570" rx="22"/>
+    <text class="tag" x="34" y="46">B / Stable Alternative</text>
+    <text class="label" x="34" y="83">Solid Workday Band</text>
+    <g transform="translate(260 260) scale(1.04)">
+      <use href="#symbol-b"/>
+    </g>
+    <g transform="translate(140 430)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="body" x="34" y="501">No gradient. The band feels deliberate,</text>
+    <text class="body" x="34" y="532">but less alive than A.</text>
+  </g>
+
+  <g transform="translate(1192 218)">
+    <rect class="shadow" x="0" y="18" width="522" height="570" rx="22"/>
+    <rect class="card" x="0" y="0" width="522" height="570" rx="22"/>
+    <text class="tag" x="34" y="46">C / Quiet Option</text>
+    <text class="label" x="34" y="83">Subtle Lean Grid</text>
+    <g transform="translate(260 260) scale(1.04)">
+      <use href="#symbol-c"/>
+    </g>
+    <g transform="translate(140 430)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="body" x="34" y="501">The safest body rhythm. The ribbon is</text>
+    <text class="body" x="34" y="532">cleaner, but less memorable.</text>
+  </g>
+
+  <g transform="translate(84 850)">
+    <rect class="panel" x="0" y="0" width="522" height="190" rx="18"/>
+    <text class="label" x="30" y="48">Header scale</text>
+    <g transform="translate(107 126) scale(.42)">
+      <use href="#symbol-a"/>
+    </g>
+    <g transform="translate(222 130)">
+      <use href="#wordmark-small"/>
+    </g>
+  </g>
+
+  <g transform="translate(638 850)">
+    <rect class="panel" x="0" y="0" width="522" height="190" rx="18"/>
+    <text class="label" x="30" y="48">App icon scale</text>
+    <g transform="translate(260 128) scale(.62)">
+      <use href="#symbol-a"/>
+    </g>
+  </g>
+
+  <g transform="translate(1192 850)">
+    <rect x="0" y="0" width="522" height="190" rx="18" fill="#10171d"/>
+    <text x="30" y="48" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="800" fill="#8feb58">Cold decision</text>
+    <text x="30" y="93" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f3f8f0">Keep A as the strongest path.</text>
+    <text x="30" y="128" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f3f8f0">No extra nodes. No center-blue cliché.</text>
+    <text x="30" y="163" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f3f8f0">Use controlled ±5° diamond variance.</text>
+  </g>
+</svg>

@@ -1,0 +1,205 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1160" viewBox="0 0 1800 1160" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow rhythmic ribbon v16</title>
+  <desc id="desc">Pineflow logo refinements with off-center meaning facets, balanced rotated diamond facets, and a crafted tapered progress ribbon.</desc>
+  <defs>
+    <linearGradient id="ribbonGrad" x1="-132" y1="96" x2="138" y2="-28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#35b985"/>
+      <stop offset=".44" stop-color="#1f7a5c"/>
+      <stop offset="1" stop-color="#176447"/>
+    </linearGradient>
+    <linearGradient id="ribbonGradSoft" x1="-132" y1="96" x2="138" y2="-28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4bc795"/>
+      <stop offset=".55" stop-color="#267a60"/>
+      <stop offset="1" stop-color="#1a5c45"/>
+    </linearGradient>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .ink { fill: #11161c; }
+      .pine { fill: #2f6f54; }
+      .flow { fill: #1f2933; }
+      .accent-deep { fill: #2f6f54; }
+      .accent-live { fill: #43c78d; }
+      .muted { fill: #68766c; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #0a241a; }
+      .panel { fill: #f1f6ef; stroke: #d8e3d1; stroke-width: 1; }
+      .title { font: 800 46px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 22px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 700 24px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .body { font: 400 22px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .caption { font: 500 23px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .word-pine { font: 800 76px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow { font: 400 76px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .word-pine-small { font: 800 38px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow-small { font: 400 38px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+    </style>
+
+    <g id="facet">
+      <path d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z"/>
+    </g>
+
+    <g id="crown">
+      <path class="ink" d="M-28 -16 L-54 -58 L-18 -32 Z"/>
+      <path class="ink" d="M-13 -22 L-28 -76 L4 -35 Z"/>
+      <path class="ink" d="M4 -23 L10 -82 L22 -34 Z"/>
+      <path class="ink" d="M17 -18 L48 -62 L31 -27 Z"/>
+      <path fill="#43c78d" d="M-7 -21 L-3 -70 L10 -28 Z"/>
+      <path fill="#9fee57" d="M7 -23 L34 -57 L19 -24 Z"/>
+    </g>
+
+    <g id="grid-flow">
+      <use href="#facet" class="ink" transform="translate(0 10) rotate(0)"/>
+      <use href="#facet" class="ink" transform="translate(-22 36) rotate(-3.5)"/>
+      <use href="#facet" class="ink" transform="translate(22 36) rotate(3)"/>
+      <use href="#facet" class="ink" transform="translate(-44 62) rotate(4)"/>
+      <use href="#facet" class="ink" transform="translate(0 62) rotate(-2)"/>
+      <use href="#facet" class="accent-deep" transform="translate(44 62) rotate(4.5)"/>
+      <use href="#facet" class="ink" transform="translate(-22 88) rotate(-3)"/>
+      <use href="#facet" class="accent-live" transform="translate(22 88) rotate(2)"/>
+      <use href="#facet" class="ink" transform="translate(0 114) rotate(.5)"/>
+      <use href="#crown"/>
+    </g>
+
+    <g id="grid-quiet">
+      <use href="#facet" class="ink" transform="translate(0 10) rotate(0)"/>
+      <use href="#facet" class="ink" transform="translate(-22 36) rotate(-3.5)"/>
+      <use href="#facet" class="ink" transform="translate(22 36) rotate(3)"/>
+      <use href="#facet" class="ink" transform="translate(-44 62) rotate(4)"/>
+      <use href="#facet" class="ink" transform="translate(0 62) rotate(-2)"/>
+      <use href="#facet" class="ink" transform="translate(44 62) rotate(4.5)"/>
+      <use href="#facet" class="ink" transform="translate(-22 88) rotate(-3)"/>
+      <use href="#facet" class="accent-live" transform="translate(22 88) rotate(2)"/>
+      <use href="#facet" class="ink" transform="translate(0 114) rotate(.5)"/>
+      <use href="#crown"/>
+    </g>
+
+    <g id="grid-diagonal">
+      <use href="#facet" class="ink" transform="translate(0 10) rotate(0)"/>
+      <use href="#facet" class="accent-deep" transform="translate(-22 36) rotate(-3.5)"/>
+      <use href="#facet" class="ink" transform="translate(22 36) rotate(3)"/>
+      <use href="#facet" class="ink" transform="translate(-44 62) rotate(4)"/>
+      <use href="#facet" class="ink" transform="translate(0 62) rotate(-2)"/>
+      <use href="#facet" class="ink" transform="translate(44 62) rotate(4.5)"/>
+      <use href="#facet" class="ink" transform="translate(-22 88) rotate(-3)"/>
+      <use href="#facet" class="accent-live" transform="translate(22 88) rotate(2)"/>
+      <use href="#facet" class="ink" transform="translate(0 114) rotate(.5)"/>
+      <use href="#crown"/>
+    </g>
+
+    <g id="ribbon-main">
+      <path fill="url(#ribbonGrad)" d="M-130 96 C-146 22 -91 -101 18 -118 C85 -128 135 -85 139 -25 C140 -14 133 -8 125 -10 C124 -62 85 -98 25 -91 C-64 -81 -113 16 -99 87 C-96 101 -125 111 -130 96 Z"/>
+    </g>
+
+    <g id="ribbon-clean">
+      <path fill="#1f7a5c" d="M-130 96 C-146 22 -91 -101 18 -118 C85 -128 135 -85 139 -25 C140 -14 133 -8 125 -10 C124 -62 85 -98 25 -91 C-64 -81 -113 16 -99 87 C-96 101 -125 111 -130 96 Z"/>
+    </g>
+
+    <g id="ribbon-soft">
+      <path fill="url(#ribbonGradSoft)" d="M-128 97 C-144 23 -88 -101 18 -118 C82 -127 128 -89 136 -34 C138 -20 132 -9 123 -11 C120 -60 81 -94 26 -88 C-62 -78 -111 17 -98 88 C-96 100 -124 110 -128 97 Z"/>
+    </g>
+
+    <g id="symbol-flow">
+      <use href="#ribbon-main"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#grid-flow"/>
+      </g>
+    </g>
+
+    <g id="symbol-quiet">
+      <use href="#ribbon-clean"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#grid-quiet"/>
+      </g>
+    </g>
+
+    <g id="symbol-diagonal">
+      <use href="#ribbon-soft"/>
+      <g transform="translate(0 -42) scale(1.25)">
+        <use href="#grid-diagonal"/>
+      </g>
+    </g>
+
+    <g id="wordmark">
+      <text x="0" y="0" class="word-pine">pine</text>
+      <text x="149" y="0" class="word-flow">flow</text>
+    </g>
+
+    <g id="wordmark-small">
+      <text x="0" y="0" class="word-pine-small">pine</text>
+      <text x="75" y="0" class="word-flow-small">flow</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1160"/>
+  <text class="title" x="86" y="92">Pineflow rhythmic ribbon v16</text>
+  <text class="sub" x="88" y="132">Off-center meaning facets, balanced rotations, and a single crafted progress ribbon.</text>
+
+  <g transform="translate(86 190)">
+    <rect class="shadow" x="0" y="18" width="520" height="545" rx="22"/>
+    <rect class="card" x="0" y="0" width="520" height="545" rx="22"/>
+    <text class="label" x="40" y="60">A. Flow Facets</text>
+    <g transform="translate(190 260) scale(1.05)">
+      <use href="#symbol-flow"/>
+    </g>
+    <g transform="translate(210 373) scale(.62)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="40" y="460">Recommended direction.</text>
+    <text class="body" x="40" y="496">Two right-side facets imply active progress.</text>
+  </g>
+
+  <g transform="translate(640 190)">
+    <rect class="shadow" x="0" y="18" width="520" height="545" rx="22"/>
+    <rect class="card" x="0" y="0" width="520" height="545" rx="22"/>
+    <text class="label" x="40" y="60">B. Quiet Completion</text>
+    <g transform="translate(190 260) scale(1.05)">
+      <use href="#symbol-quiet"/>
+    </g>
+    <g transform="translate(210 373) scale(.62)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="40" y="460">Most understated.</text>
+    <text class="body" x="40" y="496">One live facet avoids decorative color noise.</text>
+  </g>
+
+  <g transform="translate(1194 190)">
+    <rect class="shadow" x="0" y="18" width="520" height="545" rx="22"/>
+    <rect class="card" x="0" y="0" width="520" height="545" rx="22"/>
+    <text class="label" x="40" y="60">C. Diagonal Pulse</text>
+    <g transform="translate(190 260) scale(1.05)">
+      <use href="#symbol-diagonal"/>
+    </g>
+    <g transform="translate(210 373) scale(.62)">
+      <use href="#wordmark"/>
+    </g>
+    <text class="caption" x="40" y="460">More energetic.</text>
+    <text class="body" x="40" y="496">A start-to-finish diagonal reads as movement.</text>
+  </g>
+
+  <g transform="translate(86 805)">
+    <rect class="panel" x="0" y="0" width="500" height="190" rx="18"/>
+    <text class="label" x="28" y="44">Header scale</text>
+    <g transform="translate(112 122) scale(.42)">
+      <use href="#symbol-flow"/>
+    </g>
+    <g transform="translate(220 130)">
+      <use href="#wordmark-small"/>
+    </g>
+  </g>
+
+  <g transform="translate(650 805)">
+    <rect class="panel" x="0" y="0" width="500" height="190" rx="18"/>
+    <text class="label" x="28" y="44">App icon scale</text>
+    <g transform="translate(250 126) scale(.62)">
+      <use href="#symbol-flow"/>
+    </g>
+  </g>
+
+  <g transform="translate(1214 805)">
+    <rect x="0" y="0" width="500" height="190" rx="18" fill="#11161c"/>
+    <text x="28" y="44" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700" fill="#9fee57">Quality Gate</text>
+    <text x="28" y="92" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">No central color badge.</text>
+    <text x="28" y="126" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">No dots, arrows, or decorative markers.</text>
+    <text x="28" y="160" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#f2f7ef">The arc ends by its own shape.</text>
+  </g>
+</svg>

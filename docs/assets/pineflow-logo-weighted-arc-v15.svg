@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1160" viewBox="0 0 1800 1160" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow weighted arc v15</title>
+  <desc id="desc">Pineflow logo refinement candidates with a stronger single progress arc and denser rotated diamond-only pineapple body.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f5f9f3; }
+      .card { fill: #fff; stroke: #d8e3d1; stroke-width: 1; }
+      .shadow { fill: #0a241a; opacity: .95; }
+      .panel { fill: #f1f6ef; stroke: #d8e3d1; stroke-width: 1; }
+      .ink { fill: #11161c; }
+      .pine { fill: #2f6f54; }
+      .lime { fill: #8fd84f; }
+      .soft { fill: #53bd8a; }
+      .arc { fill: #1f7a5c; }
+      .arc-soft { fill: #2d8664; }
+      .arc-light { fill: #7bcf70; opacity: .92; }
+      .title { font: 800 50px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .sub { font: 400 23px Segoe UI, Arial, sans-serif; fill: #68766c; letter-spacing: 0; }
+      .label { font: 800 25px Segoe UI, Arial, sans-serif; fill: #101817; letter-spacing: 0; }
+      .note { font: 400 21px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .small-label { font: 700 20px Segoe UI, Arial, sans-serif; fill: #657268; letter-spacing: 0; }
+      .word-pine { font: 800 70px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow { font: 400 70px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+      .word-pine-small { font: 800 35px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #2f6f54; }
+      .word-flow-small { font: 400 35px Segoe UI, Arial, sans-serif; letter-spacing: 0; fill: #1f2933; }
+    </style>
+
+    <g id="diamond18">
+      <path d="M0 -16 L16 0 L0 16 L-16 0 Z"/>
+    </g>
+    <g id="diamond17">
+      <path d="M0 -15 L15 0 L0 15 L-15 0 Z"/>
+    </g>
+
+    <g id="pine-grid-a">
+      <g class="ink">
+        <use href="#diamond17" x="0" y="8" transform="rotate(-3 0 8)"/>
+        <use href="#diamond17" x="-21" y="34" transform="rotate(4 -21 34)"/>
+        <use href="#diamond17" x="21" y="34" transform="rotate(-2 21 34)"/>
+        <use href="#diamond18" x="-42" y="60" transform="rotate(-4 -42 60)"/>
+        <use href="#diamond18" x="0" y="60" transform="rotate(2 0 60)"/>
+        <use href="#diamond18" x="42" y="60" transform="rotate(4 42 60)"/>
+        <use href="#diamond17" x="-21" y="86" transform="rotate(2 -21 86)"/>
+        <use href="#diamond17" x="21" y="86" transform="rotate(-3 21 86)"/>
+        <use href="#diamond17" x="0" y="112" transform="rotate(3 0 112)"/>
+      </g>
+      <use href="#diamond17" x="21" y="34" class="pine" transform="rotate(-2 21 34)"/>
+      <path class="ink" d="M-30 -17 L-55 -62 L-18 -34 Z"/>
+      <path class="ink" d="M-13 -23 L-29 -78 L3 -36 Z"/>
+      <path class="ink" d="M5 -24 L11 -84 L23 -35 Z"/>
+      <path class="ink" d="M18 -18 L51 -64 L31 -29 Z"/>
+      <path class="soft" d="M-6 -22 L-2 -72 L10 -30 Z"/>
+      <path class="lime" d="M8 -24 L36 -59 L20 -25 Z"/>
+    </g>
+
+    <g id="pine-grid-b">
+      <g class="ink">
+        <use href="#diamond17" x="0" y="8" transform="rotate(2 0 8)"/>
+        <use href="#diamond17" x="-21" y="34" transform="rotate(-4 -21 34)"/>
+        <use href="#diamond17" x="21" y="34" transform="rotate(3 21 34)"/>
+        <use href="#diamond18" x="-42" y="60" transform="rotate(4 -42 60)"/>
+        <use href="#diamond18" x="0" y="60" transform="rotate(-2 0 60)"/>
+        <use href="#diamond18" x="42" y="60" transform="rotate(-3 42 60)"/>
+        <use href="#diamond17" x="-21" y="86" transform="rotate(-2 -21 86)"/>
+        <use href="#diamond17" x="21" y="86" transform="rotate(4 21 86)"/>
+        <use href="#diamond17" x="0" y="112" transform="rotate(-2 0 112)"/>
+      </g>
+      <use href="#diamond17" x="-21" y="86" class="soft" transform="rotate(-2 -21 86)"/>
+      <path class="ink" d="M-30 -17 L-55 -62 L-18 -34 Z"/>
+      <path class="ink" d="M-13 -23 L-29 -78 L3 -36 Z"/>
+      <path class="ink" d="M5 -24 L11 -84 L23 -35 Z"/>
+      <path class="ink" d="M18 -18 L51 -64 L31 -29 Z"/>
+      <path class="soft" d="M-6 -22 L-2 -72 L10 -30 Z"/>
+      <path class="lime" d="M8 -24 L36 -59 L20 -25 Z"/>
+    </g>
+
+    <g id="pine-grid-c">
+      <g class="ink">
+        <use href="#diamond17" x="0" y="8" transform="rotate(-2 0 8)"/>
+        <use href="#diamond17" x="-21" y="34" transform="rotate(3 -21 34)"/>
+        <use href="#diamond17" x="21" y="34" transform="rotate(-4 21 34)"/>
+        <use href="#diamond18" x="-42" y="60" transform="rotate(-3 -42 60)"/>
+        <use href="#diamond18" x="0" y="60" transform="rotate(3 0 60)"/>
+        <use href="#diamond18" x="42" y="60" transform="rotate(2 42 60)"/>
+        <use href="#diamond17" x="-21" y="86" transform="rotate(4 -21 86)"/>
+        <use href="#diamond17" x="21" y="86" transform="rotate(-2 21 86)"/>
+        <use href="#diamond17" x="0" y="112" transform="rotate(-3 0 112)"/>
+      </g>
+      <use href="#diamond18" x="-42" y="60" class="pine" transform="rotate(-3 -42 60)"/>
+      <path class="ink" d="M-30 -17 L-55 -62 L-18 -34 Z"/>
+      <path class="ink" d="M-13 -23 L-29 -78 L3 -36 Z"/>
+      <path class="ink" d="M5 -24 L11 -84 L23 -35 Z"/>
+      <path class="ink" d="M18 -18 L51 -64 L31 -29 Z"/>
+      <path class="soft" d="M-6 -22 L-2 -72 L10 -30 Z"/>
+      <path class="lime" d="M8 -24 L36 -59 L20 -25 Z"/>
+    </g>
+
+    <path id="arc-weighted" class="arc" d="M-126 95 C-146 6 -83 -105 22 -119 C92 -128 134 -75 132 -19 C127 -16 122 -13 117 -11 C116 -58 82 -101 22 -94 C-63 -84 -114 8 -96 87 C-105 90 -116 93 -126 95 Z"/>
+    <path id="arc-taper" class="arc" d="M-124 96 C-144 2 -79 -108 25 -120 C94 -128 137 -73 134 -16 C128 -14 121 -12 115 -10 C118 -59 82 -99 25 -92 C-60 -82 -112 7 -94 87 C-103 91 -114 94 -124 96 Z"/>
+    <path id="arc-cut" class="arc" d="M-128 94 C-145 10 -82 -102 18 -118 C92 -130 138 -76 134 -17 L112 -6 C120 -59 83 -99 19 -91 C-61 -80 -111 7 -94 86 Z"/>
+
+    <g id="symbol-a">
+      <use href="#arc-weighted"/>
+      <g transform="translate(0 -42) scale(1.23)">
+        <use href="#pine-grid-a"/>
+      </g>
+    </g>
+    <g id="symbol-b">
+      <use href="#arc-taper" class="arc-soft"/>
+      <g transform="translate(0 -42) scale(1.23)">
+        <use href="#pine-grid-b"/>
+      </g>
+    </g>
+    <g id="symbol-c">
+      <use href="#arc-cut"/>
+      <path class="arc-light" d="M103 -49 C111 -38 116 -24 115 -10 C121 -12 128 -14 134 -16 C135 -34 129 -51 119 -65 Z"/>
+      <g transform="translate(0 -42) scale(1.23)">
+        <use href="#pine-grid-c"/>
+      </g>
+    </g>
+
+    <g id="wordmark">
+      <text x="0" y="0" class="word-pine">pine</text>
+      <text x="137" y="0" class="word-flow">flow</text>
+    </g>
+    <g id="wordmark-small">
+      <text x="0" y="0" class="word-pine-small">pine</text>
+      <text x="68" y="0" class="word-flow-small">flow</text>
+    </g>
+  </defs>
+
+  <rect class="bg" width="1800" height="1160"/>
+  <text class="title" x="84" y="92">Pineflow weighted arc v15</text>
+  <text class="sub" x="86" y="140">Single meaningful arc, denser diamond-only body, small rotation rhythm. No markers, no second line, no filled pineapple.</text>
+
+  <g transform="translate(86 208)">
+    <rect class="shadow" x="0" y="16" width="512" height="500" rx="22"/>
+    <rect class="card" x="0" y="0" width="512" height="500" rx="22"/>
+    <text class="label" x="34" y="56">A. Weighted Progress</text>
+    <text class="note" x="34" y="92">추천: 굵은 단일 아크 + 안정적 taper</text>
+    <g transform="translate(256 238) scale(1.12)">
+      <use href="#symbol-a"/>
+    </g>
+    <g transform="translate(132 408)">
+      <use href="#wordmark-small"/>
+    </g>
+  </g>
+
+  <g transform="translate(644 208)">
+    <rect class="shadow" x="0" y="16" width="512" height="500" rx="22"/>
+    <rect class="card" x="0" y="0" width="512" height="500" rx="22"/>
+    <text class="label" x="34" y="56">B. Soft Taper</text>
+    <text class="note" x="34" y="92">가장 부드럽지만 힘은 A보다 약함</text>
+    <g transform="translate(256 238) scale(1.12)">
+      <use href="#symbol-b"/>
+    </g>
+    <g transform="translate(132 408)">
+      <use href="#wordmark-small"/>
+    </g>
+  </g>
+
+  <g transform="translate(1202 208)">
+    <rect class="shadow" x="0" y="16" width="512" height="500" rx="22"/>
+    <rect class="card" x="0" y="0" width="512" height="500" rx="22"/>
+    <text class="label" x="34" y="56">C. Forward Cut</text>
+    <text class="note" x="34" y="92">끝 방향은 좋지만 앱 아이콘에선 강함</text>
+    <g transform="translate(256 238) scale(1.12)">
+      <use href="#symbol-c"/>
+    </g>
+    <g transform="translate(132 408)">
+      <use href="#wordmark-small"/>
+    </g>
+  </g>
+
+  <g transform="translate(86 775)">
+    <rect class="panel" x="0" y="0" width="760" height="210" rx="18"/>
+    <text class="small-label" x="28" y="42">Header scale check</text>
+    <g transform="translate(104 130) scale(.42)">
+      <use href="#symbol-a"/>
+    </g>
+    <g transform="translate(214 135)">
+      <use href="#wordmark-small"/>
+    </g>
+    <text class="note" x="420" y="130">A는 헤더에서 선이 사라지지 않고, 다이아몬드 간격도 덜 성겨 보임.</text>
+  </g>
+
+  <g transform="translate(914 775)">
+    <rect class="panel" x="0" y="0" width="360" height="210" rx="18"/>
+    <text class="small-label" x="28" y="42">App icon</text>
+    <g transform="translate(180 136) scale(.62)">
+      <use href="#symbol-a"/>
+    </g>
+  </g>
+
+  <g transform="translate(1340 775)">
+    <rect x="0" y="0" width="374" height="210" rx="18" fill="#11161c"/>
+    <text x="28" y="44" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="800" fill="#9fee57">Cold decision</text>
+    <text x="28" y="88" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#f2f7ef">A만 실제 반영 후보.</text>
+    <text x="28" y="122" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#f2f7ef">B/C는 비교용 통과안.</text>
+    <text x="28" y="156" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#f2f7ef">마커, 보조선, 패턴 없음.</text>
+  </g>
+</svg>

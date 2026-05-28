@@ -98,42 +98,33 @@ button:active:not(:disabled) {
 }
 
 .logoMark svg {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
 }
 
-.logoBody {
-  fill: var(--color-gold);
-}
-
-.logoLeaf {
-  fill: #79c768;
-}
-
-.logoLeafBack {
-  fill: #2f9b63;
-}
-
-.logoLeafLeft,
-.logoLeafRight {
-  fill: #9ad978;
-}
-
-.logoFlow,
-.logoShine {
+.logoRibbon {
   fill: none;
-  stroke: #173126;
+  stroke-width: 24;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.logoFlow {
-  stroke-width: 4.1;
+.logoLeafInk,
+.logoFacet {
+  fill: #11161c;
 }
 
-.logoShine {
-  opacity: 0.35;
-  stroke-width: 3.4;
+.logoLeafMint,
+.logoFacetLive {
+  fill: #43c78d;
+}
+
+.logoLeafGold {
+  fill: #9fee57;
+}
+
+.logoFacetDeep {
+  fill: #2f6f54;
 }
 
 .eyebrow {
@@ -359,13 +350,25 @@ h1 {
 }
 
 .recordSetup .planChips.compact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  overflow: visible;
   padding-bottom: 0;
 }
 
 .recordSetup .planChips.compact button {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 10px;
   border-color: rgba(255, 255, 255, 0.2);
   color: #f4f8ee;
   background: rgba(255, 255, 255, 0.1);
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
 }
 
 .recordSetup .planChips.compact button.selected {
@@ -952,6 +955,18 @@ h1 {
   gap: 10px;
 }
 
+.timeFlowGraph.carriedOver .timeFlowKicker > span:first-child {
+  display: none;
+}
+
+.flowCarryStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-pine);
+  font-weight: 800;
+}
+
 .timeFlowKicker span {
   display: inline-flex;
   align-items: center;
@@ -1394,21 +1409,239 @@ h1 {
 
 .timeEditor {
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 10px;
+  max-width: 620px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #c9d8c4;
+  border-radius: 8px;
+  background: #fbfcf8;
+  box-shadow: 0 16px 32px rgba(47, 64, 56, 0.08);
 }
 
-.timeEditor input {
+.timeEditorHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.timeEditorHeader span {
+  color: #66746a;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.timeEditorHeader strong {
+  margin: 0;
+  color: #17231e;
+  font-size: 0.88rem;
+}
+
+.editorGroupLabel {
+  color: #2f4038;
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
+.dateRail {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.recordEditModes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.recordEditModes button {
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 6px;
+  border: 1px solid #d7e2d2;
+  border-radius: 8px;
+  color: #2f4038;
+  background: #fff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.recordEditModes button.selected {
+  border-color: #27715c;
+  color: #f9fff9;
+  background: #27715c;
+}
+
+.dateRail button {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 58px;
+  padding: 6px 4px;
+  border: 1px solid #d7e2d2;
+  border-radius: 8px;
+  color: #2f4038;
+  background: #fff;
+}
+
+.dateRail button span {
+  overflow: hidden;
+  width: 100%;
+  color: #66746a;
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dateRail button strong {
+  margin: 0;
+  color: inherit;
+  font-size: 1rem;
+}
+
+.dateRail button small {
+  color: #66746a;
+  font-size: 0.62rem;
+  font-weight: 850;
+}
+
+.dateRail button:nth-child(4) {
+  transform: translateY(-2px);
+}
+
+.dateRail button.selected {
+  border-color: #27715c;
+  color: #f9fff9;
+  background: #27715c;
+  box-shadow: 0 8px 18px rgba(39, 113, 92, 0.18);
+}
+
+.dateRail button.selected span {
+  color: #d8ede0;
+}
+
+.dateRail button.selected small {
+  color: #d8ede0;
+}
+
+.timeEditorControls {
+  display: grid;
+  grid-template-columns: auto minmax(76px, 1fr) minmax(76px, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.periodControl {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 44px;
+  padding: 3px;
+  border: 1px solid #c9d8c4;
+  border-radius: 8px;
+  background: #edf3e8;
+}
+
+.periodControl button {
+  min-height: 36px;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.periodControl button.selected {
+  color: #f9fff9;
+  background: #27715c;
+}
+
+.timeNumberField {
+  display: grid;
+  gap: 4px;
+}
+
+.timeNumberField span {
+  color: #66746a;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.timeNumberField input {
   width: 100%;
   min-width: 0;
-  min-height: 36px;
-  padding: 0 8px;
-  border: 1px solid #d3ddcf;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid #b9cbb2;
   border-radius: 8px;
   color: #17231e;
   background: #fff;
-  font-size: 0.78rem;
+  font-size: 0.98rem;
+  font-weight: 900;
+  outline: none;
+  text-align: center;
+}
+
+.timeNumberField input:focus {
+  border-color: #27715c;
+  box-shadow: 0 0 0 3px rgba(39, 113, 92, 0.14);
+}
+
+.recordEditNote {
+  display: grid;
+  gap: 5px;
+}
+
+.recordEditNote span {
+  color: #66746a;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.recordEditNote input {
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid #b9cbb2;
+  border-radius: 8px;
+  color: #17231e;
+  background: #fff;
+  font-size: 0.86rem;
+  font-weight: 800;
+  outline: none;
+}
+
+.recordEditNote input:focus {
+  border-color: #27715c;
+  box-shadow: 0 0 0 3px rgba(39, 113, 92, 0.14);
+}
+
+.timeNudges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.timeNudges button {
+  flex: 1 1 58px;
+  color: #2f4038;
+  background: #edf3e8;
+}
+
+.timelineActions.editActions {
+  align-content: start;
+}
+
+.timelineActions .save {
+  color: #f9fff9;
+  background: #27715c;
+}
+
+.timelineActions .save:hover:not(:disabled) {
+  background: #1f624e;
 }
 
 .dot {
@@ -1586,6 +1819,22 @@ h1 {
     grid-template-columns: auto 1fr;
   }
 
+  .recordSetup .planChips.compact,
+  .recordEditModes,
+  .timeEditorControls {
+    grid-template-columns: 1fr;
+  }
+
+  .dateRail {
+    grid-template-columns: repeat(7, minmax(34px, 1fr));
+    gap: 3px;
+  }
+
+  .dateRail button {
+    min-height: 50px;
+    padding-inline: 2px;
+  }
+
   .timelineItem small {
     grid-column: 2;
     justify-self: start;
@@ -1598,8 +1847,12 @@ h1 {
     justify-items: start;
   }
 
-  .timeEditor {
-    grid-template-columns: 1fr;
+  .timeEditorHeader {
+    justify-content: start;
+  }
+
+  .dateRail button:nth-child(4) {
+    transform: none;
   }
 
   .goalReadout {
