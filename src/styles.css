@@ -88,23 +88,24 @@ button:active:not(:disabled) {
 }
 
 .logoMark {
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   display: grid;
   place-items: center;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden;
 }
 
 .logoMark svg {
-  width: 46px;
-  height: 46px;
+  width: 54px;
+  height: 54px;
 }
 
 .logoRibbon {
   fill: none;
-  stroke-width: 24;
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -1409,14 +1410,15 @@ h1 {
 
 .timeEditor {
   display: grid;
-  gap: 10px;
-  max-width: 620px;
+  grid-template-columns: minmax(0, 1fr) minmax(230px, 0.64fr);
+  gap: 8px 12px;
+  max-width: 680px;
   margin-top: 12px;
-  padding: 12px;
+  padding: 14px;
   border: 1px solid #c9d8c4;
   border-radius: 8px;
   background: #fbfcf8;
-  box-shadow: 0 16px 32px rgba(47, 64, 56, 0.08);
+  box-shadow: 0 14px 30px rgba(47, 64, 56, 0.06);
 }
 
 .timeEditorHeader {
@@ -1424,6 +1426,9 @@ h1 {
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
+  grid-column: 1 / -1;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #e3ebdd;
 }
 
 .timeEditorHeader span {
@@ -1439,34 +1444,42 @@ h1 {
 }
 
 .editorGroupLabel {
+  align-self: end;
   color: #2f4038;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 950;
+}
+
+.editorGroupLabel.timeLabel {
+  grid-column: 2;
+  grid-row: 4;
 }
 
 .dateRail {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  grid-column: 1;
+  gap: 5px;
 }
 
 .recordEditModes {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  grid-column: 1 / -1;
+  gap: 7px;
 }
 
 .recordEditModes button {
   min-width: 0;
-  min-height: 42px;
-  padding: 8px 6px;
+  min-height: 36px;
+  padding: 6px 8px;
   border: 1px solid #d7e2d2;
   border-radius: 8px;
   color: #2f4038;
   background: #fff;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 900;
-  line-height: 1.15;
+  line-height: 1.1;
   overflow-wrap: anywhere;
   white-space: normal;
 }
@@ -1482,8 +1495,8 @@ h1 {
   place-items: center;
   gap: 2px;
   min-width: 0;
-  min-height: 58px;
-  padding: 6px 4px;
+  min-height: 50px;
+  padding: 5px 3px;
   border: 1px solid #d7e2d2;
   border-radius: 8px;
   color: #2f4038;
@@ -1494,7 +1507,7 @@ h1 {
   overflow: hidden;
   width: 100%;
   color: #66746a;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 850;
   text-align: center;
   text-overflow: ellipsis;
@@ -1504,24 +1517,25 @@ h1 {
 .dateRail button strong {
   margin: 0;
   color: inherit;
-  font-size: 1rem;
+  font-size: 0.96rem;
 }
 
 .dateRail button small {
   color: #66746a;
   font-size: 0.62rem;
   font-weight: 850;
+  opacity: 0;
 }
 
 .dateRail button:nth-child(4) {
-  transform: translateY(-2px);
+  transform: none;
 }
 
 .dateRail button.selected {
   border-color: #27715c;
   color: #f9fff9;
   background: #27715c;
-  box-shadow: 0 8px 18px rgba(39, 113, 92, 0.18);
+  box-shadow: 0 6px 14px rgba(39, 113, 92, 0.14);
 }
 
 .dateRail button.selected span {
@@ -1530,19 +1544,21 @@ h1 {
 
 .dateRail button.selected small {
   color: #d8ede0;
+  opacity: 1;
 }
 
 .timeEditorControls {
   display: grid;
-  grid-template-columns: auto minmax(76px, 1fr) minmax(76px, 1fr);
-  gap: 8px;
+  grid-template-columns: auto minmax(66px, 1fr) minmax(66px, 1fr);
+  grid-column: 2;
+  gap: 6px;
   align-items: end;
 }
 
 .periodControl {
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 44px;
+  min-height: 38px;
   padding: 3px;
   border: 1px solid #c9d8c4;
   border-radius: 8px;
@@ -1550,7 +1566,7 @@ h1 {
 }
 
 .periodControl button {
-  min-height: 36px;
+  min-height: 30px;
   border-radius: 6px;
   background: transparent;
 }
@@ -1574,13 +1590,13 @@ h1 {
 .timeNumberField input {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 10px;
   border: 1px solid #b9cbb2;
   border-radius: 8px;
   color: #17231e;
   background: #fff;
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 900;
   outline: none;
   text-align: center;
@@ -1593,6 +1609,7 @@ h1 {
 
 .recordEditNote {
   display: grid;
+  grid-column: 1 / -1;
   gap: 5px;
 }
 
@@ -1603,7 +1620,7 @@ h1 {
 }
 
 .recordEditNote input {
-  min-height: 42px;
+  min-height: 38px;
   padding: 0 11px;
   border: 1px solid #b9cbb2;
   border-radius: 8px;
@@ -1620,15 +1637,18 @@ h1 {
 }
 
 .timeNudges {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-column: 2;
   gap: 6px;
 }
 
 .timeNudges button {
-  flex: 1 1 58px;
+  min-height: 32px;
+  padding-inline: 6px;
   color: #2f4038;
   background: #edf3e8;
+  font-size: 0.72rem;
 }
 
 .timelineActions.editActions {
@@ -1799,6 +1819,24 @@ h1 {
 
   .weatherTimeline {
     grid-auto-columns: minmax(96px, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .timeEditor {
+    grid-template-columns: 1fr;
+  }
+
+  .editorGroupLabel.timeLabel,
+  .dateRail,
+  .timeEditorControls,
+  .timeNudges {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .recordEditModes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

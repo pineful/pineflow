@@ -673,35 +673,22 @@ function Logo() {
             <stop offset="1" stopColor="#14573e" />
           </linearGradient>
         </defs>
-        <g transform="translate(64 59) scale(.38)">
-          <path
-            className="logoRibbon"
-            d="M-130 96 C-139.57 51.74 -123.74 -10.06 -86.14 -56.21"
-            stroke="url(#pineflowLogoRibbon)"
-          />
-          <path
-            className="logoRibbon"
-            d="M49.75 -118.77 C100.3 -113.3 135.66 -75.07 139 -25"
-            stroke="url(#pineflowLogoRibbon)"
-          />
-          <g transform="translate(0 -42) scale(1.25)">
-            <path className="logoLeafInk" d="M-33 -7 L-63 -40 L-27 -27 Z" />
-            <path className="logoLeafInk" d="M-16 -14 L-33 -61 L-3 -31 Z" />
-            <path className="logoLeafInk" d="M2 -18 L8 -68 L21 -30 Z" />
-            <path className="logoLeafInk" d="M17 -12 L46 -45 L30 -23 Z" />
-            <path className="logoLeafMint" d="M-4 -15 L0 -55 L11 -27 Z" />
-            <path className="logoLeafGold" d="M8 -18 L35 -45 L18 -22 Z" />
-            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 10)" />
-            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-22 36) rotate(-3.5)" />
-            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(22 36) rotate(3)" />
-            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-44 62) rotate(4)" />
-            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 62) rotate(-2)" />
-            <path className="logoFacet logoFacetDeep" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(44 62) rotate(4.5)" />
-            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(-22 88) rotate(-3)" />
-            <path className="logoFacet logoFacetLive" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(22 88) rotate(2)" />
-            <path className="logoFacet" d="M0 -15.5 L12.5 0 L0 15.5 L-12.5 0 Z" transform="translate(0 114) rotate(.5)" />
-          </g>
-        </g>
+        <path className="logoRibbon" d="M22 88 C24 54 42 28 66 25 C88 22 104 37 104 58" stroke="url(#pineflowLogoRibbon)" />
+        <path className="logoLeafInk" d="M46 36 L29 20 L49 26 Z" />
+        <path className="logoLeafInk" d="M58 31 L50 8 L66 25 Z" />
+        <path className="logoLeafInk" d="M70 30 L78 8 L82 29 Z" />
+        <path className="logoLeafInk" d="M81 36 L101 20 L88 35 Z" />
+        <path className="logoLeafMint" d="M60 31 L60 12 L69 28 Z" />
+        <path className="logoLeafGold" d="M73 31 L91 17 L81 34 Z" />
+        <path className="logoFacet" d="M64 39 L72 48 L64 57 L56 48 Z" />
+        <path className="logoFacet" d="M51 54 L59 63 L51 72 L43 63 Z" />
+        <path className="logoFacet" d="M77 54 L85 63 L77 72 L69 63 Z" />
+        <path className="logoFacet" d="M39 70 L47 79 L39 88 L31 79 Z" />
+        <path className="logoFacet" d="M64 70 L72 79 L64 88 L56 79 Z" />
+        <path className="logoFacet logoFacetDeep" d="M89 70 L97 79 L89 88 L81 79 Z" />
+        <path className="logoFacet" d="M51 86 L59 95 L51 104 L43 95 Z" />
+        <path className="logoFacet logoFacetLive" d="M77 86 L85 95 L77 104 L69 95 Z" />
+        <path className="logoFacet" d="M64 101 L72 110 L64 119 L56 110 Z" />
       </svg>
     </div>
   );
@@ -739,12 +726,12 @@ function RecordTimeEditor({
   return (
     <div className="timeEditor" aria-label={`${recordType === "check-in" ? "출근" : "퇴근"} 시간 수정`}>
       <div className="timeEditorHeader">
-        <span>수정할 날짜와 시간</span>
+        <span>기록 수정</span>
         <strong>
           {editorMonthFormatter.format(date)} · {weekdayLabel(date, "long")}
         </strong>
       </div>
-      <span className="editorGroupLabel">어떤 시간을 보냈나요</span>
+      <span className="editorGroupLabel">시간의 성격</span>
       <div className="recordEditModes" aria-label="기록 종류 수정">
         {workModes.map((workMode) => (
           <button
@@ -759,6 +746,7 @@ function RecordTimeEditor({
           </button>
         ))}
       </div>
+      <span className="editorGroupLabel">날짜</span>
       <div className="dateRail" role="listbox" aria-label="수정할 날짜">
         {days.map((day) => {
           const key = localDateKey(day);
@@ -780,6 +768,7 @@ function RecordTimeEditor({
           );
         })}
       </div>
+      <span className="editorGroupLabel timeLabel">시간</span>
       <div className="timeEditorControls">
         <div className="periodControl" aria-label="오전 오후 선택">
           <button
