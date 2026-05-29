@@ -32,6 +32,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  cursor: default;
   background:
     radial-gradient(circle at top left, rgba(226, 184, 75, 0.16), transparent 30rem),
     linear-gradient(180deg, #fbfaf5 0%, var(--color-bg) 100%);
@@ -45,6 +46,7 @@ textarea {
 
 button {
   border: 0;
+  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   caret-color: transparent;
@@ -63,6 +65,7 @@ button:focus-visible {
 
 input,
 textarea {
+  cursor: text;
   user-select: text;
   -webkit-user-select: text;
   caret-color: auto;
@@ -77,6 +80,21 @@ button:active:not(:disabled) {
   min-height: 100vh;
   margin: 0 auto;
   padding: 18px 16px 32px;
+  cursor: default;
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.appShell :where(input, textarea) {
+  cursor: text;
+  caret-color: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.appShell :where(button, summary, [role="button"], input[type="checkbox"], input[type="radio"]) {
+  cursor: pointer;
 }
 
 .heroPanel {
@@ -125,15 +143,15 @@ button:active:not(:disabled) {
   height: 58px;
 }
 
-.logoRibbon {
+.logoFlowArrow {
   fill: none;
-  stroke-width: 7;
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.logoRibbon.short {
-  stroke-width: 6;
+.logoFlowArrowHead {
+  fill: #14573e;
 }
 
 .logoBodyFill {

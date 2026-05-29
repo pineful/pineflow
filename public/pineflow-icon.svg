@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
   <title id="title">Pineflow app icon</title>
-  <desc id="desc">A pineapple-inspired mark with a leafy crown, gold body silhouette, diamond texture, and green flow ribbon.</desc>
+  <desc id="desc">A pineapple-inspired mark with a leafy crown, gold body silhouette, diamond texture, and a large green flow arrow wrapping behind it.</desc>
   <defs>
     <linearGradient id="ribbon" x1="14" y1="96" x2="118" y2="14" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#36bb86"/>
@@ -13,9 +13,9 @@
     </radialGradient>
   </defs>
   <rect width="128" height="128" rx="26" fill="url(#tileGlow)"/>
+  <path d="M27 93 C18 58 39 24 72 23 C97 22 112 42 106 66" fill="none" stroke="url(#ribbon)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M105 66 L116 60 L113 74 Z" fill="#14573e"/>
   <path d="M64 35 C45 36 33 54 33 78 C33 100 47 115 64 119 C81 115 95 100 95 78 C95 54 83 36 64 35 Z" fill="#f2c64d" opacity=".9"/>
-  <path d="M25 92 C21 70 29 50 46 39" fill="none" stroke="url(#ribbon)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M84 40 C97 49 102 63 98 78" fill="none" stroke="url(#ribbon)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
   <path fill="#166545" d="M47 42 C40 35 36 27 35 18 C46 22 54 31 58 43 C54 42 51 42 47 42 Z"/>
   <path fill="#43c78d" d="M59 39 C57 28 59 18 64 10 C70 21 70 32 65 41 C63 40 61 40 59 39 Z"/>
   <path fill="#166545" d="M68 40 C73 29 81 20 90 15 C90 29 81 40 70 44 C70 43 69 41 68 40 Z"/>
