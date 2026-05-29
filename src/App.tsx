@@ -681,8 +681,8 @@ function Logo() {
             <stop offset="1" stopColor="#14573e" />
           </linearGradient>
         </defs>
-        <path className="logoFlowArrow" d="M27 93 C18 58 39 24 72 23 C97 22 112 42 106 66" stroke="url(#pineflowLogoRibbon)" />
-        <path className="logoFlowArrowHead" d="M105 66 L116 60 L113 74 Z" />
+        <path className="logoOrbitRing" d="M15 87 C31 58 96 42 116 60 C100 86 33 102 15 87 Z" stroke="url(#pineflowLogoRibbon)" />
+        <path className="logoOrbitArrow" d="M108 57 L119 55 L114 67 Z" />
         <path className="logoBodyFill" d="M64 35 C45 36 33 54 33 78 C33 100 47 115 64 119 C81 115 95 100 95 78 C95 54 83 36 64 35 Z" />
         <path className="logoLeafDeep" d="M47 42 C40 35 36 27 35 18 C46 22 54 31 58 43 C54 42 51 42 47 42 Z" />
         <path className="logoLeafMint" d="M59 39 C57 28 59 18 64 10 C70 21 70 32 65 41 C63 40 61 40 59 39 Z" />

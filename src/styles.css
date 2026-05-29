@@ -143,14 +143,14 @@ button:active:not(:disabled) {
   height: 58px;
 }
 
-.logoFlowArrow {
+.logoOrbitRing {
   fill: none;
-  stroke-width: 8;
+  stroke-width: 7;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.logoFlowArrowHead {
+.logoOrbitArrow {
   fill: #14573e;
 }
 
