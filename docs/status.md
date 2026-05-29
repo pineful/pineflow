@@ -35,7 +35,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - CDK bootstrap CloudFormation execution role에 대한 제한된 PassRole 권한을 GitHub OIDC 배포 Role에 추가.
 - CDK 배포 모니터링을 위한 CloudFormation stack event 조회 권한을 GitHub OIDC 배포 Role에 추가.
 - 사용자 화면에서 내부 시스템명을 제거하고 오늘 날씨 카드를 추가.
-- 날씨 카드에 세밀한 위치 표시와 2일 시간대별 예보 흐름을 추가.
+- 날씨 카드에 세밀한 위치 표시와 시간대별 예보 흐름을 추가.
+- 날씨 영역을 `Forecast Ribbon` 철학으로 정리하고, 5일 예보 그래프와 시간대별 카드를 같은 가로 스크롤 시간축에서 함께 움직이도록 개선.
 - Pineflow 앱 아이콘과 귀여운 동물형 파인애플 로고를 추가.
 - 시간대별 날씨를 온도/강수 차트와 날씨 상태 아이콘으로 보강.
 - 상단 계정 메뉴에 로그인 계정 표시, 로그아웃, 향후 계정 기능 확장 영역을 추가.

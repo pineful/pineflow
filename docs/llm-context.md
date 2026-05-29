@@ -116,7 +116,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - Lambda runtime은 AWS Health Node.js 20.x EOL 알림 대응 이후 `nodejs24.x`로 고정한다. `nodejs20.x`나 지원 종료가 가까운 런타임으로 되돌리면 `infra/scripts/verify-template.mjs` guardrail이 실패해야 한다.
 - 실제 AWS 배포 전 Budget 알림 이메일 구독을 승인해야 한다.
 - 배포 후 첫 사용자는 Cognito에서 관리자가 생성해야 한다.
-- 날씨 카드는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 직접 호출한다. 위치 좌표는 Pineflow 서버에 저장하지 않는다. BigDataCloud reverse geocoding은 브라우저 위치 권한으로 얻은 현재 좌표에만 사용하고, fallback 좌표에는 사용하지 않는다. reverse geocoding 결과가 영문 동명이나 불명확한 행정구역을 섞어 반환하면 화면에는 `현재 위치 기준`으로 표시한다.
+- 날씨 카드는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 직접 호출한다. 위치 좌표는 Pineflow 서버에 저장하지 않는다. BigDataCloud reverse geocoding은 브라우저 위치 권한으로 얻은 현재 좌표에만 사용하고, fallback 좌표에는 사용하지 않는다. reverse geocoding 결과가 영문 동명이나 불명확한 행정구역을 섞어 반환하면 화면에는 `현재 위치 기준`으로 표시한다. 날씨 영역은 `Forecast Ribbon` 철학을 따른다. 5일 예보의 그래프와 시간대별 카드는 같은 가로 스크롤 시간축 안에서 함께 움직여야 한다.
 - 로그인 후 로그아웃, 계정 표시, 향후 계정 기능은 상단 계정 메뉴를 확장하는 방향을 유지한다.
 - 기록 설정은 이번 세션이 최근 기록에 어떻게 남을지 정하는 영역이다. 모드 수는 적게 유지하고, 구체 작업명은 자주 쓰는 메모 후보나 직접 입력 메모로 남긴다. 활성 세션 중에는 종류/메모/시작 시간 요약만 보여주고 비어 있는 입력창을 노출하지 않는다.
 - 기록 입력은 출근/퇴근 CTA와 같은 상단 패널 안에 둔다. 메모 작성 후 버튼을 찾아 다시 이동하는 구조로 되돌리지 않는다.

@@ -55,6 +55,7 @@
 
 ## 2026-05-29
 
+- 날씨 영역에 `Forecast Ribbon` 디자인 철학을 추가하고, 5일 예보 그래프와 시간대별 카드를 하나의 가로 스크롤 시간축으로 통합했습니다.
 - 분야별 병렬 작업을 위해 `docs/workstreams.md` 작업 지도를 추가하고, AGENTS/아키텍처/CI 문서를 Serverless 본선 기준으로 정리했습니다.
 - AWS Lambda Node.js 20.x EOL 알림에 대응해 CDK Lambda runtime을 `nodejs24.x`로 업그레이드하고, guardrail 검증에 런타임 확인을 추가했습니다.
 - 날씨 위치명이 영문 동명이나 불명확한 행정구역으로 섞여 보이지 않도록 현재 위치 표시 기준을 보강했습니다.

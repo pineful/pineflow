@@ -83,6 +83,8 @@ const seoulCoordinates = {
   longitude: 126.978,
   label: "서울 중구 기준"
 };
+const weatherForecastDays = 5;
+const weatherForecastSlotWidth = 106;
 
 function weatherCondition(code: number) {
   if (code === 0) return "맑음";
@@ -132,11 +134,11 @@ function buildHourlyWeather(hourly: {
   );
 
   return times
+    .map((time, index) => ({ time, index }))
     .slice(startIndex)
     .filter((_, index) => index % 3 === 0)
-    .slice(0, 16)
-    .map((time) => {
-      const index = times.indexOf(time);
+    .slice(0, weatherForecastDays * 8)
+    .map(({ time, index }) => {
       return {
         time,
         label: weatherHourLabel(time),
@@ -472,31 +474,28 @@ function playPineSound(kind: FeedbackSound) {
 function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
   if (hourly.length < 2) return null;
 
-  const width = 320;
-  const height = 138;
-  const paddingX = 14;
+  const width = Math.max(360, hourly.length * weatherForecastSlotWidth);
+  const height = 156;
+  const paddingX = weatherForecastSlotWidth / 2;
   const top = 18;
-  const chartHeight = 64;
-  const precipitationBase = 122;
+  const chartHeight = 72;
+  const precipitationBase = 132;
   const temperatures = hourly.map((slot) => slot.temperature);
   const minTemperature = Math.min(...temperatures);
   const maxTemperature = Math.max(...temperatures);
   const spread = Math.max(maxTemperature - minTemperature, 1);
 
   const points = hourly.map((slot, index) => {
-    const x = paddingX + (index / (hourly.length - 1)) * (width - paddingX * 2);
+    const x = paddingX + index * weatherForecastSlotWidth;
     const y = top + ((maxTemperature - slot.temperature) / spread) * chartHeight;
     return { x, y, slot };
   });
   const line = points.map((point) => `${point.x},${point.y}`).join(" ");
-  const first = points[0];
-  const middle = points[Math.floor(points.length / 2)];
-  const last = points[points.length - 1];
-  const labelPoints = [first, middle, last];
-  const barWidth = Math.max(4, (width - paddingX * 2) / hourly.length - 5);
+  const labelPoints = points.filter((_, index) => index % 8 === 0 || index === points.length - 1);
+  const barWidth = 18;
 
   return (
-    <div className="weatherChart" aria-label="2일 온도와 강수 흐름 차트">
+    <div className="weatherChart" aria-label={`${weatherForecastDays}일 온도와 강수 흐름 차트`}>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-hidden="true">
         <defs>
           <linearGradient id="temperatureLine" x1="0" x2="1" y1="0" y2="0">
@@ -504,7 +503,12 @@ function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
             <stop offset="100%" stopColor="#f6c247" />
           </linearGradient>
         </defs>
-        <path className="chartGrid" d="M14 18H306M14 50H306M14 82H306" />
+        <path
+          className="chartGrid"
+          d={`M${paddingX} 18H${width - paddingX}M${paddingX} 54H${width - paddingX}M${paddingX} 90H${
+            width - paddingX
+          }`}
+        />
         {points.map(({ x, slot }) => {
           const barHeight = Math.max(3, (slot.precipitationProbability / 100) * 28);
           return (
@@ -524,7 +528,7 @@ function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
           <circle className={`chartPoint ${weatherTone(slot.condition)}`} key={slot.time} cx={x} cy={y} r="4.2" />
         ))}
         {labelPoints.map(({ x, slot }) => (
-          <text className="chartLabel" key={slot.time} x={x} y="136" textAnchor="middle">
+          <text className="chartLabel" key={slot.time} x={x} y="152" textAnchor="middle">
             {slot.label.startsWith("오늘 ") ? slot.label.replace("오늘 ", "") : slot.label}
           </text>
         ))}
@@ -1071,7 +1075,7 @@ function App() {
           current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m",
           daily: "precipitation_probability_max",
           hourly: "temperature_2m,apparent_temperature,precipitation_probability,weather_code",
-          forecast_days: "2",
+          forecast_days: String(weatherForecastDays),
           timezone: "auto"
         });
         const [response, resolvedLocationLabel] = await Promise.all([
@@ -1672,22 +1676,28 @@ function App() {
               <span>바람 {weather.windSpeed}km/h</span>
             </div>
             {weather.hourly && weather.hourly.length > 0 && (
-              <>
-                <WeatherChart hourly={weather.hourly} />
-                <div className="weatherTimeline" aria-label="2일 시간대별 날씨">
-                  {weather.hourly.map((slot) => (
-                    <article className="weatherSlot" key={slot.time}>
-                      <span>{slot.label}</span>
-                      <div className={`weatherGlyph ${weatherTone(slot.condition)}`} aria-hidden="true" />
-                      <strong>{slot.temperature}°</strong>
-                      <small>{slot.condition}</small>
-                      <em style={{ "--rain": `${slot.precipitationProbability}%` } as CSSProperties}>
-                        강수 {slot.precipitationProbability}%
-                      </em>
-                    </article>
-                  ))}
+              <div
+                className="weatherForecastScroller"
+                aria-label={`${weatherForecastDays}일 시간대별 날씨`}
+                style={{ "--forecast-width": `${weather.hourly.length * weatherForecastSlotWidth}px` } as CSSProperties}
+              >
+                <div className="weatherForecastTrack">
+                  <WeatherChart hourly={weather.hourly} />
+                  <div className="weatherTimeline">
+                    {weather.hourly.map((slot) => (
+                      <article className="weatherSlot" key={slot.time}>
+                        <span>{slot.label}</span>
+                        <div className={`weatherGlyph ${weatherTone(slot.condition)}`} aria-hidden="true" />
+                        <strong>{slot.temperature}°</strong>
+                        <small>{slot.condition}</small>
+                        <em style={{ "--rain": `${slot.precipitationProbability}%` } as CSSProperties}>
+                          강수 {slot.precipitationProbability}%
+                        </em>
+                      </article>
+                    ))}
+                  </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         ) : (

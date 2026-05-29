@@ -653,6 +653,11 @@ h1 {
 
 .weatherBand {
   padding: 16px;
+  border-color: rgba(184, 205, 181, 0.9);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(246, 250, 242, 0.92)),
+    radial-gradient(circle at 12% 8%, rgba(131, 183, 230, 0.2), transparent 12rem),
+    radial-gradient(circle at 86% 18%, rgba(246, 194, 71, 0.16), transparent 14rem);
 }
 
 .weatherGrid {
@@ -667,7 +672,9 @@ h1 {
   gap: 4px;
   min-height: 112px;
   padding: 16px;
-  background: #f9fbf6;
+  background:
+    radial-gradient(circle at 84% 24%, rgba(246, 194, 71, 0.28), transparent 4.5rem),
+    linear-gradient(145deg, #fbfdf8 0%, #f3f8ef 100%);
 }
 
 .weatherMain strong {
@@ -693,7 +700,9 @@ h1 {
   place-items: center;
   min-height: 40px;
   border-radius: 8px;
-  background: #eef3e9;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(232, 240, 226, 0.88)),
+    #eef3e9;
   font-weight: 800;
   text-align: center;
 }
@@ -704,14 +713,30 @@ h1 {
   background: #f9fbf6;
 }
 
-.weatherChart {
+.weatherForecastScroller {
   grid-column: 1 / -1;
-  padding: 14px 14px 10px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 2px 2px 10px;
+  scrollbar-color: rgba(47, 107, 79, 0.52) rgba(227, 234, 220, 0.9);
+  scrollbar-width: thin;
+}
+
+.weatherForecastTrack {
+  display: grid;
+  gap: 10px;
+  width: max(100%, var(--forecast-width));
+  min-width: 100%;
+}
+
+.weatherChart {
+  padding: 14px 0 10px;
   border: 1px solid #dfe6d6;
   border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.92)),
-    radial-gradient(circle at top right, rgba(246, 194, 71, 0.2), transparent 16rem);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.9)),
+    linear-gradient(90deg, rgba(131, 183, 230, 0.1), rgba(246, 194, 71, 0.13)),
+    radial-gradient(circle at top right, rgba(246, 194, 71, 0.18), transparent 16rem);
 }
 
 .weatherChart svg {
@@ -773,6 +798,7 @@ h1 {
   align-items: center;
   gap: 10px;
   margin-top: 4px;
+  padding: 0 14px;
   color: #66746a;
   font-size: 0.74rem;
   font-weight: 850;
@@ -806,17 +832,13 @@ h1 {
 }
 
 .weatherTimeline {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(92px, 1fr);
+  display: flex;
   gap: 8px;
-  overflow-x: auto;
-  padding: 2px 2px 8px;
-  scrollbar-width: thin;
+  min-width: 0;
 }
 
 .weatherSlot {
+  flex: 0 0 98px;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 6px 8px;
@@ -2034,13 +2056,8 @@ h1 {
 
   .weatherMain,
   .weatherDetails,
-  .weatherChart,
-  .weatherTimeline {
+  .weatherForecastScroller {
     grid-column: 1;
-  }
-
-  .weatherTimeline {
-    grid-auto-columns: minmax(96px, 1fr);
   }
 }
 
