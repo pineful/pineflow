@@ -1,45 +1,64 @@
 # CI/CD 설계
 
+마지막 업데이트: 2026-05-29
+
 ## 목표
 
-`main` 브랜치에 변경 사항이 push되면 GitHub Actions가 애플리케이션 Docker 이미지를 빌드해 GHCR에 발행합니다. EC2는 GitHub Actions가 접속하는 대상이 아니라, 스스로 GitHub와 GHCR을 pull해서 서비스를 갱신합니다.
+Pineflow의 본선 CI/CD는 AWS Serverless 배포입니다. `main` 브랜치에 변경 사항이 push되면 GitHub Actions가 앱과 인프라를 검증하고, GitHub OIDC로 AWS IAM Role을 assume해 CDK stack과 S3/CloudFront 프론트엔드를 갱신합니다.
 
-이 방식은 GitHub에 EC2 SSH private key를 저장하지 않기 위한 구조입니다.
+EC2 Docker/PostgreSQL workflow는 PoC 보존용 수동 workflow입니다. 새 기능 배포의 기준으로 삼지 않습니다.
 
-## 전체 흐름
+## Serverless 본선 흐름
 
-1. 개발자가 `main` 브랜치에 push합니다.
+1. 개발자가 `main` 브랜치에 push하거나 수동으로 `Pineflow Serverless` workflow를 실행합니다.
 2. GitHub Actions가 코드를 checkout합니다.
-3. `npm ci`와 `npm run build`로 프론트엔드/타입 빌드를 검증합니다.
-4. Docker 이미지를 빌드합니다.
-5. 이미지를 GitHub Container Registry, 즉 GHCR에 push합니다.
-6. EC2의 `systemd timer` 또는 운영자의 수동 명령이 `scripts/deploy-ec2.sh`를 실행합니다.
-7. EC2는 `git pull --ff-only origin main`으로 배포 파일과 스크립트를 최신화합니다.
-8. EC2는 `compose.deploy.yml`로 최신 app 이미지를 pull합니다.
-9. PostgreSQL은 유지하고 app 컨테이너만 새 이미지로 교체합니다.
-10. `/api/health`로 배포 성공 여부를 확인합니다.
+3. Node.js 24로 루트 앱 dependency를 설치하고 `npm run build`를 실행합니다.
+4. `infra` dependency를 설치하고 `npm run verify`로 CDK synth와 guardrail 검증을 실행합니다.
+5. `main` push이고 필수 GitHub Repository Variables가 있으면 deploy job이 실행됩니다.
+6. GitHub Actions는 장기 AWS key가 아니라 OIDC로 `AWS_ROLE_ARN`을 assume합니다.
+7. `npx cdk deploy --require-approval never`로 Serverless stack을 배포합니다.
+8. CDK output에서 API endpoint, Cognito, S3 bucket, CloudFront distribution 값을 읽습니다.
+9. 해당 값을 Vite 환경 변수로 주입해 프론트엔드를 다시 빌드합니다.
+10. `dist/`를 S3에 sync하고 CloudFront cache를 invalidate합니다.
 
-## 선택한 방식
+## 본선 관련 파일
 
-EC2 `t3.micro`에서 직접 Docker build를 하지 않습니다. 작은 인스턴스에서 빌드를 수행하면 메모리, CPU credit, 디스크 사용량에 부담이 커질 수 있기 때문입니다.
+- `.github/workflows/serverless.yml`: Serverless 검증과 배포 workflow.
+- `infra/lib/pineflow-serverless-stack.ts`: CDK stack 정의.
+- `infra/scripts/verify-template.mjs`: 비용/보안 guardrail 검증.
+- `infra/bootstrap/github-oidc-deploy-role.template.yaml`: GitHub OIDC 배포 Role 템플릿.
+- `docs/aws-iam-oidc.md`: OIDC Role 생성 절차.
+- `docs/aws-serverless-deployment-checklist.md`: 배포 전후 점검표.
 
-GitHub Actions는 빌드와 이미지 발행만 맡습니다. EC2 접속 정보나 SSH private key는 GitHub Secrets에 저장하지 않습니다.
+## GitHub Repository Variables
 
-## 관련 파일
+본선 workflow에는 Repository Variables를 사용합니다.
 
-- `.github/workflows/deploy.yml`: GitHub Actions workflow. 이름은 `Build Pineflow Image`이며 이미지 발행까지만 수행합니다.
+- `AWS_ROLE_ARN`
+- `AWS_REGION`
+- `BUDGET_ALERT_EMAIL`
+
+장기 AWS access key, AWS secret access key, SSH private key는 GitHub Secrets나 Variables에 저장하지 않습니다.
+
+## PoC Docker workflow
+
+`.github/workflows/deploy.yml`의 `Build Pineflow PoC Image` workflow는 `workflow_dispatch`로만 실행되는 PoC 이미지 빌드용입니다. EC2 실험 환경에서 GHCR 이미지를 쓰기 위한 흔적이며, 본선 운영 배포가 아닙니다.
+
+PoC 흐름은 GitHub에 EC2 SSH private key를 저장하지 않기 위해 pull-based 구조를 사용했습니다. EC2의 `systemd timer` 또는 운영자의 수동 명령이 `scripts/deploy-ec2.sh`를 실행하고, EC2가 직접 GitHub/GHCR에서 pull합니다.
+
+## PoC 관련 파일
+
+- `.github/workflows/deploy.yml`: 수동 PoC 이미지 빌드 workflow.
 - `Dockerfile`: app 이미지 빌드 정의.
-- `compose.deploy.yml`: GHCR 이미지를 사용하는 운영용 Compose 구성.
+- `compose.deploy.yml`: GHCR 이미지를 사용하는 PoC 운영용 Compose 구성.
 - `scripts/deploy-ec2.sh`: EC2 안에서 실행되는 pull-based 배포 스크립트.
 - `ops/systemd/pineflow-update.service`: EC2에서 update script를 실행하는 systemd service 예시.
 - `ops/systemd/pineflow-update.timer`: 주기적으로 update service를 실행하는 systemd timer 예시.
-- `.env.production.example`: 운영 환경 변수 템플릿.
+- `.env.production.example`: PoC 운영 환경 변수 템플릿.
 
-## GitHub Secrets
+## 금지하는 GitHub Secrets
 
-현재 구조에서는 EC2 접속용 GitHub Secrets가 필요 없습니다.
-
-등록하지 말아야 할 값:
+등록하지 말아야 할 값은 다음과 같습니다.
 
 - `EC2_HOST`
 - `EC2_USER`
@@ -48,9 +67,11 @@ GitHub Actions는 빌드와 이미지 발행만 맡습니다. EC2 접속 정보�
 - AWS access key
 - AWS secret access key
 
-GitHub Actions는 기본 `GITHUB_TOKEN`으로 GHCR에 이미지를 push합니다.
+PoC Docker workflow는 기본 `GITHUB_TOKEN`으로 GHCR에 이미지를 push합니다. Serverless workflow는 GitHub OIDC와 IAM Role만 사용합니다.
 
 ## EC2 최초 준비
+
+이 절은 PoC 참고용입니다. 본선 Serverless 배포에는 필요하지 않습니다.
 
 CI/CD가 동작하려면 EC2에 최초 1회 준비가 필요합니다.
 
@@ -129,7 +150,7 @@ APP_IMAGE_TAG=latest scripts/deploy-ec2.sh
 
 ## 장애 대응
 
-배포가 실패하면 EC2의 systemd service 또는 timer 로그를 확인합니다.
+PoC 배포가 실패하면 EC2의 systemd service 또는 timer 로그를 확인합니다.
 
 ```bash
 systemctl --user status pineflow-update.service
@@ -154,4 +175,4 @@ docker compose -p pineflow -f compose.deploy.yml logs --tail=200 app
 - `.env.production`은 Git에 커밋하지 않습니다.
 - PostgreSQL 포트 `5432`는 외부로 열지 않습니다.
 - GHCR package를 private으로 유지한다면 EC2의 Docker credential 저장 위치를 보호합니다.
-- 나중에 AWS API 호출 자동화가 필요하면 장기 access key 대신 GitHub OIDC와 AWS IAM role을 사용합니다.
+- AWS API 호출 자동화는 이미 Serverless workflow에서 GitHub OIDC와 AWS IAM Role을 사용합니다. 장기 access key 방식으로 되돌리지 않습니다.

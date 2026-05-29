@@ -5,11 +5,12 @@
 ## 먼저 읽을 문서
 
 1. `docs/llm-context.md`
-2. `docs/status.md`
-3. `docs/serverless-implementation.md`
-4. `docs/architecture.md`
-5. `docs/adr/`
-6. 변경하려는 영역의 `docs/modules/*.md`
+2. `docs/workstreams.md`
+3. `docs/status.md`
+4. `docs/serverless-implementation.md`
+5. `docs/architecture.md`
+6. `docs/adr/`
+7. 변경하려는 영역의 `docs/modules/*.md`
 
 ## 핵심 설계 원칙
 

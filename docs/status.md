@@ -4,7 +4,7 @@
 
 ## 현재 상태 요약
 
-Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 기준을 AWS Serverless 구조로 전환하는 중입니다. 이번 단계에서는 CDK 인프라 코드, Cognito 기반 로그인, DynamoDB 기반 Lambda API, S3/CloudFront 배포 흐름, GitHub OIDC 기반 CI/CD 초안을 추가했습니다.
+Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기준은 AWS Serverless 구조로 전환했습니다. 현재 본선은 Cognito 기반 로그인, API Gateway/Lambda/DynamoDB API, S3/CloudFront 프론트엔드, GitHub OIDC 기반 CI/CD로 배포됩니다.
 
 ## 완료됨
 
@@ -28,6 +28,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - CloudFront 보안 응답 헤더와 CSP 적용.
 - CDK 템플릿 guardrail 자동 검증 스크립트 추가.
 - LLM 기반 후속 작업을 위한 `AGENTS.md`, `docs/llm-context.md`, API 계약, 비용 가드레일, ADR 문서 추가.
+- 분야별 병렬 작업과 후속 LLM 인계를 위한 `docs/workstreams.md` 작업 지도 추가.
 - GitHub OIDC 배포 Role 템플릿과 설정 문서 추가.
 - GitHub OIDC trust policy 범위와 `AdministratorAccess` 금지를 자동 검증에 포함.
 - GitHub Actions 공식 action 버전을 Node 24 대응 버전으로 갱신.
@@ -75,13 +76,10 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 
 ## 아직 남은 일
 
-- AWS 계정에서 CDK bootstrap 수행.
-- GitHub OIDC용 AWS IAM Role 생성.
-- GitHub repository variables 등록.
-- 실제 AWS 배포 후 Cognito 로그인, API 호출, S3/CloudFront 프론트 배포 검증.
 - DynamoDB export/import 백업 절차 구현.
 - 실제 사용 후 CloudWatch 지표 기반 throttling/capacity 조정.
-- 필요 시 기존 깨져 보이는 일부 PoC 문서의 인코딩/본문을 Serverless 본선 기준으로 재정리.
+- Budget 알림 이메일 구독과 비용 알림 수신 상태를 주기적으로 확인.
+- 필요 시 기존 PoC 문서를 Serverless 본선과 명확히 구분되도록 더 정리.
 
 ## 현재 CI/CD 방향
 

@@ -4,7 +4,7 @@
 
 ## 이번 단계의 목표
 
-Pineflow의 운영 기준을 EC2 Docker PoC에서 AWS Serverless 구조로 옮기기 위한 실제 코드 기반을 만들었다. 이 단계의 핵심은 배포 전에 반드시 필요한 보안/비용 가드레일을 인프라 코드에 고정하고, 프론트엔드가 Cognito 로그인 기반으로 API를 호출할 수 있게 만드는 것이다.
+Pineflow의 운영 기준은 EC2 Docker PoC에서 AWS Serverless 구조로 옮겨졌다. 이 단계의 핵심은 보안/비용 가드레일을 인프라 코드에 고정하고, 프론트엔드가 Cognito 로그인 기반으로 API를 호출하며, GitHub Actions가 OIDC로 AWS에 배포하는 본선 흐름을 유지하는 것이다.
 
 ## 추가된 구성
 
@@ -64,12 +64,9 @@ DynamoDB single-table 구조를 사용한다.
 
 ## 아직 남은 작업
 
-- AWS 계정에서 CDK bootstrap 수행.
-- GitHub OIDC용 AWS IAM Role 생성.
-- GitHub repository variables 등록.
-- Cognito 관리자 생성 사용자로 실제 로그인 검증.
 - DynamoDB export/import 운영 절차 구체화.
-- 실제 AWS 배포 후 CloudWatch 지표와 Budget 알림 수신 검증.
+- 실제 사용 후 CloudWatch 지표를 보며 throttling/capacity 조정 필요 여부 확인.
+- Budget 알림 이메일 구독과 비용 알림 수신 상태를 주기적으로 확인.
 
 ## 관련 점검 문서
 
