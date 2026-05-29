@@ -49,6 +49,7 @@ assert(stage?.Properties?.DefaultRouteSettings?.ThrottlingBurstLimit === 5, "API
 const lambda = resourcesOf("AWS::Lambda::Function").find(
   (resource) => resource.Properties.FunctionName === "pineflow-api"
 );
+assert(lambda?.Properties?.Runtime === "nodejs24.x", "Lambda runtime must stay on supported Node.js 24.x.");
 assert(lambda?.Properties?.ReservedConcurrentExecutions === 1, "Lambda reserved concurrency must be 1.");
 assert(lambda?.Properties?.MemorySize === 128, "Lambda memory must remain at the minimum 128 MB baseline.");
 

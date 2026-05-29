@@ -143,11 +143,29 @@ button:active:not(:disabled) {
   height: 58px;
 }
 
-.logoOrbitRing {
+.logoOrbitBack,
+.logoOrbitFront {
   fill: none;
-  stroke-width: 7;
+  stroke-width: 11;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.logoOrbitBack {
+  opacity: 0.82;
+}
+
+.logoOrbitFront {
+  opacity: 0.88;
+}
+
+.logoOrbitBackLight,
+.logoOrbitFrontLight {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
 }
 
 .logoOrbitArrow {

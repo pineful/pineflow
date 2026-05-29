@@ -1,6 +1,6 @@
 # AWS Serverless 배포 전 점검표
 
-마지막 업데이트: 2026-05-20
+마지막 업데이트: 2026-05-29
 
 ## 생성 순서
 
@@ -46,6 +46,7 @@
 ## 문제 발생 시 중단 기준
 
 - `npm run verify` 실패.
+- Lambda runtime이 `nodejs24.x`가 아닌 값으로 합성됨.
 - `npm audit --audit-level=high`에서 high 이상 취약점 발견.
 - GitHub Actions가 AWS OIDC Role을 assume하지 못함.
 - CDK diff에서 WAF, NAT Gateway, RDS, EC2, provisioned concurrency 같은 의도하지 않은 유료 리소스가 보임.

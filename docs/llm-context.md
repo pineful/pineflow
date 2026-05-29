@@ -21,7 +21,7 @@ Pineflow는 회사에 속해 있지 않은 개인도 자신의 출근, 퇴근, �
 - Frontend: React/Vite, S3, CloudFront
 - Auth: Cognito User Pool, 관리자 생성 사용자만 허용
 - API: API Gateway HTTP API, JWT authorizer 필수
-- Compute: Lambda Node.js
+- Compute: Lambda Node.js 24.x (`nodejs24.x`)
 - Database: DynamoDB single-table
 - IaC: AWS CDK TypeScript
 - CI/CD: GitHub Actions + GitHub OIDC + AWS IAM Role
@@ -112,6 +112,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 ## 현재 주의사항
 
 - `infra` npm audit에는 CDK 도구 체인의 moderate `brace-expansion` transitive issue가 남아 있다. Lambda asset에는 포함되지 않는다.
+- Lambda runtime은 AWS Health Node.js 20.x EOL 알림 대응 이후 `nodejs24.x`로 고정한다. `nodejs20.x`나 지원 종료가 가까운 런타임으로 되돌리면 `infra/scripts/verify-template.mjs` guardrail이 실패해야 한다.
 - 실제 AWS 배포 전 Budget 알림 이메일 구독을 승인해야 한다.
 - 배포 후 첫 사용자는 Cognito에서 관리자가 생성해야 한다.
 - 날씨 카드는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 직접 호출한다. 위치 좌표는 Pineflow 서버에 저장하지 않는다. BigDataCloud reverse geocoding은 브라우저 위치 권한으로 얻은 현재 좌표에만 사용하고, fallback 좌표에는 사용하지 않는다. reverse geocoding 결과가 영문 동명이나 불명확한 행정구역을 섞어 반환하면 화면에는 `현재 위치 기준`으로 표시한다.
@@ -129,6 +130,6 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 태블릿 이상 화면에서는 상단 패널을 가로형 대시보드로 구성한다. 왼쪽에는 큰 흐름 그래프, 오른쪽에는 현재 시각, 기록 메모/모드, 출근/퇴근 CTA를 둬서 그래프 확인과 기록 조작이 같은 시야 안에 들어와야 한다.
 - 첫 화면에는 좌측 사이드바, 큰 배경 패턴, 과한 마스코트 장식을 넣지 않는다. Pineflow의 세련됨은 장식량보다 시간 정보의 위계에서 나와야 한다.
 - 효과음은 외부 음원 파일을 쓰지 않고 Web Audio API로 짧고 조용하게 생성한다. 기본값은 꺼짐이며, 계정 메뉴에서 사용자가 켠 뒤 사용자 조작에 대해서만 재생한다. 자동 재생, 백그라운드 업데이트, 날씨 갱신에는 소리를 내지 않는다.
-- 로고는 얼굴이 있는 캐릭터가 아니라 `잎 + 둥근 파인 실루엣 + 바깥 타원 궤도 화살표`로 구성한 Pineflow Mark를 사용한다. 브랜드의 귀여움은 표정이 아니라 둥근 비율과 부드러운 곡선에서 나온다. 작은 헤더 마크에서는 검은 잎처럼 머리카락으로 읽히는 요소를 피하고, 골드 몸통 실루엣과 초록 잎으로 파인애플 판독성을 우선한다. 상단 잎은 분리된 뾰족한 삼각형이 아니라 몸통에 붙은 곡선형 `leafy crown`으로 유지한다. 흐름선은 잎 주변의 작은 곡선 장식이나 몸통에 붙은 선으로 되돌리지 말고, 토성 고리처럼 몸통과 분리된 바깥 타원 궤도 화살표로 유지한다.
+- 로고는 얼굴이 있는 캐릭터가 아니라 `잎 + 둥근 파인 실루엣 + 바깥 타원 궤도 화살표`로 구성한 Pineflow Mark를 사용한다. 브랜드의 귀여움은 표정이 아니라 둥근 비율과 부드러운 곡선에서 나온다. 작은 헤더 마크에서는 검은 잎처럼 머리카락으로 읽히는 요소를 피하고, 골드 몸통 실루엣과 초록 잎으로 파인애플 판독성을 우선한다. 상단 잎은 분리된 뾰족한 삼각형이 아니라 몸통에 붙은 곡선형 `leafy crown`으로 유지한다. 흐름선은 잎 주변의 작은 곡선 장식이나 몸통에 붙은 선으로 되돌리지 말고, 토성 고리처럼 몸통과 분리된 바깥 타원 궤도 화살표로 유지한다. 작은 아이콘에서도 흐름이 보여야 하므로 고리는 뒤/앞 레이어와 민트 하이라이트를 가진 굵은 `Saturn Flow Ring` 구조로 둔다.
 - 헤더 브랜드는 밝은 뉴트럴 타일 위의 compact mark와 `pineflow` 소문자 워드마크를 함께 사용한다. 어두운 히어로 배경에 마크를 직접 올리거나 일반 `h1` 글꼴로 `Pineflow`를 표시하면 최종 시안의 색감과 타이포 의도가 깨진다.
 - 색상은 뉴트럴 UI를 기본으로 하고, 파인 그린은 CTA/진행, 파인애플 골드는 작은 강조, 파랑/빨강은 정보/위험 상태에만 쓰는 역할 기반 체계를 유지한다.

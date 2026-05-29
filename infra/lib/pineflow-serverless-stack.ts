@@ -154,7 +154,7 @@ export class PineflowServerlessStack extends cdk.Stack {
       functionName: "pineflow-api",
       code: lambda.Code.fromAsset("lambda/pineflow-api"),
       handler: "index.handler",
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       architecture: lambda.Architecture.ARM_64,
       memorySize: 128,
       timeout: cdk.Duration.seconds(5),

@@ -60,7 +60,9 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 유지하면서, 실제 운영 �
 - 작은 헤더 로고가 사람 얼굴처럼 보이지 않도록 골드 파인애플 몸통 실루엣과 초록/골드 잎 중심으로 보강.
 - 헤더 로고와 favicon의 잎 부분을 곡선형 leafy crown으로 맞춰 머리카락처럼 보이는 문제를 줄임.
 - 헤더 로고와 favicon의 흐름선을 파인애플 몸통과 분리된 토성 고리형 타원 화살표로 바꿔 의미를 명확히 함.
+- 작은 아이콘에서도 흐름선이 보이도록 로고 고리를 뒤/앞 레이어와 민트 하이라이트가 있는 `Saturn Flow Ring`으로 보강.
 - 읽기 전용 UI 영역에서 텍스트 입력 caret이 보이지 않도록 커서/선택 스타일 기준을 정리.
+- AWS Lambda Node.js 20.x EOL 알림에 대응해 API Lambda runtime을 `nodejs24.x`로 업그레이드하고 guardrail 검증에 런타임 확인을 추가.
 
 ## 검증됨
 

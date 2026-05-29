@@ -1,6 +1,6 @@
 # Serverless 구현 현황
 
-마지막 업데이트: 2026-05-24
+마지막 업데이트: 2026-05-29
 
 ## 이번 단계의 목표
 
@@ -16,7 +16,7 @@ Pineflow의 운영 기준을 EC2 Docker PoC에서 AWS Serverless 구조로 옮�
 - `src/App.tsx`: access key 입력 화면을 Cognito 로그인 화면으로 전환.
 - `infra/scripts/verify-template.mjs`: CDK 출력 템플릿의 비용/보안 가드레일 자동 검증.
 
-Lambda 코드는 Node.js 20 Lambda 런타임에 포함된 AWS SDK for JavaScript v3를 사용한다. 따라서 Lambda asset에는 별도 `node_modules`를 포함하지 않는다.
+Lambda 코드는 Node.js 24 Lambda 런타임에 포함된 AWS SDK for JavaScript v3를 사용한다. 따라서 Lambda asset에는 별도 `node_modules`를 포함하지 않는다. AWS Health에서 Node.js 20.x EOL 알림이 발생했으므로 Pineflow의 CDK 정의와 guardrail 검증은 `nodejs24.x`를 기준으로 고정한다.
 
 ## 보안 설계
 

@@ -680,9 +680,14 @@ function Logo() {
             <stop offset="0.52" stopColor="#1f7a5c" />
             <stop offset="1" stopColor="#14573e" />
           </linearGradient>
+          <linearGradient id="pineflowLogoRingLight" x1="10" y1="94" x2="116" y2="54" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#bff4d8" />
+            <stop offset="0.56" stopColor="#6fd8a7" />
+            <stop offset="1" stopColor="#1f7a5c" />
+          </linearGradient>
         </defs>
-        <path className="logoOrbitRing" d="M15 87 C31 58 96 42 116 60 C100 86 33 102 15 87 Z" stroke="url(#pineflowLogoRibbon)" />
-        <path className="logoOrbitArrow" d="M108 57 L119 55 L114 67 Z" />
+        <path className="logoOrbitBack" d="M6 92 C25 54 96 34 122 56 C100 94 27 112 6 92 Z" stroke="url(#pineflowLogoRibbon)" />
+        <path className="logoOrbitBackLight" d="M13 88 C34 59 94 43 114 60" stroke="url(#pineflowLogoRingLight)" />
         <path className="logoBodyFill" d="M64 35 C45 36 33 54 33 78 C33 100 47 115 64 119 C81 115 95 100 95 78 C95 54 83 36 64 35 Z" />
         <path className="logoLeafDeep" d="M47 42 C40 35 36 27 35 18 C46 22 54 31 58 43 C54 42 51 42 47 42 Z" />
         <path className="logoLeafMint" d="M59 39 C57 28 59 18 64 10 C70 21 70 32 65 41 C63 40 61 40 59 39 Z" />
@@ -698,6 +703,9 @@ function Logo() {
         <path className="logoFacet logoFacetDeep" d="M79 84 L87 92 L79 100 L71 92 Z" />
         <path className="logoFacet" d="M64 101 L72 109 L64 117 L56 109 Z" />
         <path className="logoFacet logoFacetLive" d="M92 75 L99 82 L92 89 L85 82 Z" />
+        <path className="logoOrbitFront" d="M12 91 C37 105 91 88 117 60" stroke="url(#pineflowLogoRibbon)" />
+        <path className="logoOrbitFrontLight" d="M19 88 C44 98 86 84 109 63" stroke="url(#pineflowLogoRingLight)" />
+        <path className="logoOrbitArrow" d="M111 56 L122 53 L117 66 Z" />
       </svg>
     </div>
   );
