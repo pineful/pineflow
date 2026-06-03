@@ -31,6 +31,7 @@
 - 퇴근 시각 보정은 기존 `SESSION#...` item의 `checkOutAt`만 갱신한다.
 - 출근 시각 보정은 최근 기록 정렬이 틀어지지 않도록 `SESSION#<ISO 시간>#<session-id>` 정렬 키를 새 시간으로 이동한다. 구현은 기존 item 삭제와 새 item 생성을 하나의 DynamoDB transaction으로 묶는다.
 - 활성 세션의 출근 시각, `mode`, `note`를 보정하는 경우 `ACTIVE_SESSION.sessionSk`, `ACTIVE_SESSION.checkInAt`, `ACTIVE_SESSION.mode`, `ACTIVE_SESSION.note`도 같은 transaction에서 맞춘다.
+- 기록 삭제는 `recordId`에서 `sessionId`를 추출해 해당 `SESSION#...` item 전체를 삭제한다. 활성 세션이면 `ACTIVE_SESSION` item도 같은 transaction에서 삭제한다. 출근/퇴근 이벤트 하나만 삭제하는 partial delete는 저장소 모델을 깨뜨리므로 제공하지 않는다.
 - 이 기능은 GSI 없이 최근 세션 query 결과에서 `sessionId`를 찾는다. 개인 사용과 낮은 기록량을 전제로 한 선택이며, 검색/통계 패턴이 명확해지기 전에는 인덱스를 추가하지 않는다.
 
 ## 변경 시 주의점

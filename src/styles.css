@@ -1566,6 +1566,19 @@ h1 {
   gap: 8px;
 }
 
+.timelineActions.confirming {
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  justify-self: stretch;
+}
+
+.timelineActions.confirming span {
+  color: #6f4a35;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-align: right;
+}
+
 .timelineActions button,
 .timeEditor button {
   min-height: 32px;
@@ -1582,6 +1595,24 @@ h1 {
 .timelineActions button:hover:not(:disabled),
 .timeEditor button:hover:not(:disabled) {
   background: #d8e5d2;
+}
+
+.timelineActions button.delete {
+  color: #6f4a35;
+  background: #f4eee5;
+}
+
+.timelineActions button.delete:hover:not(:disabled) {
+  background: #eadccf;
+}
+
+.timelineActions button.danger {
+  color: #fffaf4;
+  background: #9b4d31;
+}
+
+.timelineActions button.danger:hover:not(:disabled) {
+  background: #843e27;
 }
 
 .timelineActions button:disabled,

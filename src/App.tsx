@@ -11,6 +11,7 @@ import {
 import {
   createCheckIn,
   createCheckOut,
+  deleteRecord,
   fetchState,
   isSessionExpiredError,
   saveDailyGoal,
@@ -912,6 +913,7 @@ function App() {
   const [editingMode, setEditingMode] = useState<WorkMode>("focus");
   const [editingNote, setEditingNote] = useState("");
   const [editingOriginal, setEditingOriginal] = useState<RecordEditSnapshot | null>(null);
+  const [confirmingDeleteRecordId, setConfirmingDeleteRecordId] = useState("");
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
   const [toastMessage, setToastMessage] = useState("");
@@ -948,6 +950,7 @@ function App() {
     setIsAuthenticated(false);
     setState(initialState);
     resetRecordEdit();
+    setConfirmingDeleteRecordId("");
     setToastMessage("");
     setErrorMessage(message);
   }
@@ -1269,6 +1272,7 @@ function App() {
       setState(serverState);
       setNote("");
       resetRecordEdit();
+      setConfirmingDeleteRecordId("");
       playFeedback("finish");
       flashToast("퇴근 기록이 저장됐어요");
       startActionCooldown();
@@ -1303,6 +1307,7 @@ function App() {
   function startEditRecord(record: CommuteRecord) {
     const localTimestamp = toDateTimeLocalValue(record.timestamp);
     playFeedback("open");
+    setConfirmingDeleteRecordId("");
     setEditingRecordId(record.id);
     setEditingTimestamp(localTimestamp);
     setEditingMode(record.mode);
@@ -1366,6 +1371,28 @@ function App() {
     }
   }
 
+  async function removeRecord(recordId: string) {
+    if (requestInFlightRef.current) return;
+
+    requestInFlightRef.current = true;
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      setState(await deleteRecord(recordId));
+      resetRecordEdit();
+      setConfirmingDeleteRecordId("");
+      playFeedback("success");
+      flashToast("기록이 삭제됐어요");
+      startActionCooldown();
+    } catch (error) {
+      handleAppError(error, "기록 삭제에 실패했습니다.");
+    } finally {
+      requestInFlightRef.current = false;
+      setIsSaving(false);
+    }
+  }
+
   function signOut() {
     clearSession();
     requestInFlightRef.current = false;
@@ -1382,6 +1409,7 @@ function App() {
     setIsAuthenticated(false);
     setState(initialState);
     resetRecordEdit();
+    setConfirmingDeleteRecordId("");
     setIsGoalEditing(false);
     setDraftGoalMinutes(initialState.dailyGoalMinutes);
     setToastMessage("");
@@ -1645,10 +1673,36 @@ function App() {
                     )}
                   </div>
                   {editingRecordId !== record.id && (
-                    <div className="timelineActions">
-                      <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
-                        수정
-                      </button>
+                    <div className={confirmingDeleteRecordId === record.id ? "timelineActions confirming" : "timelineActions"}>
+                      {confirmingDeleteRecordId === record.id ? (
+                        <>
+                          <span>이 세션 전체를 삭제할까요?</span>
+                          <button className="danger" type="button" disabled={isSaving} onClick={() => removeRecord(record.id)}>
+                            삭제
+                          </button>
+                          <button type="button" disabled={isSaving} onClick={() => setConfirmingDeleteRecordId("")}>
+                            취소
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button type="button" disabled={isSaving} onClick={() => startEditRecord(record)}>
+                            수정
+                          </button>
+                          <button
+                            className="delete"
+                            type="button"
+                            disabled={isSaving}
+                            onClick={() => {
+                              playFeedback("open");
+                              resetRecordEdit();
+                              setConfirmingDeleteRecordId(record.id);
+                            }}
+                          >
+                            삭제
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

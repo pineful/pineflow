@@ -1,6 +1,6 @@
 # Serverless 구현 현황
 
-마지막 업데이트: 2026-05-29
+마지막 업데이트: 2026-06-03
 
 ## 이번 단계의 목표
 
@@ -52,6 +52,8 @@ DynamoDB single-table 구조를 사용한다.
 이 구조는 사용자별 최근 기록 조회, 현재 활성 세션 조회, 설정 조회를 단순한 key 기반 접근으로 처리하기 위해 선택했다. 초기 버전에서는 GSI를 만들지 않는다. 사용량이 적은 개인 서비스이므로 불필요한 capacity 축을 늘리지 않는 편이 비용 방어에 유리하다.
 
 기록 시간 보정은 최근 세션 query 결과에서 `sessionId`를 찾아 처리한다. 퇴근 시각은 item update로 끝나지만, 출근 시각은 최근 기록 정렬 기준이므로 `SESSION#<iso-time>#<session-id>` 정렬 키를 새 시간으로 옮긴다. 이 이동은 delete/put transaction으로 처리하고, 활성 세션이면 `ACTIVE_SESSION.sessionSk`도 같이 갱신한다.
+
+기록 삭제는 `DELETE /api/records/{recordId}`로 처리한다. `recordId`에서 `sessionId`를 추출해 해당 `SESSION#...` item 전체를 삭제하고, 삭제 대상이 활성 세션이면 `ACTIVE_SESSION` item도 같은 transaction에서 삭제한다. 개별 출근/퇴근 이벤트만 삭제하는 기능은 세션 모델을 깨뜨릴 수 있으므로 제공하지 않는다.
 
 ## 배포 흐름
 

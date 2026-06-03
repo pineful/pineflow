@@ -1,6 +1,6 @@
 # API 계약
 
-마지막 업데이트: 2026-05-24
+마지막 업데이트: 2026-06-03
 
 모든 API는 API Gateway HTTP API 뒤에 있으며, Cognito JWT authorizer를 통과해야 한다. 클라이언트는 `Authorization: Bearer <access_token>` 헤더를 보낸다.
 
@@ -146,6 +146,25 @@
 - 퇴근 시각은 출근 시각보다 늦어야 하며, 아직 퇴근하지 않은 세션의 퇴근 기록은 수정할 수 없다.
 - 출근 시각을 수정하면 `SESSION#<ISO 시간>#<session-id>` 정렬 키도 함께 이동한다.
 - `mode`와 `note`는 세션 단위 속성이므로 `:in`, `:out` 어느 쪽 기록에서 수정해도 같은 세션의 출근/퇴근 기록에 함께 반영된다.
+
+응답: `GET /api/state`와 같은 형태.
+
+## DELETE /api/records/{recordId}
+
+목적: 잘못 생성된 기록이 속한 세션 전체를 삭제한다. Pineflow는 출근과 퇴근을 하나의 세션 item에 저장하므로, 개별 출근 또는 개별 퇴근만 삭제하지 않는다.
+
+경로 파라미터:
+
+- `recordId`: `GET /api/state`의 `records[].id`. 예: `session-id:in`, `session-id:out`
+
+요청 body: 없음.
+
+제약:
+
+- 삭제 대상은 `recordId`에서 추출한 `session-id`의 `SESSION#...` item이다.
+- 활성 세션을 삭제하면 `ACTIVE_SESSION` item도 같은 transaction에서 삭제한다.
+- 존재하지 않는 record id이면 `404`.
+- 현재 구현은 복구 감사 로그를 남기지 않는다. 감사 로그나 undo가 필요하면 별도 ADR과 저장소 설계를 먼저 추가한다.
 
 응답: `GET /api/state`와 같은 형태.
 

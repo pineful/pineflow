@@ -35,8 +35,9 @@ assert(
 
 const routes = resourcesOf("AWS::ApiGatewayV2::Route");
 const routeKeys = routes.map((route) => route.Properties.RouteKey);
-assert(routes.length >= 6, "Expected all Pineflow API routes to be synthesized.");
+assert(routes.length >= 7, "Expected all Pineflow API routes to be synthesized.");
 assert(routeKeys.includes("PATCH /api/records/{recordId}"), "Record time correction route must be synthesized.");
+assert(routeKeys.includes("DELETE /api/records/{recordId}"), "Record deletion route must be synthesized.");
 assert(
   routes.every((route) => route.Properties.AuthorizationType === "JWT"),
   "Every API route, including health, must require JWT authorization."

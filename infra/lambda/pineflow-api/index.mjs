@@ -387,6 +387,57 @@ async function updateRecordTime(pk, recordId, body) {
   return json(200, await loadState(pk));
 }
 
+async function deleteRecordSession(pk, recordId) {
+  const parsed = parseRecordId(recordId);
+  if (!parsed) {
+    return json(400, { error: "Invalid record id." });
+  }
+
+  const session = await findSessionById(pk, parsed.sessionId);
+  if (!session) {
+    return json(404, { error: "Record was not found." });
+  }
+
+  const activeResult = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk, sk: "ACTIVE_SESSION" })
+    })
+  );
+  const active = itemToObject(activeResult.Item);
+  const transactItems = [
+    {
+      Delete: {
+        TableName: tableName,
+        Key: objectToItem({ pk, sk: session.sk }),
+        ConditionExpression: "attribute_exists(pk)"
+      }
+    }
+  ];
+
+  if (active?.sessionId === session.sessionId) {
+    transactItems.push({
+      Delete: {
+        TableName: tableName,
+        Key: objectToItem({ pk, sk: "ACTIVE_SESSION" }),
+        ConditionExpression: "attribute_exists(pk)"
+      }
+    });
+  }
+
+  try {
+    await dynamodb.send(new TransactWriteItemsCommand({ TransactItems: transactItems }));
+  } catch (error) {
+    if (isConditionalFailure(error)) {
+      return json(404, { error: "Record was not found." });
+    }
+
+    throw error;
+  }
+
+  return json(200, await loadState(pk));
+}
+
 async function checkIn(pk, body) {
   const mode = body.mode;
   if (typeof mode !== "string" || !allowedModes.has(mode)) {
@@ -554,6 +605,10 @@ export async function handler(event) {
     if (method === "PATCH" && path.startsWith("/api/records/")) {
       const recordId = decodeURIComponent(path.slice("/api/records/".length));
       return updateRecordTime(pk, recordId, body.value);
+    }
+    if (method === "DELETE" && path.startsWith("/api/records/")) {
+      const recordId = decodeURIComponent(path.slice("/api/records/".length));
+      return deleteRecordSession(pk, recordId);
     }
     if (method === "PATCH" && path === "/api/settings") return updateSettings(pk, body.value);
 

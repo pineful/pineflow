@@ -185,6 +185,7 @@ export class PineflowServerlessStack extends cdk.Stack {
         allowHeaders: ["authorization", "content-type"],
         allowMethods: [
           apigwv2.CorsHttpMethod.GET,
+          apigwv2.CorsHttpMethod.DELETE,
           apigwv2.CorsHttpMethod.PATCH,
           apigwv2.CorsHttpMethod.POST,
           apigwv2.CorsHttpMethod.OPTIONS
@@ -218,6 +219,7 @@ export class PineflowServerlessStack extends cdk.Stack {
       { path: "/api/check-in", method: apigwv2.HttpMethod.POST },
       { path: "/api/check-out", method: apigwv2.HttpMethod.POST },
       { path: "/api/records/{recordId}", method: apigwv2.HttpMethod.PATCH },
+      { path: "/api/records/{recordId}", method: apigwv2.HttpMethod.DELETE },
       { path: "/api/settings", method: apigwv2.HttpMethod.PATCH }
     ]) {
       httpApi.addRoutes({

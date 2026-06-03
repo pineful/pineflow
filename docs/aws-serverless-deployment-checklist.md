@@ -1,6 +1,6 @@
 # AWS Serverless 배포 전 점검표
 
-마지막 업데이트: 2026-05-29
+마지막 업데이트: 2026-06-03
 
 ## 생성 순서
 
@@ -53,6 +53,7 @@
 - Budget 알림 이메일 승인 전 실제 사용 시작.
 - Cognito self sign-up이 켜져 있음.
 - API route 중 JWT authorizer가 없는 route가 있음.
+- `DELETE /api/records/{recordId}` route가 JWT authorizer 없이 생성됨.
 
 ## 현재 검증 결과
 

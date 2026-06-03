@@ -78,3 +78,9 @@ export function updateRecord(recordId: string, patch: { timestamp?: string; mode
     body: JSON.stringify(patch),
   });
 }
+
+export function deleteRecord(recordId: string) {
+  return requestState(`/api/records/${encodeURIComponent(recordId)}`, {
+    method: "DELETE",
+  });
+}
