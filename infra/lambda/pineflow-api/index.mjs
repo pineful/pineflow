@@ -120,6 +120,19 @@ function toRecords(session) {
   ];
 }
 
+function sortRecordsByTimestampDesc(records) {
+  return records.sort((left, right) => {
+    const leftTime = new Date(left.timestamp).getTime();
+    const rightTime = new Date(right.timestamp).getTime();
+
+    if (Number.isNaN(leftTime) || Number.isNaN(rightTime)) return 0;
+    if (rightTime !== leftTime) return rightTime - leftTime;
+    if (left.type === right.type) return 0;
+
+    return left.type === "check-out" ? -1 : 1;
+  });
+}
+
 function parseRecordId(recordId) {
   if (typeof recordId !== "string") return null;
 
@@ -194,7 +207,7 @@ async function loadState(pk) {
   const sessions = (sessionsResult.Items ?? []).map(itemToObject);
 
   return {
-    records: sessions.flatMap(toRecords),
+    records: sortRecordsByTimestampDesc(sessions.flatMap(toRecords)),
     activeSession: active
       ? {
           id: active.sessionId,

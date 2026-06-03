@@ -47,8 +47,13 @@ function maxDate(left: Date, right: Date) {
   return left.getTime() >= right.getTime() ? left : right;
 }
 
+function recordSessionId(record: CommuteRecord) {
+  const separatorIndex = record.id.lastIndexOf(":");
+  return separatorIndex === -1 ? record.id : record.id.slice(0, separatorIndex);
+}
+
 export function summarizeToday(records: CommuteRecord[], now: Date, activeCheckIn?: string) {
-  const sorted = records
+  const sorted = [...records]
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   const dayStart = startOfLocalDay(now);
   const dayEnd = new Date(dayStart);
@@ -56,10 +61,10 @@ export function summarizeToday(records: CommuteRecord[], now: Date, activeCheckI
   const chartRecords: CommuteRecord[] = [];
 
   let totalMinutes = 0;
-  let openCheckIn: CommuteRecord | null = null;
   let firstCheckIn: string | undefined;
   let lastCheckOut: string | undefined;
   let carriedOver = false;
+  const sessions = new Map<string, { checkIn?: CommuteRecord; checkOut?: CommuteRecord }>();
 
   function addSession(checkIn: CommuteRecord, checkOutAt: string | undefined, isActive = false) {
     const sessionStart = new Date(checkIn.timestamp);
@@ -101,14 +106,19 @@ export function summarizeToday(records: CommuteRecord[], now: Date, activeCheckI
   }
 
   sorted.forEach((record) => {
+    const sessionId = recordSessionId(record);
+    const session = sessions.get(sessionId) ?? {};
     if (record.type === "check-in") {
-      openCheckIn = record;
-      return;
+      session.checkIn = record;
+    } else {
+      session.checkOut = record;
     }
+    sessions.set(sessionId, session);
+  });
 
-    if (openCheckIn) {
-      addSession(openCheckIn, record.timestamp);
-      openCheckIn = null;
+  Array.from(sessions.values()).forEach((session) => {
+    if (session.checkIn && session.checkOut) {
+      addSession(session.checkIn, session.checkOut.timestamp);
     }
   });
 

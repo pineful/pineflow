@@ -64,6 +64,12 @@ type FlowChartRecordPoint = FlowChartPoint & {
   type: "check-in" | "check-out" | "now";
 };
 
+type RecordEditSnapshot = {
+  localTimestamp: string;
+  mode: WorkMode;
+  note: string;
+};
+
 type ReverseGeocodeResult = {
   localityName?: string;
   locality?: string;
@@ -752,6 +758,7 @@ function RecordTimeEditor({
   const minute = date.getMinutes();
   const period = hour24 >= 12 ? "pm" : "am";
   const days = dayRailOptions(date);
+  const isSelectedToday = selectedKey === localDateKey(new Date());
 
   return (
     <div className="timeEditor" aria-label={`${recordType === "check-in" ? "출근" : "퇴근"} 시간 수정`}>
@@ -761,6 +768,14 @@ function RecordTimeEditor({
           {editorMonthFormatter.format(date)} · {weekdayLabel(date, "long")}
         </strong>
       </div>
+      {!isSelectedToday && (
+        <div className="editorDateNotice" role="note">
+          <span>오늘이 아닌 날짜입니다. 시간만 바꾸면 이 날짜의 기록으로 저장됩니다.</span>
+          <button type="button" disabled={disabled} onClick={() => onChange(formatLocalDateTimeValue(new Date()))}>
+            오늘 현재로
+          </button>
+        </div>
+      )}
       <span className="editorGroupLabel">업무 유형 선택</span>
       <div className="recordEditModes" aria-label="업무 유형 선택">
         {workModes.map((workMode) => (
@@ -896,6 +911,7 @@ function App() {
   const [editingTimestamp, setEditingTimestamp] = useState("");
   const [editingMode, setEditingMode] = useState<WorkMode>("focus");
   const [editingNote, setEditingNote] = useState("");
+  const [editingOriginal, setEditingOriginal] = useState<RecordEditSnapshot | null>(null);
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
   const [toastMessage, setToastMessage] = useState("");
@@ -931,10 +947,7 @@ function App() {
     setIsActionCoolingDown(false);
     setIsAuthenticated(false);
     setState(initialState);
-    setEditingRecordId("");
-    setEditingTimestamp("");
-    setEditingMode("focus");
-    setEditingNote("");
+    resetRecordEdit();
     setToastMessage("");
     setErrorMessage(message);
   }
@@ -1255,10 +1268,7 @@ function App() {
       const serverState = await createCheckOut();
       setState(serverState);
       setNote("");
-      setEditingRecordId("");
-      setEditingTimestamp("");
-      setEditingMode("focus");
-      setEditingNote("");
+      resetRecordEdit();
       playFeedback("finish");
       flashToast("퇴근 기록이 저장됐어요");
       startActionCooldown();
@@ -1291,12 +1301,26 @@ function App() {
   }
 
   function startEditRecord(record: CommuteRecord) {
+    const localTimestamp = toDateTimeLocalValue(record.timestamp);
     playFeedback("open");
     setEditingRecordId(record.id);
-    setEditingTimestamp(toDateTimeLocalValue(record.timestamp));
+    setEditingTimestamp(localTimestamp);
     setEditingMode(record.mode);
     setEditingNote(record.note ?? "");
+    setEditingOriginal({
+      localTimestamp,
+      mode: record.mode,
+      note: record.note ?? ""
+    });
     setErrorMessage("");
+  }
+
+  function resetRecordEdit() {
+    setEditingRecordId("");
+    setEditingTimestamp("");
+    setEditingMode("focus");
+    setEditingNote("");
+    setEditingOriginal(null);
   }
 
   async function saveRecordEdit(recordId: string) {
@@ -1308,16 +1332,29 @@ function App() {
       return;
     }
 
+    const patch: { timestamp?: string; mode?: WorkMode; note?: string } = {};
+    if (!editingOriginal || editingTimestamp !== editingOriginal.localTimestamp) {
+      patch.timestamp = timestamp;
+    }
+    if (!editingOriginal || editingMode !== editingOriginal.mode) {
+      patch.mode = editingMode;
+    }
+    if (!editingOriginal || editingNote !== editingOriginal.note) {
+      patch.note = editingNote;
+    }
+
+    if (Object.keys(patch).length === 0) {
+      resetRecordEdit();
+      return;
+    }
+
     requestInFlightRef.current = true;
     setIsSaving(true);
     setErrorMessage("");
 
     try {
-      setState(await updateRecord(recordId, { timestamp, mode: editingMode, note: editingNote }));
-      setEditingRecordId("");
-      setEditingTimestamp("");
-      setEditingMode("focus");
-      setEditingNote("");
+      setState(await updateRecord(recordId, patch));
+      resetRecordEdit();
       playFeedback("success");
       flashToast("기록이 수정됐어요");
       startActionCooldown();
@@ -1344,10 +1381,7 @@ function App() {
     setIsActionCoolingDown(false);
     setIsAuthenticated(false);
     setState(initialState);
-    setEditingRecordId("");
-    setEditingTimestamp("");
-    setEditingMode("focus");
-    setEditingNote("");
+    resetRecordEdit();
     setIsGoalEditing(false);
     setDraftGoalMinutes(initialState.dailyGoalMinutes);
     setToastMessage("");
@@ -1634,12 +1668,7 @@ function App() {
                       <button
                         type="button"
                         disabled={isSaving}
-                        onClick={() => {
-                          setEditingRecordId("");
-                          setEditingTimestamp("");
-                          setEditingMode("focus");
-                          setEditingNote("");
-                        }}
+                        onClick={resetRecordEdit}
                       >
                         취소
                       </button>

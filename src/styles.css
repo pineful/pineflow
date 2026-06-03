@@ -1626,6 +1626,30 @@ h1 {
   font-size: 0.88rem;
 }
 
+.editorDateNotice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #efd893;
+  border-radius: 8px;
+  color: #4f482f;
+  background: #fff8df;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.editorDateNotice button {
+  min-height: 30px;
+  color: #173126;
+  background: #f6c247;
+}
+
+.editorDateNotice button:hover:not(:disabled) {
+  background: #edb82f;
+}
+
 .editorGroupLabel {
   margin-top: 2px;
   color: #2f4038;

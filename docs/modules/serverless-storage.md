@@ -27,6 +27,7 @@
 
 - 최근 기록의 출근/퇴근 시각 보정은 세션 item을 직접 갱신한다.
 - 기록 종류 `mode`와 메모 `note` 보정도 같은 세션 item에 저장한다. 이 값은 세션 단위 속성이므로 출근/퇴근 record 중 어느 쪽에서 수정해도 같은 세션의 양쪽 record에 함께 반영된다.
+- `GET /api/state`의 최근 기록 응답은 DynamoDB query의 `SESSION#<checkInAt>` 정렬 결과를 그대로 노출하지 않고, 세션을 출근/퇴근 이벤트로 펼친 뒤 각 record의 실제 `timestamp` 기준 최신순으로 정렬한다. 퇴근 시각만 나중으로 보정된 기록이나 자정을 넘긴 세션이 세션 시작일 위치에 묶여 보이지 않게 하기 위한 규칙이다.
 - 퇴근 시각 보정은 기존 `SESSION#...` item의 `checkOutAt`만 갱신한다.
 - 출근 시각 보정은 최근 기록 정렬이 틀어지지 않도록 `SESSION#<ISO 시간>#<session-id>` 정렬 키를 새 시간으로 이동한다. 구현은 기존 item 삭제와 새 item 생성을 하나의 DynamoDB transaction으로 묶는다.
 - 활성 세션의 출근 시각, `mode`, `note`를 보정하는 경우 `ACTIVE_SESSION.sessionSk`, `ACTIVE_SESSION.checkInAt`, `ACTIVE_SESSION.mode`, `ACTIVE_SESSION.note`도 같은 transaction에서 맞춘다.
