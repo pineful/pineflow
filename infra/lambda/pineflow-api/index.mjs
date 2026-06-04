@@ -5,7 +5,6 @@ import {
   QueryCommand,
   TransactWriteItemsCommand
 } from "@aws-sdk/client-dynamodb";
-import { CloudWatchClient, GetMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 import { randomUUID } from "node:crypto";
 
 const tableName = process.env.TABLE_NAME;
@@ -15,8 +14,7 @@ if (!tableName) {
 }
 
 const dynamodb = new DynamoDBClient({});
-const cloudwatch = new CloudWatchClient({});
-const cloudwatchGlobal = new CloudWatchClient({ region: "us-east-1" });
+let cloudwatchSdkPromise;
 const allowedModes = new Set(["focus", "remote", "study", "project"]);
 const defaultDailyGoalMinutes = 480;
 const maxBodyBytes = 4096;
@@ -173,10 +171,16 @@ function metricQuery(id, namespace, metricName, dimensions, stat = "Sum") {
   };
 }
 
-async function readMetrics(client, metricDataQueries, startTime, endTime) {
+async function readMetrics(options, metricDataQueries, startTime, endTime) {
   if (metricDataQueries.length === 0) return [];
 
-  const result = await client.send(
+  if (!cloudwatchSdkPromise) {
+    cloudwatchSdkPromise = import("@aws-sdk/client-cloudwatch");
+  }
+
+  const { CloudWatchClient, GetMetricDataCommand } = await cloudwatchSdkPromise;
+  const cloudwatch = new CloudWatchClient(options.region ? { region: options.region } : {});
+  const result = await cloudwatch.send(
     new GetMetricDataCommand({
       StartTime: startTime,
       EndTime: endTime,
@@ -262,8 +266,8 @@ async function loadUsageSnapshot() {
     : [];
 
   const [localMetrics, globalMetrics] = await Promise.all([
-    safeReadMetrics(cloudwatch, localMetricQueries, periodStart, now, "regional"),
-    safeReadMetrics(cloudwatchGlobal, globalMetricQueries, periodStart, now, "global")
+    safeReadMetrics({}, localMetricQueries, periodStart, now, "regional"),
+    safeReadMetrics({ region: "us-east-1" }, globalMetricQueries, periodStart, now, "global")
   ]);
 
   return {
