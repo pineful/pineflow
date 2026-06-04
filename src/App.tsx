@@ -1519,7 +1519,7 @@ function App() {
               <button type="button" aria-pressed={soundEnabled} onClick={toggleSound}>
                 효과음 {soundEnabled ? "끄기" : "켜기"}
               </button>
-              <button type="button" onClick={signOut}>
+              <button className="logoutAction" type="button" onClick={signOut}>
                 로그아웃
               </button>
             </div>

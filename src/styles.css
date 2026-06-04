@@ -11,6 +11,17 @@
   --color-gold: #e2b84b;
   --color-info: #356f8c;
   --color-danger: #b94a3a;
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --radius-field: 6px;
+  --radius-compact: 5px;
+  --radius-pill: 999px;
+  --border-control: #cfdccc;
+  --shadow-control: 0 1px 2px rgba(23, 35, 28, 0.08);
+  --shadow-layer: 0 14px 30px rgba(23, 35, 28, 0.12);
+  --focus-ring: 0 0 0 3px rgba(39, 113, 92, 0.16);
+  --focus-ring-warm: 0 0 0 3px rgba(246, 194, 71, 0.16);
+  --focus-ring-danger: 0 0 0 3px rgba(185, 74, 58, 0.16);
   --motion-fast: 120ms;
   --motion-ui: 160ms;
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
@@ -63,6 +74,12 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+button.danger:focus-visible,
+button.delete:focus-visible,
+.logoutAction:focus-visible {
+  outline-color: rgba(185, 74, 58, 0.42);
+}
+
 input,
 textarea {
   cursor: text;
@@ -106,7 +123,7 @@ button:active:not(:disabled) {
   padding: 20px;
   color: #f9fff9;
   background: linear-gradient(155deg, rgba(16, 40, 32, 0.95), rgba(31, 84, 66, 0.9));
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   box-shadow: 0 24px 60px rgba(25, 45, 36, 0.24);
 }
 
@@ -127,7 +144,7 @@ button:active:not(:disabled) {
   height: 64px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background:
     radial-gradient(circle at 36% 24%, rgba(255, 255, 255, 0.92), transparent 1.2rem),
     linear-gradient(145deg, #fbfdf7 0%, #edf5e8 100%);
@@ -255,7 +272,7 @@ h1 {
   min-height: 42px;
   padding: 4px 8px 4px 4px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.1);
   cursor: pointer;
   user-select: none;
@@ -281,7 +298,7 @@ h1 {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: #173126;
   background: #f6c247;
   font-size: 0.9rem;
@@ -309,10 +326,10 @@ h1 {
   gap: 6px;
   padding: 10px;
   border: 1px solid rgba(20, 33, 28, 0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   color: #17231e;
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 18px 42px rgba(13, 30, 23, 0.28);
+  box-shadow: var(--shadow-layer);
 }
 
 .accountIdentity {
@@ -336,7 +353,7 @@ h1 {
   display: inline-grid;
   margin-top: 5px;
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: #27715c;
   background: #eef3e6;
   font-size: 0.72rem;
@@ -351,7 +368,7 @@ h1 {
 .accountPopover button {
   min-height: 40px;
   padding: 0 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: #2f4038;
   background: transparent;
   text-align: left;
@@ -367,6 +384,18 @@ h1 {
 .accountPopover button:disabled {
   color: #9aa7a0;
   cursor: default;
+}
+
+.accountPopover .logoutAction {
+  margin-top: 4px;
+  border: 1px solid rgba(185, 74, 58, 0.18);
+  color: #8f3d31;
+  background: #fff7f4;
+}
+
+.accountPopover .logoutAction:hover:not(:disabled) {
+  color: #6f2d24;
+  background: #f5dfd9;
 }
 
 .clockBlock {
@@ -389,7 +418,7 @@ h1 {
   width: fit-content;
   padding: 8px 10px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: #f4f8ee;
   background: rgba(255, 255, 255, 0.08);
   font-size: 0.83rem;
@@ -400,7 +429,7 @@ h1 {
   gap: 10px;
   padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -431,13 +460,17 @@ h1 {
 .recordSetup .modeControl.compact button {
   min-height: 62px;
   padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-control);
   color: #eaf7ed;
   background: rgba(255, 255, 255, 0.1);
 }
 
 .recordSetup .modeControl.compact button.selected {
+  border-color: rgba(185, 243, 211, 0.7);
   color: #173126;
   background: #b9f3d3;
+  box-shadow: inset 0 0 0 1px rgba(23, 49, 38, 0.12);
 }
 
 .recordSetup .modeControl.compact button span {
@@ -461,6 +494,7 @@ h1 {
   min-width: 0;
   min-height: 42px;
   padding: 8px 10px;
+  border-radius: var(--radius-control);
   border-color: rgba(255, 255, 255, 0.2);
   color: #f4f8ee;
   background: rgba(255, 255, 255, 0.1);
@@ -493,7 +527,7 @@ h1 {
 
 .recordSetup .noteField.compact input:focus {
   border-color: #f6c247;
-  box-shadow: 0 0 0 3px rgba(246, 194, 71, 0.14);
+  box-shadow: var(--focus-ring-warm);
 }
 
 .recordSetup .activePlan.compact {
@@ -544,7 +578,7 @@ h1 {
   min-height: 54px;
   padding: 0 14px;
   border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   color: #f9fff9;
   background: rgba(255, 255, 255, 0.1);
   outline: none;
@@ -552,7 +586,7 @@ h1 {
 
 .accessForm input:focus {
   border-color: #f6c247;
-  box-shadow: 0 0 0 3px rgba(246, 194, 71, 0.14);
+  box-shadow: var(--focus-ring-warm);
 }
 
 .primaryAction {
@@ -560,10 +594,12 @@ h1 {
   gap: 5px;
   min-height: 88px;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   color: #173126;
   background: #f6c247;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28);
   cursor: pointer;
 }
 
@@ -620,7 +656,7 @@ h1 {
 .weatherMain,
 .weatherDetails {
   border: 1px solid #dfe6d6;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: rgba(255, 255, 255, 0.72);
 }
 
@@ -699,7 +735,7 @@ h1 {
   display: grid;
   place-items: center;
   min-height: 40px;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(232, 240, 226, 0.88)),
     #eef3e9;
@@ -709,7 +745,7 @@ h1 {
 
 .weatherFallback {
   padding: 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: #f9fbf6;
 }
 
@@ -732,7 +768,7 @@ h1 {
 .weatherChart {
   padding: 14px 0 10px;
   border: 1px solid #dfe6d6;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.9)),
     linear-gradient(90deg, rgba(131, 183, 230, 0.1), rgba(246, 194, 71, 0.13)),
@@ -813,7 +849,7 @@ h1 {
 .chartLegend span::before {
   width: 18px;
   height: 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: linear-gradient(90deg, #44b883, #f6c247);
   content: "";
 }
@@ -845,7 +881,7 @@ h1 {
   min-height: 130px;
   padding: 12px;
   border: 1px solid #dfe6d6;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: #f9fbf6;
   transition:
     transform 160ms ease,
@@ -988,7 +1024,8 @@ h1 {
 .goalEditorActions button {
   min-height: 34px;
   padding: 0 11px;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
   color: #173126;
   background: #e7ede2;
   font-size: 0.78rem;
@@ -1013,7 +1050,7 @@ h1 {
   margin-top: 10px;
   padding: 12px;
   border: 1px solid #dfe6d6;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: rgba(255, 255, 255, 0.72);
 }
 
@@ -1048,7 +1085,7 @@ h1 {
   padding: 14px;
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 248, 244, 0.98));
 }
 
@@ -1058,7 +1095,7 @@ h1 {
   left: 18px;
   width: 58px;
   height: 4px;
-  border-radius: 0 0 999px 999px;
+  border-radius: 0 0 var(--radius-pill) var(--radius-pill);
   background: linear-gradient(90deg, var(--color-pine), var(--color-gold));
   content: "";
 }
@@ -1098,7 +1135,7 @@ h1 {
   gap: 7px;
   min-height: 28px;
   padding: 0 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: var(--color-pine);
   background: var(--color-pine-soft);
   font-size: 0.78rem;
@@ -1108,7 +1145,7 @@ h1 {
 .timeFlowKicker span::before {
   width: 7px;
   height: 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: #8aa49b;
   content: "";
 }
@@ -1181,7 +1218,7 @@ h1 {
   position: relative;
   height: 132px;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background:
     linear-gradient(90deg, rgba(47, 107, 79, 0.08), rgba(53, 111, 140, 0.06), rgba(226, 184, 75, 0.08)),
     var(--color-surface-subtle);
@@ -1363,7 +1400,8 @@ h1 {
   gap: 5px;
   min-height: 74px;
   padding: 12px;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
   color: #2f4038;
   background: #e7ede2;
   text-align: left;
@@ -1371,8 +1409,10 @@ h1 {
 }
 
 .modeControl button.selected {
+  border-color: #27715c;
   color: #f9fff9;
   background: #27715c;
+  box-shadow: inset 0 0 0 1px rgba(249, 255, 249, 0.14);
 }
 
 .modeControl button strong {
@@ -1408,7 +1448,7 @@ h1 {
   min-height: 38px;
   padding: 0 12px;
   border: 1px solid #d3ddcf;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: #2f4038;
   background: rgba(255, 255, 255, 0.74);
   font-size: 0.8rem;
@@ -1428,7 +1468,7 @@ h1 {
   gap: 7px;
   padding: 14px;
   border: 1px solid #dfe6d6;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: rgba(255, 255, 255, 0.72);
 }
 
@@ -1462,7 +1502,7 @@ h1 {
   min-height: 48px;
   padding: 0 14px;
   border: 1px solid #d3ddcf;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   color: #17231e;
   background: rgba(255, 255, 255, 0.86);
   outline: none;
@@ -1470,7 +1510,7 @@ h1 {
 
 .noteField input:focus {
   border-color: #27715c;
-  box-shadow: 0 0 0 3px rgba(39, 113, 92, 0.14);
+  box-shadow: var(--focus-ring);
 }
 
 .timeline {
@@ -1484,6 +1524,7 @@ h1 {
   align-items: center;
   gap: 12px;
   padding: 13px;
+  box-shadow: var(--shadow-control);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
@@ -1520,7 +1561,7 @@ h1 {
   width: fit-content;
   margin-top: 7px;
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: #436154;
   background: #eef5ed;
   font-size: 0.72rem;
@@ -1545,7 +1586,7 @@ h1 {
   place-items: center;
   width: 24px;
   height: 24px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: #eef5ed;
   font-size: 0.82rem;
 }
@@ -1583,7 +1624,8 @@ h1 {
 .timeEditor button {
   min-height: 32px;
   padding: 0 10px;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
   color: #173126;
   background: #e7ede2;
   font-size: 0.76rem;
@@ -1598,21 +1640,23 @@ h1 {
 }
 
 .timelineActions button.delete {
-  color: #6f4a35;
-  background: #f4eee5;
+  border-color: rgba(185, 74, 58, 0.16);
+  color: #8f3d31;
+  background: #fff7f4;
 }
 
 .timelineActions button.delete:hover:not(:disabled) {
-  background: #eadccf;
+  background: #f5dfd9;
 }
 
 .timelineActions button.danger {
+  border-color: rgba(255, 255, 255, 0.18);
   color: #fffaf4;
-  background: #9b4d31;
+  background: #a64635;
 }
 
 .timelineActions button.danger:hover:not(:disabled) {
-  background: #843e27;
+  background: #873528;
 }
 
 .timelineActions button:disabled,
@@ -1628,11 +1672,11 @@ h1 {
   margin-top: 12px;
   padding: 16px 18px 18px;
   border: 1px solid #c9d8c4;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(251, 252, 248, 0.96)),
     #fbfcf8;
-  box-shadow: 0 14px 30px rgba(47, 64, 56, 0.06);
+  box-shadow: 0 8px 20px rgba(47, 64, 56, 0.05);
 }
 
 .timeEditorHeader {
@@ -1664,7 +1708,7 @@ h1 {
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid #efd893;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: #4f482f;
   background: #fff8df;
   font-size: 0.78rem;
@@ -1722,7 +1766,7 @@ h1 {
   min-height: 44px;
   padding: 6px 8px;
   border: 1px solid #d7e2d2;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: #344b40;
   background: rgba(255, 255, 255, 0.66);
   font-size: 0.78rem;
@@ -1745,7 +1789,7 @@ h1 {
   place-items: center;
   width: 16px;
   height: 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: #f9fff9;
   background: #27715c;
   font-size: 0.62rem;
@@ -1761,7 +1805,7 @@ h1 {
   min-height: 58px;
   padding: 6px 4px;
   border: 1px solid #d7e2d2;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   color: #344b40;
   background: rgba(255, 255, 255, 0.66);
 }
@@ -1798,7 +1842,7 @@ h1 {
   border-color: #27715c;
   color: #f9fff9;
   background: #27715c;
-  box-shadow: 0 6px 14px rgba(39, 113, 92, 0.14);
+  box-shadow: 0 5px 12px rgba(39, 113, 92, 0.12);
 }
 
 .dateRail button.selected span {
@@ -1824,14 +1868,14 @@ h1 {
   min-height: 42px;
   padding: 3px;
   border: 1px solid #c9d8c4;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: #edf3e8;
 }
 
 .periodControl button {
   min-height: 34px;
   padding-inline: 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-compact);
   background: transparent;
   line-height: 1;
 }
@@ -1858,7 +1902,7 @@ h1 {
   min-height: 42px;
   padding: 0 10px;
   border: 1px solid #aac2a6;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   color: #17231e;
   background: #fff;
   font-size: 0.92rem;
@@ -1869,7 +1913,7 @@ h1 {
 
 .timeNumberField input:focus {
   border-color: #27715c;
-  box-shadow: 0 0 0 3px rgba(39, 113, 92, 0.14);
+  box-shadow: var(--focus-ring);
 }
 
 .recordEditNote {
@@ -1888,7 +1932,7 @@ h1 {
   min-height: 38px;
   padding: 0 11px;
   border: 1px solid #aac2a6;
-  border-radius: 8px;
+  border-radius: var(--radius-field);
   color: #17231e;
   background: #fff;
   font-size: 0.86rem;
@@ -1898,7 +1942,7 @@ h1 {
 
 .recordEditNote input:focus {
   border-color: #27715c;
-  box-shadow: 0 0 0 3px rgba(39, 113, 92, 0.14);
+  box-shadow: var(--focus-ring);
 }
 
 .timeNudges {
@@ -1912,6 +1956,7 @@ h1 {
   min-height: 34px;
   padding-inline: 4px;
   border: 1px solid transparent;
+  border-radius: var(--radius-compact);
   color: #2d6e58;
   background: transparent;
   font-size: 0.72rem;
@@ -1937,7 +1982,8 @@ h1 {
   min-height: 40px;
   min-width: 82px;
   padding-inline: 14px;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
   color: #173126;
   background: #e7ede2;
   font-size: 0.8rem;
@@ -1966,7 +2012,7 @@ h1 {
 .dot {
   width: 12px;
   height: 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .dot.in {
@@ -1980,7 +2026,7 @@ h1 {
 .emptyState {
   padding: 18px;
   border: 1px dashed #cbd7c6;
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   color: #66746a;
   text-align: center;
 }
@@ -1989,7 +2035,7 @@ h1 {
   margin-top: 12px;
   padding: 12px 14px;
   border: 1px solid rgba(193, 65, 65, 0.28);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   color: #842525;
   background: rgba(255, 245, 245, 0.9);
   font-size: 0.88rem;
@@ -2004,7 +2050,7 @@ h1 {
   max-width: min(320px, calc(100vw - 32px));
   padding: 12px 14px;
   border: 1px solid rgba(47, 111, 94, 0.18);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   color: #173126;
   background: rgba(249, 251, 246, 0.96);
   box-shadow: 0 16px 36px rgba(23, 49, 38, 0.18);

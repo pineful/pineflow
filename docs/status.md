@@ -71,6 +71,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 기록 수정 저장 시 변경된 필드만 PATCH하도록 바꿔, 메모/업무 유형 수정 중 오래된 timestamp가 다시 저장되는 위험을 줄임.
 - 기록 수정 패널에서 오늘이 아닌 날짜를 선택 중이면 경고와 `오늘 현재로` 빠른 보정 버튼을 표시.
 - 잘못 생성된 기록을 정리할 수 있도록 `DELETE /api/records/{recordId}`와 최근 기록 카드의 세션 전체 삭제 확인 UI를 추가.
+- 그룹웨어 UI 리서치 기준으로 컨트롤 외곽을 `Structured Soft Rectangle` 체계로 정리하고, 입력/선택/보조 실행/주요 실행/위험 실행의 shape, border, focus 위계를 분리.
 
 ## 검증됨
 

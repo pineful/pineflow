@@ -1,6 +1,6 @@
 # 분야별 작업 지도
 
-마지막 업데이트: 2026-05-29
+마지막 업데이트: 2026-06-04
 
 ## 목적
 
@@ -24,6 +24,7 @@
 | 브랜딩/로고 | Pineflow 이름, 워드마크, 앱 아이콘, 로고 판독성 | `src/brand.ts`, `src/App.tsx`, `src/styles.css`, `public/pineflow-icon.svg` | `docs/brand.md`, `docs/modules/branding.md`, `docs/research/pineflow-logo-*.md` |
 | 대시보드/오늘 요약 | 오늘 누적 시간, 목표 대비 진행, 그래프, 태블릿 배치 | `src/App.tsx`, `src/date.ts`, `src/styles.css` | `docs/modules/summary.md`, `docs/research/dashboard-ux-redesign-2026-05-24.md` |
 | 기록 UX | 출근/퇴근 CTA, 메모, 업무 유형, 최근 기록, 시간 수정 | `src/App.tsx`, `src/api.ts`, `src/types.ts`, `src/date.ts`, `src/styles.css` | `docs/modules/recording.md`, `docs/api-contract.md`, `docs/research/record-time-editor-ux-2026-05-26.md` |
+| UI 컨트롤 외곽 | 버튼, 입력, 선택지, 카드, 위험 동작의 shape/elevation/focus 위계 | `src/styles.css`, `src/App.tsx` | `docs/modules/ui-controls.md`, `docs/research/groupware-control-shape-2026-06-04.md`, `docs/modules/recording.md`, `docs/modules/microinteractions.md` |
 | 인증/세션 | Cognito 로그인, 1일 refresh token, 열린 탭 refresh, 계정 메뉴 | `src/auth.ts`, `src/api.ts`, `src/App.tsx`, `infra/lib/pineflow-serverless-stack.ts` | `docs/modules/serverless-auth.md`, `docs/api-contract.md`, `docs/adr/0002-cognito-admin-only-auth.md`, `docs/adr/0007-open-tab-session-refresh.md` |
 | Serverless API | Lambda handler, API Gateway route, JWT authorizer, 오류 응답 | `infra/lambda/pineflow-api/index.mjs`, `infra/lib/pineflow-serverless-stack.ts` | `docs/api-contract.md`, `docs/serverless-implementation.md`, `docs/modules/serverless-auth.md` |
 | 저장소/데이터 | DynamoDB single-table, 활성 세션, 기록 보정, 백업/이관 | `infra/lambda/pineflow-api/index.mjs`, `infra/lib/pineflow-serverless-stack.ts` | `docs/modules/serverless-storage.md`, `docs/data-management.md`, `docs/adr/0003-dynamodb-single-table.md` |
@@ -59,3 +60,4 @@
 - 기록 수정은 시간뿐 아니라 `mode`와 `note`도 바꿀 수 있어야 한다.
 - 최근 기록 목록은 사용자가 남긴 메모를 바로 보여줘야 한다.
 - 로고는 `v23 Leafy Crown + Saturn Flow Ring` 기준을 따른다.
+- UI 컨트롤 외곽은 `Structured Soft Rectangle` 기준을 따른다. 모든 버튼을 pill로 만들거나 모든 카드를 같은 8px 박스로만 처리하지 말고, 입력/선택/보조 실행/주요 실행/위험 실행을 형태로 구분한다.
