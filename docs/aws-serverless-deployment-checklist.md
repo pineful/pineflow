@@ -29,9 +29,10 @@
 - CloudWatch log retention은 7일이다.
 - S3 bucket은 public access가 차단된다.
 - CloudFront만 S3에 접근할 수 있다.
+- S3 frontend bucket은 incomplete multipart upload를 1일 뒤 정리하고 `assets/` 객체를 30일 뒤 Intelligent-Tiering으로 전환한다.
 - WAF, Route 53, custom domain, NAT Gateway, VPC Lambda, provisioned concurrency는 사용하지 않는다.
 - GitHub OIDC Role 템플릿 자체는 IAM 리소스만 만들며 월 비용을 만들지 않는다.
-- 앱 하단 운영 사용량 패널은 CloudWatch `GetMetricData`만 사용한다. Cost Explorer API 권한은 앱 Lambda에 없어야 한다.
+- 앱 하단 운영 사용량 패널은 CloudWatch `GetMetricData`만 사용하고 같은 날짜의 스냅샷을 캐시한다. Cost Explorer API 권한은 앱 Lambda에 없어야 한다.
 
 ## 배포가 만드는 리소스
 
@@ -57,6 +58,7 @@
 - `DELETE /api/records/{recordId}` route가 JWT authorizer 없이 생성됨.
 - `GET /api/usage` route가 JWT authorizer 없이 생성됨.
 - 앱 Lambda IAM 정책에 Cost Explorer API 권한이 추가됨.
+- S3 lifecycle rule이 사라지거나, `assets/` 외의 현재 프론트엔드 핵심 객체를 archive 계열 storage로 전환함.
 
 ## 현재 검증 결과
 

@@ -143,6 +143,15 @@ function startOfMonth(date) {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0));
 }
 
+function cacheDateFor(date) {
+  const koreaTime = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  return koreaTime.toISOString().slice(0, 10);
+}
+
+function usageCacheKey(date) {
+  return `USAGE#${cacheDateFor(date)}`;
+}
+
 function sumMetric(results, id) {
   const result = results.find((item) => item.Id === id);
   return Math.round((result?.Values ?? []).reduce((sum, value) => sum + Number(value || 0), 0));
@@ -181,12 +190,14 @@ function riskLabel(riskLevel) {
 
 function costEstimateItem({ id, label, value, freeLimit, freeTierLabel, usageLabel, detail }) {
   const riskLevel = riskLevelFor(value, freeLimit);
+  const usagePercent = freeLimit > 0 ? Math.min(100, Math.round((value / freeLimit) * 100)) : 0;
   return {
     id,
     label,
     estimateLabel: riskLabel(riskLevel),
     freeTierLabel,
     usageLabel,
+    usagePercent,
     detail,
     riskLevel
   };
@@ -230,6 +241,7 @@ function buildCostEstimate({
       estimateLabel: "무료 범위 예상",
       freeTierLabel: "25 RCU + 25 WCU + 25GB",
       usageLabel: `읽기 ${Math.round(dynamodbRead).toLocaleString("ko-KR")} · 쓰기 ${Math.round(dynamodbWrite).toLocaleString("ko-KR")}`,
+      usagePercent: 0,
       detail: "현재 테이블은 provisioned 1 RCU / 1 WCU로 고정되어 무료 제공량보다 낮습니다.",
       riskLevel: "free-tier"
     },
@@ -249,7 +261,7 @@ function buildCostEstimate({
       freeLimit: s3FreeBytes,
       freeTierLabel: "5GB Standard storage",
       usageLabel: formatBytes(s3Bytes),
-      detail: "정적 프론트엔드 파일만 저장하므로 현재 구조에서는 저장 비용이 매우 낮습니다."
+      detail: "정적 프론트엔드 assets/ 객체는 30일 후 Intelligent-Tiering으로 전환해 장기 저장 비용을 낮춥니다."
     }),
     {
       id: "cognito",
@@ -257,6 +269,7 @@ function buildCostEstimate({
       estimateLabel: "무료 범위 예상",
       freeTierLabel: "직접 로그인 10,000 MAU/월",
       usageLabel: "관리자 생성 개인 계정",
+      usagePercent: 0,
       detail: "self sign-up을 막아 두었기 때문에 원치 않는 MAU 증가 가능성을 낮췄습니다.",
       riskLevel: "free-tier"
     },
@@ -266,6 +279,7 @@ function buildCostEstimate({
       estimateLabel: "무료 범위 예상",
       freeTierLabel: "Logs 5GB 무료 범위",
       usageLabel: "7일 보관",
+      usagePercent: 0,
       detail: "Lambda 로그 보관 기간을 7일로 제한해 로그 저장 비용이 누적되지 않게 했습니다.",
       riskLevel: "free-tier"
     },
@@ -275,6 +289,7 @@ function buildCostEstimate({
       estimateLabel: "무료 범위 예상",
       freeTierLabel: "단순 예산 알림 무료",
       usageLabel: "$1 · $3 · $5 알림",
+      usagePercent: 0,
       detail: "Budget action이나 report를 추가하지 않는 한 현재 알림 구성은 비용을 만들지 않습니다.",
       riskLevel: "free-tier"
     }
@@ -308,6 +323,54 @@ function metricQuery(id, namespace, metricName, dimensions, stat = "Sum") {
   };
 }
 
+function trendPoints(results, id) {
+  const result = results.find((item) => item.Id === id);
+  const timestamps = result?.Timestamps ?? [];
+  const values = result?.Values ?? [];
+
+  return timestamps
+    .map((timestamp, index) => {
+      const date = new Date(timestamp);
+      return {
+        timestamp: date.toISOString(),
+        label: `${date.getUTCMonth() + 1}/${date.getUTCDate()}`,
+        value: Math.round(Number(values[index] ?? 0))
+      };
+    })
+    .filter((point) => Number.isFinite(point.value))
+    .sort((left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime())
+    .slice(-14);
+}
+
+function buildUsageTrends(localMetrics, globalMetrics) {
+  return [
+    {
+      id: "apiRequests",
+      label: "API 요청",
+      unit: "count",
+      points: trendPoints(localMetrics, "apiRequests")
+    },
+    {
+      id: "lambdaErrors",
+      label: "Lambda 오류",
+      unit: "count",
+      points: trendPoints(localMetrics, "lambdaErrors")
+    },
+    {
+      id: "cloudfrontBytes",
+      label: "전송량",
+      unit: "bytes",
+      points: trendPoints(globalMetrics, "cloudfrontBytes")
+    },
+    {
+      id: "s3Bytes",
+      label: "S3 저장량",
+      unit: "bytes",
+      points: trendPoints(localMetrics, "s3Bytes")
+    }
+  ].filter((trend) => trend.points.length > 0);
+}
+
 async function readMetrics(options, metricDataQueries, startTime, endTime) {
   if (metricDataQueries.length === 0) return [];
 
@@ -337,8 +400,55 @@ async function safeReadMetrics(client, metricDataQueries, startTime, endTime, sc
   }
 }
 
-async function loadUsageSnapshot() {
+async function loadCachedUsageSnapshot(pk, now) {
+  const result = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk, sk: usageCacheKey(now) })
+    })
+  );
+  const cached = itemToObject(result.Item);
+  if (!cached?.payload) return null;
+
+  try {
+    const snapshot = JSON.parse(cached.payload);
+    if (snapshot?.cacheDate !== cacheDateFor(now)) return null;
+    return {
+      ...snapshot,
+      cacheStatus: "cached"
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function saveUsageSnapshot(pk, snapshot) {
+  await dynamodb.send(
+    new PutItemCommand({
+      TableName: tableName,
+      Item: objectToItem({
+        pk,
+        sk: `USAGE#${snapshot.cacheDate}`,
+        entityType: "USAGE_CACHE",
+        cacheDate: snapshot.cacheDate,
+        generatedAt: snapshot.generatedAt,
+        payload: JSON.stringify(snapshot)
+      })
+    })
+  );
+}
+
+async function loadUsageSnapshot(pk) {
   const now = new Date();
+  let cached = null;
+  try {
+    cached = await loadCachedUsageSnapshot(pk, now);
+  } catch (error) {
+    console.warn("Usage snapshot cache read failed", { name: error?.name });
+  }
+
+  if (cached) return cached;
+
   const periodStart = startOfMonth(now);
   const localMetricQueries = [
     metricQuery("lambdaInvocations", "AWS/Lambda", "Invocations", [
@@ -420,11 +530,13 @@ async function loadUsageSnapshot() {
   const s3Bytes = latestMetric(localMetrics, "s3Bytes");
   const s3Objects = latestMetric(localMetrics, "s3Objects");
 
-  return {
+  const snapshot = {
     generatedAt: now.toISOString(),
     periodStart: periodStart.toISOString(),
     periodEnd: now.toISOString(),
     source: "cloudwatch",
+    cacheStatus: "fresh",
+    cacheDate: cacheDateFor(now),
     note: "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량과 Free Tier 기준 추정만 보여줍니다.",
     costEstimate: buildCostEstimate({
       apiRequests,
@@ -436,6 +548,7 @@ async function loadUsageSnapshot() {
       cloudfrontBytes,
       s3Bytes
     }),
+    trends: buildUsageTrends(localMetrics, globalMetrics),
     modules: [
       {
         id: "api",
@@ -536,6 +649,14 @@ async function loadUsageSnapshot() {
       }
     ]
   };
+
+  try {
+    await saveUsageSnapshot(pk, snapshot);
+  } catch (error) {
+    console.warn("Usage snapshot cache write failed", { name: error?.name });
+  }
+
+  return snapshot;
 }
 
 function parseRecordId(recordId) {
@@ -999,7 +1120,7 @@ export async function handler(event) {
       return json(200, { ok: true, service: "pineflow-api" });
     }
     if (method === "GET" && path === "/api/usage") {
-      return json(200, await loadUsageSnapshot());
+      return json(200, await loadUsageSnapshot(pk));
     }
 
     const body = parseBody(event);

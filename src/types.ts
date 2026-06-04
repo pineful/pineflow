@@ -44,6 +44,7 @@ export type CostEstimateItem = {
   estimateLabel: string;
   freeTierLabel: string;
   usageLabel: string;
+  usagePercent: number;
   detail: string;
   riskLevel: CostRiskLevel;
 };
@@ -56,12 +57,28 @@ export type OperationalCostEstimate = {
   items: CostEstimateItem[];
 };
 
+export type UsageTrendPoint = {
+  label: string;
+  timestamp: string;
+  value: number;
+};
+
+export type UsageTrend = {
+  id: string;
+  label: string;
+  unit: UsageMetric["unit"];
+  points: UsageTrendPoint[];
+};
+
 export type OperationalUsageSnapshot = {
   generatedAt: string;
   periodStart: string;
   periodEnd: string;
   source: "cloudwatch";
+  cacheStatus: "fresh" | "cached";
+  cacheDate: string;
   modules: UsageModule[];
+  trends: UsageTrend[];
   costEstimate: OperationalCostEstimate;
   note: string;
 };

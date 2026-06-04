@@ -785,7 +785,7 @@ h1 {
 
 .costEstimatePanel {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   padding: 12px;
   border: 1px solid #cddfcf;
   border-radius: var(--radius-card);
@@ -809,7 +809,7 @@ h1 {
 
 .costEstimateHeader strong {
   color: #1c6f55;
-  font-size: 1.42rem;
+  font-size: 1.64rem;
   font-weight: 950;
   text-align: right;
 }
@@ -835,6 +835,100 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 8px;
+}
+
+.usageTrendGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+}
+
+.usageTrendCard {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #dce8d7;
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.usageTrendCard > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.usageTrendCard strong,
+.usageTrendCard span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.usageTrendCard strong {
+  color: #17231e;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.usageTrendCard span {
+  color: #1f7158;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.usageTrendCard svg {
+  width: 100%;
+  height: 52px;
+  overflow: visible;
+}
+
+.trendGuide {
+  fill: none;
+  stroke: rgba(111, 133, 118, 0.22);
+  stroke-dasharray: 5 6;
+  stroke-width: 2;
+}
+
+.trendLine {
+  fill: none;
+  stroke: #2d7f63;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.usageTrendCard small {
+  color: #6c7a70;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.usageDetails {
+  display: grid;
+  gap: 10px;
+}
+
+.usageDetails[open] {
+  gap: 12px;
+}
+
+.usageDetails summary {
+  cursor: pointer;
+  width: fit-content;
+  padding: 8px 10px;
+  border: 1px solid #d7e5d1;
+  border-radius: var(--radius-control);
+  color: #1d6e55;
+  background: #eef6ea;
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
+.usageDetails summary::marker {
+  color: #75a584;
 }
 
 .costEstimateItem {
@@ -871,6 +965,21 @@ h1 {
   font-size: 0.66rem;
   font-weight: 950;
   line-height: 1;
+}
+
+.costMeter {
+  overflow: hidden;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: #e8eee2;
+}
+
+.costMeter i {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #41b77f, #f6c247);
 }
 
 .costEstimateItem dl {

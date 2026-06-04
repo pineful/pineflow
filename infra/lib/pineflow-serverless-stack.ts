@@ -72,6 +72,22 @@ export class PineflowServerlessStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true,
+      lifecycleRules: [
+        {
+          id: "AbortIncompleteFrontendUploads",
+          abortIncompleteMultipartUploadAfter: cdk.Duration.days(1)
+        },
+        {
+          id: "TransitionFrontendAssetsToIntelligentTiering",
+          prefix: "assets/",
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+              transitionAfter: cdk.Duration.days(30)
+            }
+          ]
+        }
+      ],
       removalPolicy: cdk.RemovalPolicy.RETAIN
     });
 

@@ -20,7 +20,7 @@ import {
 } from "./api";
 import { modeDescriptions, modeIcons, modeLabels, modePlans, productName, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
-import type { CommuteRecord, CommuteState, OperationalUsageSnapshot, UsageMetric, WorkMode } from "./types";
+import type { CommuteRecord, CommuteState, OperationalUsageSnapshot, UsageMetric, UsageTrend, WorkMode } from "./types";
 
 const workModes = Object.keys(modeLabels) as WorkMode[];
 
@@ -31,6 +31,7 @@ const initialState: CommuteState = {
 };
 
 const soundStorageKey = "pineflow.sound-enabled";
+const usageCacheStorageKey = "pineflow.usage-cache.v1";
 const sessionRefreshIntervalMs = 30 * 60 * 1000;
 
 type WeatherState = {
@@ -188,6 +189,81 @@ function costRiskClass(riskLevel: string) {
   if (riskLevel === "billable") return "riskBillable";
   if (riskLevel === "watch") return "riskWatch";
   return "riskFree";
+}
+
+function todayUsageCacheDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getStoredUsageSnapshot() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const cached = JSON.parse(window.localStorage.getItem(usageCacheStorageKey) ?? "null") as OperationalUsageSnapshot | null;
+    if (!cached || cached.cacheDate !== todayUsageCacheDate()) return null;
+
+    return {
+      ...cached,
+      cacheStatus: "cached" as const
+    };
+  } catch {
+    return null;
+  }
+}
+
+function storeUsageSnapshot(snapshot: OperationalUsageSnapshot) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(usageCacheStorageKey, JSON.stringify(snapshot));
+}
+
+function formatUsageValue(value: number, unit: UsageMetric["unit"]) {
+  return formatUsageMetric({
+    id: "value",
+    label: "값",
+    value,
+    unit
+  });
+}
+
+function trendPath(points: UsageTrend["points"], width: number, height: number) {
+  if (points.length === 0) return "";
+
+  const maxValue = Math.max(...points.map((point) => point.value), 1);
+  const step = points.length > 1 ? width / (points.length - 1) : width;
+
+  return points
+    .map((point, index) => {
+      const x = points.length > 1 ? index * step : width / 2;
+      const y = height - (point.value / maxValue) * (height - 8) - 4;
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(" ");
+}
+
+function UsageTrendCard({ trend }: { trend: UsageTrend }) {
+  const latest = trend.points[trend.points.length - 1];
+  const first = trend.points[0];
+  const path = trendPath(trend.points, 160, 48);
+
+  return (
+    <article className="usageTrendCard">
+      <div>
+        <strong>{trend.label}</strong>
+        <span>{latest ? formatUsageValue(latest.value, trend.unit) : "-"}</span>
+      </div>
+      <svg viewBox="0 0 160 52" role="img" aria-label={`${trend.label} 추이`}>
+        <path className="trendGuide" d="M 0 26 L 160 26" />
+        <path className="trendLine" d={path} />
+      </svg>
+      <small>
+        {first?.label ?? "-"} → {latest?.label ?? "-"}
+      </small>
+    </article>
+  );
 }
 
 function uniqueFilled(values: Array<string | undefined>) {
@@ -1069,10 +1145,18 @@ function App() {
       return;
     }
 
+    const cachedUsage = getStoredUsageSnapshot();
+    if (cachedUsage) {
+      setUsage(cachedUsage);
+      setUsageStatus("ready");
+      return;
+    }
+
     setUsageStatus("loading");
     const timer = window.setTimeout(() => {
       fetchUsage()
         .then((snapshot) => {
+          storeUsageSnapshot(snapshot);
           setUsage(snapshot);
           setUsageStatus("ready");
         })
@@ -1924,8 +2008,12 @@ function App() {
           {usageStatus === "ready" && usage ? (
             <>
               <div className="usageIntro">
-                <strong>비용을 만드는 기본 지표</strong>
-                <span>{usage.note}</span>
+                <strong>비용 상태 요약</strong>
+                <span>
+                  {usage.cacheStatus === "cached"
+                    ? "오늘 이미 확인한 스냅샷을 다시 사용하고 있습니다."
+                    : "오늘 처음 조회한 운영 지표입니다."}
+                </span>
               </div>
               <div className="costEstimatePanel">
                 <div className="costEstimateHeader">
@@ -1934,46 +2022,60 @@ function App() {
                   <p>{usage.costEstimate.summaryLabel}</p>
                 </div>
                 <p className="costEstimateCaption">{usage.costEstimate.caption}</p>
-                <div className="costEstimateGrid">
-                  {usage.costEstimate.items.map((item) => (
-                    <article className={`costEstimateItem ${costRiskClass(item.riskLevel)}`} key={item.id}>
-                      <div>
-                        <strong>{item.label}</strong>
-                        <span>{item.estimateLabel}</span>
-                      </div>
-                      <dl>
+                {usage.trends.length > 0 && (
+                  <div className="usageTrendGrid">
+                    {usage.trends.map((trend) => (
+                      <UsageTrendCard trend={trend} key={trend.id} />
+                    ))}
+                  </div>
+                )}
+                <details className="usageDetails">
+                  <summary>서비스별 상세 기준 보기</summary>
+                  <div className="costEstimateGrid">
+                    {usage.costEstimate.items.map((item) => (
+                      <article className={`costEstimateItem ${costRiskClass(item.riskLevel)}`} key={item.id}>
                         <div>
-                          <dt>현재</dt>
-                          <dd>{item.usageLabel}</dd>
+                          <strong>{item.label}</strong>
+                          <span>{item.estimateLabel}</span>
                         </div>
+                        <div className="costMeter" aria-label={`${item.label} 무료 기준 대비 ${item.usagePercent}%`}>
+                          <i style={{ width: `${item.usagePercent}%` }} />
+                        </div>
+                        <dl>
+                          <div>
+                            <dt>현재</dt>
+                            <dd>{item.usageLabel}</dd>
+                          </div>
+                          <div>
+                            <dt>무료 기준</dt>
+                            <dd>{item.freeTierLabel}</dd>
+                          </div>
+                        </dl>
+                        <p>{item.detail}</p>
+                      </article>
+                    ))}
+                  </div>
+                  <div className="usageGrid">
+                    {usage.modules.map((module) => (
+                      <article className="usageModule" key={module.id}>
                         <div>
-                          <dt>무료 기준</dt>
-                          <dd>{item.freeTierLabel}</dd>
+                          <strong>{module.label}</strong>
+                          <span>{module.caption}</span>
                         </div>
-                      </dl>
-                      <p>{item.detail}</p>
-                    </article>
-                  ))}
-                </div>
-                <p className="costEstimateDisclaimer">{usage.costEstimate.disclaimer}</p>
-              </div>
-              <div className="usageGrid">
-                {usage.modules.map((module) => (
-                  <article className="usageModule" key={module.id}>
-                    <div>
-                      <strong>{module.label}</strong>
-                      <span>{module.caption}</span>
-                    </div>
-                    <dl>
-                      {module.metrics.map((metric) => (
-                        <div key={metric.id}>
-                          <dt>{metric.label}</dt>
-                          <dd>{formatUsageMetric(metric)}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </article>
-                ))}
+                        <dl>
+                          {module.metrics.map((metric) => (
+                            <div key={metric.id}>
+                              <dt>{metric.label}</dt>
+                              <dd>{formatUsageMetric(metric)}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </article>
+                    ))}
+                  </div>
+                  <p className="costEstimateDisclaimer">{usage.costEstimate.disclaimer}</p>
+                  <p className="costEstimateDisclaimer">{usage.note}</p>
+                </details>
               </div>
               <p className="usageTimestamp">
                 마지막 조회 {formatDate(usage.generatedAt)} · {formatTime(usage.generatedAt)}

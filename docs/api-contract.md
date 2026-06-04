@@ -89,6 +89,8 @@
   "periodStart": "2026-06-01T00:00:00.000Z",
   "periodEnd": "2026-06-04T00:00:00.000Z",
   "source": "cloudwatch",
+  "cacheStatus": "fresh",
+  "cacheDate": "2026-06-04",
   "note": "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량과 Free Tier 기준 추정만 보여줍니다.",
   "costEstimate": {
     "headline": "$0 예상",
@@ -102,11 +104,26 @@
         "estimateLabel": "무료 범위 예상",
         "freeTierLabel": "100만 요청 + 400,000 GB-s/월",
         "usageLabel": "10건 · 0.003 GB-s",
+        "usagePercent": 0,
         "detail": "128MB, reserved concurrency 1 구성이라 개인 사용에서는 컴퓨팅 비용 발생 가능성이 낮습니다.",
         "riskLevel": "free-tier"
       }
     ]
   },
+  "trends": [
+    {
+      "id": "apiRequests",
+      "label": "API 요청",
+      "unit": "count",
+      "points": [
+        {
+          "label": "6/4",
+          "timestamp": "2026-06-04T00:00:00.000Z",
+          "value": 10
+        }
+      ]
+    }
+  ],
   "modules": [
     {
       "id": "lambda",
@@ -133,12 +150,15 @@
 - CloudFront 요청 수와 다운로드 전송량.
 - S3 저장량과 객체 수.
 - Free Tier 기준 예상 비용 상태.
+- 시간 순서로 정렬된 간단한 운영량 추이.
 
 설계 제약:
 
 - 이 API는 Cost Explorer를 호출하지 않는다. Cost Explorer 권한을 앱 Lambda에 주지 않는다.
 - 실제 청구액 판단은 AWS Budgets 알림과 Billing 콘솔에서 한다. 화면의 비용 정보는 CloudWatch 지표와 Pineflow 설정을 Free Tier 기준선에 대입한 추정이다.
+- 같은 사용자에 대해 같은 날짜의 사용량 스냅샷이 DynamoDB에 있으면 CloudWatch를 다시 호출하지 않고 캐시를 반환한다.
 - 앱은 이 API를 화면 진입 직후 즉시 호출하지 않고, `/api/state`와 겹쳐 throttling을 유발하지 않도록 짧게 지연 호출한다.
+- 프론트엔드는 같은 날짜의 사용량 스냅샷을 `localStorage`에 저장해 같은 날 재방문 시 `/api/usage` 호출 자체를 생략한다.
 - 운영 지표 조회 실패는 기록 기능 실패로 보여주지 않고, 하단 운영 패널 안에서만 `불러올 수 없음`으로 표시한다.
 
 ## POST /api/check-in

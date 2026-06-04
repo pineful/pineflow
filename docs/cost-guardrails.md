@@ -59,12 +59,15 @@ Pineflow 앱 하단에는 AWS 사용량의 기초 지표와 Free Tier 기준 예
 - CloudFront 요청/전송량
 - S3 저장량/객체 수
 - Pineflow IaC에 고정된 비용 가드레일 값
+- 같은 날짜에 캐시된 운영 사용량 스냅샷
 
 금지:
 
 - 앱 Lambda에 Cost Explorer 권한을 주지 않는다.
 - 앱 화면에서 실제 청구액을 계산한다고 표현하지 않는다. `Free Tier 기준 예상`, `$0 예상` 같은 문구는 추정임을 함께 표시한다.
 - 운영 지표를 자동 polling하지 않는다. 화면 진입 후 1회 조회를 기본으로 한다.
+- 같은 날짜에 이미 조회한 값이 있으면 프론트엔드와 Lambda 모두 캐시를 우선 사용한다.
+- S3 프론트엔드 버킷은 `assets/` 객체만 30일 뒤 Intelligent-Tiering으로 전환한다. `index.html`은 첫 화면 안정성을 위해 Standard에 둔다.
 
 ## 현재 공식 문서 기준 확인
 
@@ -74,5 +77,6 @@ Pineflow 앱 하단에는 AWS 사용량의 기초 지표와 Free Tier 기준 예
 - S3: 신규 고객 free tier는 5GB storage, GET/PUT 요청 수 제한이 있다.
 - AWS Budgets: budget monitoring notification은 무료다.
 - Cost Explorer API는 호출당 비용이 있으므로 앱 화면에서는 사용하지 않는다.
+- S3 Intelligent-Tiering은 객체 수와 크기에 따라 모니터링 비용이 생길 수 있다. 프론트엔드 assets 객체 수가 많아지면 실제 비용 대비 효과를 다시 확인한다.
 
 정책은 변할 수 있으므로 배포 직전에는 공식 pricing 문서를 다시 확인한다.

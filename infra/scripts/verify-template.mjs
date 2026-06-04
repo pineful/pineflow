@@ -74,6 +74,20 @@ assert(
     publicAccessBlock?.RestrictPublicBuckets,
   "S3 public access block must stay fully enabled."
 );
+const lifecycleRules = bucket?.Properties?.LifecycleConfiguration?.Rules ?? [];
+const intelligentTieringRule = lifecycleRules.find((rule) => rule.Id === "TransitionFrontendAssetsToIntelligentTiering");
+assert(
+  intelligentTieringRule?.Prefix === "assets/" &&
+    intelligentTieringRule?.Transitions?.some(
+      (transition) => transition.StorageClass === "INTELLIGENT_TIERING" && transition.TransitionInDays === 30
+    ),
+  "Frontend assets must transition to S3 Intelligent-Tiering after 30 days."
+);
+const incompleteUploadRule = lifecycleRules.find((rule) => rule.Id === "AbortIncompleteFrontendUploads");
+assert(
+  incompleteUploadRule?.AbortIncompleteMultipartUpload?.DaysAfterInitiation === 1,
+  "S3 incomplete multipart uploads must be aborted after one day."
+);
 
 const oac = resourcesOf("AWS::CloudFront::OriginAccessControl")[0];
 assert(oac?.Properties?.OriginAccessControlConfig?.SigningBehavior === "always", "CloudFront OAC must always sign S3 origin requests.");
