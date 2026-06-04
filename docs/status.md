@@ -73,6 +73,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 잘못 생성된 기록을 정리할 수 있도록 `DELETE /api/records/{recordId}`와 최근 기록 카드의 세션 전체 삭제 확인 UI를 추가.
 - 그룹웨어 UI 리서치 기준으로 컨트롤 외곽을 `Structured Soft Rectangle` 체계로 정리하고, 입력/선택/보조 실행/주요 실행/위험 실행의 shape, border, focus 위계를 분리.
 - 앱 하단에 CloudWatch 기반 AWS 운영 사용량 패널을 추가하고, API Gateway/Lambda/DynamoDB/CloudFront/S3의 이번 달 기초 지표를 표시.
+- 운영 사용량 패널에 Cost Explorer 없이 CloudWatch 지표와 Pineflow 설정을 Free Tier 기준선에 대입한 예상 비용 상태를 표시.
 - `Request failed.` 같은 일반 오류 문구를 상태 코드별 사용자 문구로 바꾸고, 초기 상태 조회 직후 기록 버튼이 API Gateway throttling에 걸릴 가능성을 줄이도록 짧은 쿨다운과 지연 사용량 조회를 적용.
 
 ## 검증됨

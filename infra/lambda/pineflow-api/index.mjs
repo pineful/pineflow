@@ -155,6 +155,143 @@ function latestMetric(results, id) {
   return Math.round(Number(latest ?? 0));
 }
 
+function formatCount(value) {
+  return `${Math.round(value).toLocaleString("ko-KR")}건`;
+}
+
+function formatBytes(value) {
+  if (value >= 1024 * 1024 * 1024) return `${(value / 1024 / 1024 / 1024).toFixed(2)}GB`;
+  if (value >= 1024 * 1024) return `${(value / 1024 / 1024).toFixed(1)}MB`;
+  if (value >= 1024) return `${(value / 1024).toFixed(1)}KB`;
+  return `${Math.round(value).toLocaleString("ko-KR")}B`;
+}
+
+function riskLevelFor(value, freeLimit) {
+  if (freeLimit <= 0) return "free-tier";
+  if (value > freeLimit) return "billable";
+  if (value > freeLimit * 0.8) return "watch";
+  return "free-tier";
+}
+
+function riskLabel(riskLevel) {
+  if (riskLevel === "billable") return "초과 가능";
+  if (riskLevel === "watch") return "주의";
+  return "무료 범위 예상";
+}
+
+function costEstimateItem({ id, label, value, freeLimit, freeTierLabel, usageLabel, detail }) {
+  const riskLevel = riskLevelFor(value, freeLimit);
+  return {
+    id,
+    label,
+    estimateLabel: riskLabel(riskLevel),
+    freeTierLabel,
+    usageLabel,
+    detail,
+    riskLevel
+  };
+}
+
+function buildCostEstimate({
+  apiRequests,
+  lambdaInvocations,
+  lambdaDurationMs,
+  dynamodbRead,
+  dynamodbWrite,
+  cloudfrontRequests,
+  cloudfrontBytes,
+  s3Bytes
+}) {
+  const lambdaGbSeconds = (lambdaDurationMs / 1000) * 0.125;
+  const cloudfrontFreeBytes = 100 * 1024 * 1024 * 1024;
+  const s3FreeBytes = 5 * 1024 * 1024 * 1024;
+  const items = [
+    costEstimateItem({
+      id: "api",
+      label: "API Gateway",
+      value: apiRequests,
+      freeLimit: 1_000_000,
+      freeTierLabel: "HTTP API 100만 요청/월",
+      usageLabel: formatCount(apiRequests),
+      detail: "Free Tier가 끝난 계정도 개인 사용량이면 표준 요금 기준 영향은 보통 센트 단위입니다."
+    }),
+    costEstimateItem({
+      id: "lambda",
+      label: "Lambda",
+      value: Math.max(lambdaInvocations / 1_000_000, lambdaGbSeconds / 400_000),
+      freeLimit: 1,
+      freeTierLabel: "100만 요청 + 400,000 GB-s/월",
+      usageLabel: `${formatCount(lambdaInvocations)} · ${lambdaGbSeconds.toFixed(3)} GB-s`,
+      detail: "128MB, reserved concurrency 1 구성이라 개인 사용에서는 컴퓨팅 비용 발생 가능성이 낮습니다."
+    }),
+    {
+      id: "dynamodb",
+      label: "DynamoDB",
+      estimateLabel: "무료 범위 예상",
+      freeTierLabel: "25 RCU + 25 WCU + 25GB",
+      usageLabel: `읽기 ${Math.round(dynamodbRead).toLocaleString("ko-KR")} · 쓰기 ${Math.round(dynamodbWrite).toLocaleString("ko-KR")}`,
+      detail: "현재 테이블은 provisioned 1 RCU / 1 WCU로 고정되어 무료 제공량보다 낮습니다.",
+      riskLevel: "free-tier"
+    },
+    costEstimateItem({
+      id: "cloudfront",
+      label: "CloudFront",
+      value: Math.max(cloudfrontRequests / 1_000_000, cloudfrontBytes / cloudfrontFreeBytes),
+      freeLimit: 1,
+      freeTierLabel: "Free plan 기준 100GB 전송 + 100만 요청/월",
+      usageLabel: `${formatCount(cloudfrontRequests)} · ${formatBytes(cloudfrontBytes)}`,
+      detail: "앱 URL이 외부에 노출되어 정적 파일 요청이 급증하면 가장 먼저 확인해야 하는 항목입니다."
+    }),
+    costEstimateItem({
+      id: "s3",
+      label: "S3",
+      value: s3Bytes,
+      freeLimit: s3FreeBytes,
+      freeTierLabel: "5GB Standard storage",
+      usageLabel: formatBytes(s3Bytes),
+      detail: "정적 프론트엔드 파일만 저장하므로 현재 구조에서는 저장 비용이 매우 낮습니다."
+    }),
+    {
+      id: "cognito",
+      label: "Cognito",
+      estimateLabel: "무료 범위 예상",
+      freeTierLabel: "직접 로그인 10,000 MAU/월",
+      usageLabel: "관리자 생성 개인 계정",
+      detail: "self sign-up을 막아 두었기 때문에 원치 않는 MAU 증가 가능성을 낮췄습니다.",
+      riskLevel: "free-tier"
+    },
+    {
+      id: "cloudwatch",
+      label: "CloudWatch Logs",
+      estimateLabel: "무료 범위 예상",
+      freeTierLabel: "Logs 5GB 무료 범위",
+      usageLabel: "7일 보관",
+      detail: "Lambda 로그 보관 기간을 7일로 제한해 로그 저장 비용이 누적되지 않게 했습니다.",
+      riskLevel: "free-tier"
+    },
+    {
+      id: "budgets",
+      label: "AWS Budgets",
+      estimateLabel: "무료 범위 예상",
+      freeTierLabel: "단순 예산 알림 무료",
+      usageLabel: "$1 · $3 · $5 알림",
+      detail: "Budget action이나 report를 추가하지 않는 한 현재 알림 구성은 비용을 만들지 않습니다.",
+      riskLevel: "free-tier"
+    }
+  ];
+
+  const hasBillable = items.some((item) => item.riskLevel === "billable");
+  const hasWatch = items.some((item) => item.riskLevel === "watch");
+
+  return {
+    headline: hasBillable ? "초과 가능 항목 있음" : hasWatch ? "무료 범위 근접 항목 있음" : "$0 예상",
+    summaryLabel: hasBillable ? "즉시 확인 필요" : hasWatch ? "주의 관찰" : "Free Tier 안쪽으로 보임",
+    caption: "CloudWatch 사용량과 Pineflow 설정을 Free Tier 기준선에 대입한 추정입니다.",
+    disclaimer: "실제 청구액은 AWS Billing과 Budget 알림이 최종 기준입니다. Cost Explorer API는 호출당 비용이 있어 이 화면에서는 사용하지 않습니다.",
+    items
+  };
+}
+
 function metricQuery(id, namespace, metricName, dimensions, stat = "Sum") {
   return {
     Id: id,
@@ -208,6 +345,9 @@ async function loadUsageSnapshot() {
       { Name: "FunctionName", Value: apiFunctionName }
     ]),
     metricQuery("lambdaErrors", "AWS/Lambda", "Errors", [
+      { Name: "FunctionName", Value: apiFunctionName }
+    ]),
+    metricQuery("lambdaDurationMs", "AWS/Lambda", "Duration", [
       { Name: "FunctionName", Value: apiFunctionName }
     ]),
     metricQuery("dynamodbRead", "AWS/DynamoDB", "ConsumedReadCapacityUnits", [
@@ -269,13 +409,33 @@ async function loadUsageSnapshot() {
     safeReadMetrics({}, localMetricQueries, periodStart, now, "regional"),
     safeReadMetrics({ region: "us-east-1" }, globalMetricQueries, periodStart, now, "global")
   ]);
+  const apiRequests = sumMetric(localMetrics, "apiRequests");
+  const lambdaInvocations = sumMetric(localMetrics, "lambdaInvocations");
+  const lambdaErrors = sumMetric(localMetrics, "lambdaErrors");
+  const lambdaDurationMs = sumMetric(localMetrics, "lambdaDurationMs");
+  const dynamodbRead = sumMetric(localMetrics, "dynamodbRead");
+  const dynamodbWrite = sumMetric(localMetrics, "dynamodbWrite");
+  const cloudfrontRequests = sumMetric(globalMetrics, "cloudfrontRequests");
+  const cloudfrontBytes = sumMetric(globalMetrics, "cloudfrontBytes");
+  const s3Bytes = latestMetric(localMetrics, "s3Bytes");
+  const s3Objects = latestMetric(localMetrics, "s3Objects");
 
   return {
     generatedAt: now.toISOString(),
     periodStart: periodStart.toISOString(),
     periodEnd: now.toISOString(),
     source: "cloudwatch",
-    note: "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량만 보여줍니다.",
+    note: "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량과 Free Tier 기준 추정만 보여줍니다.",
+    costEstimate: buildCostEstimate({
+      apiRequests,
+      lambdaInvocations,
+      lambdaDurationMs,
+      dynamodbRead,
+      dynamodbWrite,
+      cloudfrontRequests,
+      cloudfrontBytes,
+      s3Bytes
+    }),
     modules: [
       {
         id: "api",
@@ -285,7 +445,7 @@ async function loadUsageSnapshot() {
           {
             id: "requests",
             label: "요청",
-            value: sumMetric(localMetrics, "apiRequests"),
+            value: apiRequests,
             unit: "count",
             caption: "이번 달 Count"
           }
@@ -299,14 +459,20 @@ async function loadUsageSnapshot() {
           {
             id: "invocations",
             label: "호출",
-            value: sumMetric(localMetrics, "lambdaInvocations"),
+            value: lambdaInvocations,
             unit: "count"
           },
           {
             id: "errors",
             label: "오류",
-            value: sumMetric(localMetrics, "lambdaErrors"),
+            value: lambdaErrors,
             unit: "count"
+          },
+          {
+            id: "duration",
+            label: "실행시간",
+            value: lambdaDurationMs,
+            unit: "milliseconds"
           }
         ]
       },
@@ -318,13 +484,13 @@ async function loadUsageSnapshot() {
           {
             id: "read",
             label: "읽기",
-            value: sumMetric(localMetrics, "dynamodbRead"),
+            value: dynamodbRead,
             unit: "capacity-unit"
           },
           {
             id: "write",
             label: "쓰기",
-            value: sumMetric(localMetrics, "dynamodbWrite"),
+            value: dynamodbWrite,
             unit: "capacity-unit"
           }
         ]
@@ -337,13 +503,13 @@ async function loadUsageSnapshot() {
           {
             id: "requests",
             label: "요청",
-            value: sumMetric(globalMetrics, "cloudfrontRequests"),
+            value: cloudfrontRequests,
             unit: "count"
           },
           {
             id: "bytes",
             label: "전송량",
-            value: sumMetric(globalMetrics, "cloudfrontBytes"),
+            value: cloudfrontBytes,
             unit: "bytes"
           }
         ]
@@ -356,14 +522,14 @@ async function loadUsageSnapshot() {
           {
             id: "bytes",
             label: "저장량",
-            value: latestMetric(localMetrics, "s3Bytes"),
+            value: s3Bytes,
             unit: "bytes",
             caption: "일 단위 지표"
           },
           {
             id: "objects",
             label: "객체",
-            value: latestMetric(localMetrics, "s3Objects"),
+            value: s3Objects,
             unit: "count"
           }
         ]

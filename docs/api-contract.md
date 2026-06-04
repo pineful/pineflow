@@ -89,7 +89,24 @@
   "periodStart": "2026-06-01T00:00:00.000Z",
   "periodEnd": "2026-06-04T00:00:00.000Z",
   "source": "cloudwatch",
-  "note": "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량만 보여줍니다.",
+  "note": "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량과 Free Tier 기준 추정만 보여줍니다.",
+  "costEstimate": {
+    "headline": "$0 예상",
+    "summaryLabel": "Free Tier 안쪽으로 보임",
+    "caption": "CloudWatch 사용량과 Pineflow 설정을 Free Tier 기준선에 대입한 추정입니다.",
+    "disclaimer": "실제 청구액은 AWS Billing과 Budget 알림이 최종 기준입니다. Cost Explorer API는 호출당 비용이 있어 이 화면에서는 사용하지 않습니다.",
+    "items": [
+      {
+        "id": "lambda",
+        "label": "Lambda",
+        "estimateLabel": "무료 범위 예상",
+        "freeTierLabel": "100만 요청 + 400,000 GB-s/월",
+        "usageLabel": "10건 · 0.003 GB-s",
+        "detail": "128MB, reserved concurrency 1 구성이라 개인 사용에서는 컴퓨팅 비용 발생 가능성이 낮습니다.",
+        "riskLevel": "free-tier"
+      }
+    ]
+  },
   "modules": [
     {
       "id": "lambda",
@@ -111,15 +128,16 @@
 현재 표시 대상:
 
 - API Gateway 요청 수.
-- Lambda 호출 수와 오류 수.
+- Lambda 호출 수, 오류 수, 실행시간.
 - DynamoDB consumed read/write capacity units.
 - CloudFront 요청 수와 다운로드 전송량.
 - S3 저장량과 객체 수.
+- Free Tier 기준 예상 비용 상태.
 
 설계 제약:
 
 - 이 API는 Cost Explorer를 호출하지 않는다. Cost Explorer 권한을 앱 Lambda에 주지 않는다.
-- 실제 청구액 판단은 AWS Budgets 알림과 Billing 콘솔에서 한다.
+- 실제 청구액 판단은 AWS Budgets 알림과 Billing 콘솔에서 한다. 화면의 비용 정보는 CloudWatch 지표와 Pineflow 설정을 Free Tier 기준선에 대입한 추정이다.
 - 앱은 이 API를 화면 진입 직후 즉시 호출하지 않고, `/api/state`와 겹쳐 throttling을 유발하지 않도록 짧게 지연 호출한다.
 - 운영 지표 조회 실패는 기록 기능 실패로 보여주지 않고, 하단 운영 패널 안에서만 `불러올 수 없음`으로 표시한다.
 

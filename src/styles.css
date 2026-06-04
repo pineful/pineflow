@@ -783,6 +783,140 @@ h1 {
   line-height: 1.45;
 }
 
+.costEstimatePanel {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #cddfcf;
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(135deg, rgba(237, 247, 235, 0.95), rgba(255, 251, 231, 0.78)),
+    #f7fbf2;
+}
+
+.costEstimateHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: baseline;
+}
+
+.costEstimateHeader span {
+  color: #66746a;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.costEstimateHeader strong {
+  color: #1c6f55;
+  font-size: 1.42rem;
+  font-weight: 950;
+  text-align: right;
+}
+
+.costEstimateHeader p,
+.costEstimateCaption,
+.costEstimateDisclaimer,
+.costEstimateItem p {
+  margin: 0;
+  color: #5c6c62;
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.costEstimateHeader p,
+.costEstimateCaption,
+.costEstimateDisclaimer {
+  grid-column: 1 / -1;
+}
+
+.costEstimateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+}
+
+.costEstimateItem {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #dfe6d6;
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.costEstimateItem > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.costEstimateItem strong {
+  overflow: hidden;
+  color: #17231e;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.costEstimateItem span {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border-radius: 5px;
+  font-size: 0.66rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.costEstimateItem dl {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+}
+
+.costEstimateItem dl div {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+}
+
+.costEstimateItem dt {
+  color: #748278;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.costEstimateItem dd {
+  margin: 0;
+  overflow: hidden;
+  color: #20312a;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.costEstimateItem.riskFree span {
+  background: #e3f3e6;
+  color: #1d6e55;
+}
+
+.costEstimateItem.riskWatch span {
+  background: #fff0bf;
+  color: #7a5b00;
+}
+
+.costEstimateItem.riskBillable span {
+  background: #ffe0da;
+  color: #9b2f1f;
+}
+
 .usageGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

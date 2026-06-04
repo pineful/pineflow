@@ -166,6 +166,12 @@ function formatUsageMetric(metric: UsageMetric) {
     return `${metric.value.toLocaleString("ko-KR")}B`;
   }
 
+  if (metric.unit === "milliseconds") {
+    if (metric.value >= 1000 * 60) return `${(metric.value / 1000 / 60).toFixed(1)}분`;
+    if (metric.value >= 1000) return `${(metric.value / 1000).toFixed(2)}초`;
+    return `${metric.value.toLocaleString("ko-KR")}ms`;
+  }
+
   if (metric.unit === "capacity-unit") {
     return metric.value.toLocaleString("ko-KR");
   }
@@ -176,6 +182,12 @@ function formatUsageMetric(metric: UsageMetric) {
 function formatUsagePeriod(snapshot: OperationalUsageSnapshot) {
   const start = new Date(snapshot.periodStart);
   return `${start.getMonth() + 1}월 사용량`;
+}
+
+function costRiskClass(riskLevel: string) {
+  if (riskLevel === "billable") return "riskBillable";
+  if (riskLevel === "watch") return "riskWatch";
+  return "riskFree";
 }
 
 function uniqueFilled(values: Array<string | undefined>) {
@@ -1914,6 +1926,36 @@ function App() {
               <div className="usageIntro">
                 <strong>비용을 만드는 기본 지표</strong>
                 <span>{usage.note}</span>
+              </div>
+              <div className="costEstimatePanel">
+                <div className="costEstimateHeader">
+                  <span>Free Tier 기준 예상</span>
+                  <strong>{usage.costEstimate.headline}</strong>
+                  <p>{usage.costEstimate.summaryLabel}</p>
+                </div>
+                <p className="costEstimateCaption">{usage.costEstimate.caption}</p>
+                <div className="costEstimateGrid">
+                  {usage.costEstimate.items.map((item) => (
+                    <article className={`costEstimateItem ${costRiskClass(item.riskLevel)}`} key={item.id}>
+                      <div>
+                        <strong>{item.label}</strong>
+                        <span>{item.estimateLabel}</span>
+                      </div>
+                      <dl>
+                        <div>
+                          <dt>현재</dt>
+                          <dd>{item.usageLabel}</dd>
+                        </div>
+                        <div>
+                          <dt>무료 기준</dt>
+                          <dd>{item.freeTierLabel}</dd>
+                        </div>
+                      </dl>
+                      <p>{item.detail}</p>
+                    </article>
+                  ))}
+                </div>
+                <p className="costEstimateDisclaimer">{usage.costEstimate.disclaimer}</p>
               </div>
               <div className="usageGrid">
                 {usage.modules.map((module) => (

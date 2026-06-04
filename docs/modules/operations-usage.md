@@ -10,18 +10,20 @@
 - CloudWatch 지표 조회가 실패하더라도 `/api/state` 같은 핵심 API가 실패하면 안 된다.
 - CloudWatch SDK는 Lambda 모듈 초기화 시점에 강하게 결합하지 않고, `/api/usage` 요청 시점에 지연 로드한다.
 - 사용량 지표가 없거나 조회 권한/런타임 패키지 문제로 실패하면 패널만 `unavailable` 상태로 처리한다.
-- 실제 비용 금액은 Cost Explorer를 붙이기 전까지 추정해서 보여주지 않는다. 현재 패널은 기초 운영량 지표만 보여준다.
+- 실제 청구액은 Cost Explorer를 붙이지 않는 한 계산하지 않는다. 현재 패널은 CloudWatch 기초 운영량과 Free Tier 기준선 비교 결과만 추정으로 보여준다.
 
 ## 현재 표시 지표
 
 - API Gateway 요청 수
-- Lambda 호출 수와 오류 수
+- Lambda 호출 수, 오류 수, 실행시간 합계
 - DynamoDB read/write capacity 사용량
 - CloudFront 요청 수와 전송량
 - S3 객체 수와 저장 용량
+- Cognito, CloudWatch Logs, AWS Budgets처럼 현재 구성값만으로 판단 가능한 비용 항목의 Free Tier 예상 상태
 
 ## 변경 시 주의점
 
 - `/api/usage`에 문제가 생겨도 `/api/state`가 영향을 받지 않는지 먼저 확인한다.
-- 비용 API를 추가할 경우 Cost Explorer 비용, IAM 권한, 월별 호출 빈도, Free Tier 기준을 ADR로 먼저 기록한다.
+- Cost Explorer API를 추가할 경우 Cost Explorer 비용, IAM 권한, 월별 호출 빈도, Free Tier 기준을 ADR로 먼저 기록한다.
+- Free Tier 기준선은 AWS 정책 변경 가능성이 있으므로 가격 문서를 확인한 날짜와 근거를 변경 설명에 남긴다.
 - CloudWatch 지표 조회는 운영자 참고용이다. 사용자의 출퇴근 이력 정합성 판단에는 사용하지 않는다.

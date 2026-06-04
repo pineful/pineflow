@@ -47,21 +47,23 @@ LLM 에이전트는 AWS 리소스를 추가하거나 설정을 바꿀 때 아래
 
 ## 앱 내 운영 사용량 패널
 
-Pineflow 앱 하단에는 AWS 사용량의 기초 지표를 표시할 수 있다. 이 패널의 목적은 실제 청구액 산정이 아니라 비용을 유발하는 활동량을 빠르게 보는 것이다.
+Pineflow 앱 하단에는 AWS 사용량의 기초 지표와 Free Tier 기준 예상 상태를 표시할 수 있다. 이 패널의 목적은 실제 청구액 산정이 아니라 비용을 유발하는 활동량과 무료 범위 접근 여부를 빠르게 보는 것이다.
 
 현재 허용된 데이터 소스:
 
 - CloudWatch `GetMetricData`
 - API Gateway 요청 수
 - Lambda 호출/오류 수
+- Lambda 실행시간 합계
 - DynamoDB consumed read/write capacity units
 - CloudFront 요청/전송량
 - S3 저장량/객체 수
+- Pineflow IaC에 고정된 비용 가드레일 값
 
 금지:
 
 - 앱 Lambda에 Cost Explorer 권한을 주지 않는다.
-- 앱 화면에서 실제 청구액을 계산한다고 표현하지 않는다.
+- 앱 화면에서 실제 청구액을 계산한다고 표현하지 않는다. `Free Tier 기준 예상`, `$0 예상` 같은 문구는 추정임을 함께 표시한다.
 - 운영 지표를 자동 polling하지 않는다. 화면 진입 후 1회 조회를 기본으로 한다.
 
 ## 현재 공식 문서 기준 확인
@@ -71,5 +73,6 @@ Pineflow 앱 하단에는 AWS 사용량의 기초 지표를 표시할 수 있다
 - DynamoDB: 25GB storage와 25 RCU/WCU always free tier가 있다.
 - S3: 신규 고객 free tier는 5GB storage, GET/PUT 요청 수 제한이 있다.
 - AWS Budgets: budget monitoring notification은 무료다.
+- Cost Explorer API는 호출당 비용이 있으므로 앱 화면에서는 사용하지 않는다.
 
 정책은 변할 수 있으므로 배포 직전에는 공식 pricing 문서를 다시 확인한다.
