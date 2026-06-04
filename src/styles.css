@@ -292,6 +292,120 @@ h1 {
   display: none;
 }
 
+.costSignal {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-control);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.06)),
+    rgba(13, 35, 28, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.costSignalLights {
+  display: grid;
+  grid-template-columns: repeat(3, 9px);
+  gap: 4px;
+  padding: 5px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(8, 27, 22, 0.42);
+}
+
+.costSignalLights i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  opacity: 0.3;
+  background: #dfe8df;
+}
+
+.costSignalLights .safe {
+  background: #55d08d;
+}
+
+.costSignalLights .watch {
+  background: #f5c64a;
+}
+
+.costSignalLights .billable {
+  background: #ef6a60;
+}
+
+.costSignalLights .active {
+  opacity: 1;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+}
+
+.costSignalCopy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.costSignalCopy span {
+  grid-row: 1 / span 2;
+  align-self: center;
+  padding: 5px 8px;
+  border-radius: var(--radius-pill);
+  color: #10231d;
+  background: #baf2d0;
+  font-size: 0.72rem;
+  font-weight: 950;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.costSignal.watch .costSignalCopy span,
+.costSignal.unavailable .costSignalCopy span {
+  background: #f6d57a;
+}
+
+.costSignal.billable .costSignalCopy span {
+  background: #f2aaa2;
+}
+
+.costSignal.loading .costSignalCopy span {
+  color: #dce9df;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.costSignalCopy strong {
+  overflow: hidden;
+  color: #f8fff8;
+  font-size: 0.84rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.costSignalCopy p {
+  overflow: hidden;
+  color: rgba(244, 255, 247, 0.78);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.costSignal small {
+  justify-self: end;
+  color: rgba(244, 255, 247, 0.72);
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1.25;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .accountAvatar {
   width: 32px;
   height: 32px;
@@ -2455,7 +2569,7 @@ h1 {
 
   .heroFlow {
     grid-column: 1;
-    grid-row: 2 / span 3;
+    grid-row: 3 / span 3;
     min-height: 100%;
     padding: 18px;
   }
@@ -2523,6 +2637,21 @@ h1 {
 }
 
 @media (max-width: 680px) {
+  .costSignal {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .costSignalCopy {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .costSignal small {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+
   .timeEditor {
     grid-template-columns: 1fr;
   }

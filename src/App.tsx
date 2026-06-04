@@ -56,6 +56,8 @@ type HourlyWeather = {
 };
 
 type FeedbackSound = "tap" | "open" | "start" | "finish" | "success";
+type UsageStatus = "idle" | "loading" | "ready" | "unavailable";
+type CostSignalLevel = "safe" | "watch" | "billable" | "loading" | "unavailable";
 
 type FlowChartPoint = {
   x: number;
@@ -189,6 +191,73 @@ function costRiskClass(riskLevel: string) {
   if (riskLevel === "billable") return "riskBillable";
   if (riskLevel === "watch") return "riskWatch";
   return "riskFree";
+}
+
+function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: UsageStatus) {
+  if (usageStatus === "loading") {
+    return {
+      level: "loading" as CostSignalLevel,
+      label: "확인 중",
+      title: "비용 신호 확인 중",
+      message: "오늘 운영 지표를 천천히 불러오는 중입니다.",
+      meta: "기록 기능과 분리"
+    };
+  }
+
+  if (usageStatus === "unavailable") {
+    return {
+      level: "unavailable" as CostSignalLevel,
+      label: "확인 필요",
+      title: "사용량 확인 불가",
+      message: "운영 지표만 불러오지 못했습니다. 기록 기능에는 영향이 없습니다.",
+      meta: "하단 패널에서 상태 확인"
+    };
+  }
+
+  if (!usage) {
+    return {
+      level: "loading" as CostSignalLevel,
+      label: "대기",
+      title: "비용 신호 대기",
+      message: "로그인 후 당일 스냅샷으로 비용 위험을 요약합니다.",
+      meta: "추가 자동 호출 없음"
+    };
+  }
+
+  const items = usage.costEstimate.items;
+  const billableItems = items.filter((item) => item.riskLevel === "billable");
+  const watchItems = items.filter((item) => item.riskLevel === "watch");
+  const topUsageItem = [...items].sort((left, right) => right.usagePercent - left.usagePercent)[0];
+  const cacheLabel = usage.cacheStatus === "cached" ? "오늘 캐시" : "오늘 신규 조회";
+  const usageLabel = topUsageItem ? `최대 ${Math.round(topUsageItem.usagePercent)}% · ${topUsageItem.label}` : "기초 지표 기준";
+
+  if (billableItems.length > 0) {
+    return {
+      level: "billable" as CostSignalLevel,
+      label: "위험",
+      title: "비용 확인 필요",
+      message: `${billableItems[0].label} 항목이 무료 기준을 넘었을 수 있습니다.`,
+      meta: `${cacheLabel} · ${usageLabel}`
+    };
+  }
+
+  if (watchItems.length > 0) {
+    return {
+      level: "watch" as CostSignalLevel,
+      label: "주의",
+      title: "비용 추이 관찰",
+      message: `${watchItems[0].label} 항목이 무료 기준에 가까워지고 있습니다.`,
+      meta: `${cacheLabel} · ${usageLabel}`
+    };
+  }
+
+  return {
+    level: "safe" as CostSignalLevel,
+    label: "안심",
+    title: "비용 상태 안정",
+    message: "이번 달 운영량은 현재 Free Tier 기준 안쪽으로 보입니다.",
+    meta: `${cacheLabel} · ${usageLabel}`
+  };
 }
 
 function todayUsageCacheDate() {
@@ -1032,7 +1101,7 @@ function App() {
     locationLabel: seoulCoordinates.label
   });
   const [usage, setUsage] = useState<OperationalUsageSnapshot | null>(null);
-  const [usageStatus, setUsageStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
+  const [usageStatus, setUsageStatus] = useState<UsageStatus>("idle");
   const [email, setEmail] = useState(() => (typeof window === "undefined" ? "" : getStoredEmail()));
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -1315,8 +1384,9 @@ function App() {
   const currentSessionMinutes =
     activeCheckInTime !== undefined && Number.isFinite(activeCheckInTime)
       ? Math.max(0, Math.round((now.getTime() - activeCheckInTime) / 60000))
-    : 0;
+      : 0;
   const isRecordActionDisabled = isLoading || isSaving || isActionCoolingDown;
+  const costSignal = costSignalFor(usage, usageStatus);
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -1675,6 +1745,20 @@ function App() {
             </div>
           </details>
         </header>
+
+        <aside className={`costSignal ${costSignal.level}`} aria-live="polite" aria-label="AWS 비용 신호등">
+          <div className="costSignalLights" aria-hidden="true">
+            <i className={costSignal.level === "safe" ? "active safe" : "safe"} />
+            <i className={costSignal.level === "watch" || costSignal.level === "unavailable" ? "active watch" : "watch"} />
+            <i className={costSignal.level === "billable" ? "active billable" : "billable"} />
+          </div>
+          <div className="costSignalCopy">
+            <span>{costSignal.label}</span>
+            <strong>{costSignal.title}</strong>
+            <p>{costSignal.message}</p>
+          </div>
+          <small>{costSignal.meta}</small>
+        </aside>
 
         <TimeFlowGraph
           className="heroFlow"
