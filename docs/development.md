@@ -16,6 +16,7 @@ $env:NODE_OPTIONS='--use-system-ca'
 
 ```powershell
 & "C:\Program Files\nodejs\npm.cmd" install
+$env:POSTGRES_PASSWORD='local-dev-password-change-me'
 docker compose up -d postgres
 & "C:\Program Files\nodejs\npm.cmd" run api
 & "C:\Program Files\nodejs\npm.cmd" run build
@@ -27,6 +28,8 @@ API 설정을 바꾸려면 `.env.example`을 `.env`로 복사한 뒤 값을 수�
 Vite 개발 서버를 API와 별도로 띄울 때는 `.env`에 `VITE_API_BASE_URL=http://127.0.0.1:3001`를 둡니다. 그러면 브라우저 요청이 API 서버로 전달됩니다.
 
 `docker compose up -d postgres`를 실행하기 전에는 Docker Desktop이 켜져 있어야 합니다. Docker가 설치되어 있어도 엔진이 꺼져 있으면 PostgreSQL 이미지를 내려받거나 컨테이너를 시작할 수 없습니다.
+
+로컬 PostgreSQL compose는 레거시 Docker/PostgreSQL PoC 개발용입니다. 운영 본선은 AWS Serverless이며, 이 compose 파일은 `POSTGRES_PASSWORD`가 명시되지 않으면 시작하지 않고 DB 포트도 `127.0.0.1`에만 바인딩합니다.
 
 ## 문서 갱신 규칙
 

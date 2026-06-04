@@ -209,6 +209,7 @@
 경로 파라미터:
 
 - `recordId`: `GET /api/state`의 `records[].id`. 예: `session-id:in`, `session-id:out`
+- URL decoding에 실패하거나 빈 값이면 `400`.
 
 요청:
 
@@ -242,6 +243,7 @@
 경로 파라미터:
 
 - `recordId`: `GET /api/state`의 `records[].id`. 예: `session-id:in`, `session-id:out`
+- URL decoding에 실패하거나 빈 값이면 `400`.
 
 요청 body: 없음.
 

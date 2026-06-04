@@ -28,8 +28,7 @@ function json(statusCode, body) {
   return {
     statusCode,
     headers: {
-      "content-type": "application/json",
-      "access-control-allow-origin": "*"
+      "content-type": "application/json"
     },
     body: JSON.stringify(body)
   };
@@ -668,6 +667,15 @@ function parseRecordId(recordId) {
   return { sessionId: match[1], kind: match[2] };
 }
 
+function recordIdFromPath(path) {
+  try {
+    const recordId = decodeURIComponent(path.slice("/api/records/".length));
+    return recordId.trim() ? recordId : null;
+  } catch {
+    return null;
+  }
+}
+
 function normalizeTimestamp(value) {
   if (typeof value !== "string") return null;
 
@@ -1132,11 +1140,13 @@ export async function handler(event) {
     if (method === "POST" && path === "/api/check-in") return checkIn(pk, body.value);
     if (method === "POST" && path === "/api/check-out") return checkOut(pk);
     if (method === "PATCH" && path.startsWith("/api/records/")) {
-      const recordId = decodeURIComponent(path.slice("/api/records/".length));
+      const recordId = recordIdFromPath(path);
+      if (!recordId) return json(400, { error: "Invalid record id." });
       return updateRecordTime(pk, recordId, body.value);
     }
     if (method === "DELETE" && path.startsWith("/api/records/")) {
-      const recordId = decodeURIComponent(path.slice("/api/records/".length));
+      const recordId = recordIdFromPath(path);
+      if (!recordId) return json(400, { error: "Invalid record id." });
       return deleteRecordSession(pk, recordId);
     }
     if (method === "PATCH" && path === "/api/settings") return updateSettings(pk, body.value);
