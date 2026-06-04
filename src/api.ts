@@ -1,4 +1,4 @@
-import type { CommuteState, WorkMode } from "./types";
+import type { CommuteState, OperationalUsageSnapshot, WorkMode } from "./types";
 import { getValidAccessToken, refreshSession } from "./auth";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -10,11 +10,38 @@ export class SessionExpiredError extends Error {
   }
 }
 
+export class ApiRequestError extends Error {
+  statusCode: number;
+
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.statusCode = statusCode;
+  }
+}
+
 export function isSessionExpiredError(error: unknown) {
   return error instanceof SessionExpiredError;
 }
 
-async function requestState(path: string, init?: RequestInit, didRetry = false): Promise<CommuteState> {
+function messageForStatus(statusCode: number, serverMessage?: string) {
+  if (statusCode === 429) {
+    return "요청이 너무 빠르게 이어졌습니다. 잠시 후 다시 시도해주세요.";
+  }
+
+  if (statusCode >= 500) {
+    return "서버가 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.";
+  }
+
+  const message = serverMessage?.trim();
+  if (!message || message === "Request failed." || message === "Unexpected server error.") {
+    return "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.";
+  }
+
+  return message;
+}
+
+async function requestJson<T>(path: string, init?: RequestInit, didRetry = false): Promise<T> {
   const token = await getValidAccessToken();
   if (!token) {
     throw new SessionExpiredError();
@@ -32,7 +59,7 @@ async function requestState(path: string, init?: RequestInit, didRetry = false):
   if ((response.status === 401 || response.status === 403) && !didRetry) {
     const refreshedToken = await refreshSession(true);
     if (refreshedToken) {
-      return requestState(path, init, true);
+      return requestJson<T>(path, init, true);
     }
   }
 
@@ -41,15 +68,23 @@ async function requestState(path: string, init?: RequestInit, didRetry = false):
   }
 
   if (!response.ok) {
-    const body = await response.json().catch(() => ({ error: "Request failed." }));
-    throw new Error(body.error ?? "Request failed.");
+    const body = await response.json().catch(() => ({ error: "" }));
+    throw new ApiRequestError(response.status, messageForStatus(response.status, body.error));
   }
 
   return response.json();
 }
 
+async function requestState(path: string, init?: RequestInit, didRetry = false) {
+  return requestJson<CommuteState>(path, init, didRetry);
+}
+
 export function fetchState() {
   return requestState("/api/state");
+}
+
+export function fetchUsage() {
+  return requestJson<OperationalUsageSnapshot>("/api/usage");
 }
 
 export function createCheckIn(mode: WorkMode, note: string) {

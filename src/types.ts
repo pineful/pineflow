@@ -20,3 +20,27 @@ export type CommuteState = {
   activeSession: ActiveSession | null;
   dailyGoalMinutes: number;
 };
+
+export type UsageMetric = {
+  id: string;
+  label: string;
+  value: number;
+  unit: "count" | "bytes" | "capacity-unit";
+  caption?: string;
+};
+
+export type UsageModule = {
+  id: string;
+  label: string;
+  caption: string;
+  metrics: UsageMetric[];
+};
+
+export type OperationalUsageSnapshot = {
+  generatedAt: string;
+  periodStart: string;
+  periodEnd: string;
+  source: "cloudwatch";
+  modules: UsageModule[];
+  note: string;
+};

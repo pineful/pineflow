@@ -35,7 +35,8 @@ assert(
 
 const routes = resourcesOf("AWS::ApiGatewayV2::Route");
 const routeKeys = routes.map((route) => route.Properties.RouteKey);
-assert(routes.length >= 7, "Expected all Pineflow API routes to be synthesized.");
+assert(routes.length >= 8, "Expected all Pineflow API routes to be synthesized.");
+assert(routeKeys.includes("GET /api/usage"), "Operational usage route must be synthesized.");
 assert(routeKeys.includes("PATCH /api/records/{recordId}"), "Record time correction route must be synthesized.");
 assert(routeKeys.includes("DELETE /api/records/{recordId}"), "Record deletion route must be synthesized.");
 assert(
@@ -89,6 +90,8 @@ const policies = resourcesOf("AWS::IAM::Policy");
 const policyActions = JSON.stringify(policies.flatMap((policy) => policy.Properties.PolicyDocument.Statement));
 assert(!policyActions.includes("dynamodb:Scan"), "Lambda role must not allow DynamoDB Scan.");
 assert(!policyActions.includes("dynamodb:BatchWriteItem"), "Lambda role must not allow DynamoDB BatchWriteItem.");
+assert(policyActions.includes("cloudwatch:GetMetricData"), "Lambda role must read CloudWatch usage metrics for the operations panel.");
+assert(!policyActions.includes("ce:"), "Lambda role must not use Cost Explorer APIs from the app.");
 
 const budgets = resourcesOf("AWS::Budgets::Budget");
 const budgetAmounts = budgets.map((budget) => budget.Properties.Budget.BudgetLimit.Amount).sort();

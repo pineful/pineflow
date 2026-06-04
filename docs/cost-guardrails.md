@@ -1,6 +1,6 @@
 # 비용 가드레일
 
-마지막 업데이트: 2026-05-20
+마지막 업데이트: 2026-06-04
 
 ## 목표
 
@@ -31,6 +31,7 @@ Pineflow는 개인 사용을 전제로 AWS Free Tier 안에서 가능한 한 비
 - Lambda provisioned concurrency
 - CloudWatch dashboard 대량 생성
 - 장기 로그 보관
+- 앱 Lambda에서 Cost Explorer API 직접 호출
 
 필요하면 ADR에 비용 근거, 대체안, 중단 기준을 먼저 적는다.
 
@@ -43,6 +44,25 @@ LLM 에이전트는 AWS 리소스를 추가하거나 설정을 바꿀 때 아래
 - 요청이 악의적으로 증가할 때 비용 상한이 있는가?
 - Budget 알림이 비용 증가 전에 도착하는가?
 - `infra/scripts/verify-template.mjs`에 자동 검증을 추가했는가?
+
+## 앱 내 운영 사용량 패널
+
+Pineflow 앱 하단에는 AWS 사용량의 기초 지표를 표시할 수 있다. 이 패널의 목적은 실제 청구액 산정이 아니라 비용을 유발하는 활동량을 빠르게 보는 것이다.
+
+현재 허용된 데이터 소스:
+
+- CloudWatch `GetMetricData`
+- API Gateway 요청 수
+- Lambda 호출/오류 수
+- DynamoDB consumed read/write capacity units
+- CloudFront 요청/전송량
+- S3 저장량/객체 수
+
+금지:
+
+- 앱 Lambda에 Cost Explorer 권한을 주지 않는다.
+- 앱 화면에서 실제 청구액을 계산한다고 표현하지 않는다.
+- 운영 지표를 자동 polling하지 않는다. 화면 진입 후 1회 조회를 기본으로 한다.
 
 ## 현재 공식 문서 기준 확인
 

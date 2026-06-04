@@ -79,6 +79,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 
 - `GET /api/health`
 - `GET /api/state`
+- `GET /api/usage`
 - `POST /api/check-in`
 - `POST /api/check-out`
 - `PATCH /api/records/{recordId}`
@@ -103,6 +104,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - DynamoDB 변경: `docs/modules/serverless-storage.md`, `docs/data-management.md`, `docs/adr/`
 - AWS 리소스 변경: `docs/serverless-implementation.md`, `docs/aws-serverless-deployment-checklist.md`, `infra/scripts/verify-template.mjs`
 - 비용 정책 변경: `docs/cost-guardrails.md`, `docs/adr/`
+- 운영 사용량 표시 변경: `docs/api-contract.md`, `docs/cost-guardrails.md`, `docs/serverless-implementation.md`
 - CI/CD 변경: `docs/cicd.md`, `.github/workflows/serverless.yml`
 - GitHub OIDC/IAM 변경: `docs/aws-iam-oidc.md`, `infra/bootstrap/github-oidc-deploy-role.template.yaml`, `docs/adr/`
 - 제품/브랜드 변경: `docs/product-plan.md`, `docs/brand.md`, `docs/modules/branding.md`
@@ -140,3 +142,4 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 로고는 얼굴이 있는 캐릭터가 아니라 `잎 + 둥근 파인 실루엣 + 바깥 타원 궤도 화살표`로 구성한 Pineflow Mark를 사용한다. 브랜드의 귀여움은 표정이 아니라 둥근 비율과 부드러운 곡선에서 나온다. 작은 헤더 마크에서는 검은 잎처럼 머리카락으로 읽히는 요소를 피하고, 골드 몸통 실루엣과 초록 잎으로 파인애플 판독성을 우선한다. 상단 잎은 분리된 뾰족한 삼각형이 아니라 몸통에 붙은 곡선형 `leafy crown`으로 유지한다. 흐름선은 잎 주변의 작은 곡선 장식이나 몸통에 붙은 선으로 되돌리지 말고, 토성 고리처럼 몸통과 분리된 바깥 타원 궤도 화살표로 유지한다. 작은 아이콘에서도 흐름이 보여야 하므로 고리는 뒤/앞 레이어와 민트 하이라이트를 가진 굵은 `Saturn Flow Ring` 구조로 둔다.
 - 헤더 브랜드는 밝은 뉴트럴 타일 위의 compact mark와 `pineflow` 소문자 워드마크를 함께 사용한다. 어두운 히어로 배경에 마크를 직접 올리거나 일반 `h1` 글꼴로 `Pineflow`를 표시하면 최종 시안의 색감과 타이포 의도가 깨진다.
 - 색상은 뉴트럴 UI를 기본으로 하고, 파인 그린은 CTA/진행, 파인애플 골드는 작은 강조, 파랑/빨강은 정보/위험 상태에만 쓰는 역할 기반 체계를 유지한다.
+- 앱 하단 운영 사용량 패널은 CloudWatch 기초 지표만 표시한다. 앱 Lambda에 Cost Explorer 권한을 추가하지 않고, 실제 청구액은 AWS Budgets와 Billing 콘솔에서 확인하는 구조를 유지한다. 운영 지표 조회 실패는 기록 기능 오류처럼 상단 error banner로 띄우지 않는다.

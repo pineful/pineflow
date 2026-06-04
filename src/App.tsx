@@ -13,13 +13,14 @@ import {
   createCheckOut,
   deleteRecord,
   fetchState,
+  fetchUsage,
   isSessionExpiredError,
   saveDailyGoal,
   updateRecord
 } from "./api";
 import { modeDescriptions, modeIcons, modeLabels, modePlans, productName, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
-import type { CommuteRecord, CommuteState, WorkMode } from "./types";
+import type { CommuteRecord, CommuteState, OperationalUsageSnapshot, UsageMetric, WorkMode } from "./types";
 
 const workModes = Object.keys(modeLabels) as WorkMode[];
 
@@ -92,6 +93,7 @@ const seoulCoordinates = {
 };
 const weatherForecastDays = 5;
 const weatherForecastSlotWidth = 106;
+const usageLoadDelayMs = 4000;
 
 function weatherCondition(code: number) {
   if (code === 0) return "맑음";
@@ -154,6 +156,26 @@ function buildHourlyWeather(hourly: {
         condition: weatherCondition(hourly.weather_code?.[index] ?? -1)
       };
     });
+}
+
+function formatUsageMetric(metric: UsageMetric) {
+  if (metric.unit === "bytes") {
+    if (metric.value >= 1024 * 1024 * 1024) return `${(metric.value / 1024 / 1024 / 1024).toFixed(2)}GB`;
+    if (metric.value >= 1024 * 1024) return `${(metric.value / 1024 / 1024).toFixed(1)}MB`;
+    if (metric.value >= 1024) return `${(metric.value / 1024).toFixed(1)}KB`;
+    return `${metric.value.toLocaleString("ko-KR")}B`;
+  }
+
+  if (metric.unit === "capacity-unit") {
+    return metric.value.toLocaleString("ko-KR");
+  }
+
+  return metric.value.toLocaleString("ko-KR");
+}
+
+function formatUsagePeriod(snapshot: OperationalUsageSnapshot) {
+  const start = new Date(snapshot.periodStart);
+  return `${start.getMonth() + 1}월 사용량`;
 }
 
 function uniqueFilled(values: Array<string | undefined>) {
@@ -921,6 +943,8 @@ function App() {
     status: "loading",
     locationLabel: seoulCoordinates.label
   });
+  const [usage, setUsage] = useState<OperationalUsageSnapshot | null>(null);
+  const [usageStatus, setUsageStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const [email, setEmail] = useState(() => (typeof window === "undefined" ? "" : getStoredEmail()));
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -961,7 +985,8 @@ function App() {
       return;
     }
 
-    setErrorMessage(error instanceof Error ? error.message : fallback);
+    const message = error instanceof Error ? error.message.trim() : "";
+    setErrorMessage(!message || message === "Request failed." || message === "Unexpected server error." ? fallback : message);
   }
 
   function startActionCooldown() {
@@ -1011,6 +1036,8 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated) {
       setIsLoading(false);
+      setUsage(null);
+      setUsageStatus("idle");
       return;
     }
 
@@ -1019,9 +1046,36 @@ function App() {
         setState(serverState);
         setMode(serverState.activeSession?.mode ?? "focus");
         setNote(serverState.activeSession?.note ?? "");
+        startActionCooldown();
       })
-      .catch((error: unknown) => handleAppError(error, "기록을 불러오지 못했습니다."))
+      .catch((error: unknown) => handleAppError(error, "기록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요."))
       .finally(() => setIsLoading(false));
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    setUsageStatus("loading");
+    const timer = window.setTimeout(() => {
+      fetchUsage()
+        .then((snapshot) => {
+          setUsage(snapshot);
+          setUsageStatus("ready");
+        })
+        .catch((error: unknown) => {
+          if (isSessionExpiredError(error)) {
+            expireSession();
+            return;
+          }
+
+          setUsage(null);
+          setUsageStatus("unavailable");
+        });
+    }, usageLoadDelayMs);
+
+    return () => window.clearTimeout(timer);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -1847,6 +1901,50 @@ function App() {
             </div>
           </div>
         )}
+      </section>
+
+      <section className="sectionBand usageBand">
+        <div className="sectionTitle">
+          <h2>AWS 운영 사용량</h2>
+          <span>{usage ? formatUsagePeriod(usage) : "CloudWatch 기준"}</span>
+        </div>
+        <div className="usagePanel">
+          {usageStatus === "ready" && usage ? (
+            <>
+              <div className="usageIntro">
+                <strong>비용을 만드는 기본 지표</strong>
+                <span>{usage.note}</span>
+              </div>
+              <div className="usageGrid">
+                {usage.modules.map((module) => (
+                  <article className="usageModule" key={module.id}>
+                    <div>
+                      <strong>{module.label}</strong>
+                      <span>{module.caption}</span>
+                    </div>
+                    <dl>
+                      {module.metrics.map((metric) => (
+                        <div key={metric.id}>
+                          <dt>{metric.label}</dt>
+                          <dd>{formatUsageMetric(metric)}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </article>
+                ))}
+              </div>
+              <p className="usageTimestamp">
+                마지막 조회 {formatDate(usage.generatedAt)} · {formatTime(usage.generatedAt)}
+              </p>
+            </>
+          ) : (
+            <p className="usageFallback">
+              {usageStatus === "loading"
+                ? "운영 사용량을 불러오는 중입니다."
+                : "지금은 운영 사용량을 불러올 수 없습니다. 기록 기능에는 영향이 없습니다."}
+            </p>
+          )}
+        </div>
       </section>
 
     </main>

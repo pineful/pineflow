@@ -1,6 +1,6 @@
 # Serverless 구현 현황
 
-마지막 업데이트: 2026-06-03
+마지막 업데이트: 2026-06-04
 
 ## 이번 단계의 목표
 
@@ -30,6 +30,7 @@ Lambda 코드는 Node.js 24 Lambda 런타임에 포함된 AWS SDK for JavaScript
 - Cognito refresh token validity는 1일로 제한한다. 열린 탭에서는 30분 주기로 access token을 refresh하고, refresh 실패 시 프론트엔드가 세션을 정리하고 로그인 화면으로 복귀한다.
 - 모든 API route는 `/api/health`까지 JWT authorizer를 요구한다.
 - Lambda IAM 권한은 필요한 DynamoDB item 작업으로 제한하고 `Scan`, `BatchWriteItem`은 허용하지 않는다.
+- 운영 사용량 패널은 CloudWatch `GetMetricData`만 읽는다. 앱 Lambda에는 Cost Explorer 권한을 주지 않는다.
 - dependency audit 기준 애플리케이션에는 취약점이 없고, `infra`에는 high 이상 취약점이 없다. `infra`의 moderate `brace-expansion` 이슈는 CDK 도구 체인의 transitive dependency이며 Lambda 배포 asset에는 포함되지 않는다.
 
 ## 비용 가드레일
@@ -41,6 +42,7 @@ Lambda 코드는 Node.js 24 Lambda 런타임에 포함된 AWS SDK for JavaScript
 - AWS Budgets: 월 $1, $3, $5 알림.
 - S3 public access block 적용.
 - CloudFront OAC로만 S3 object 접근 허용.
+- 앱 하단 운영 사용량은 CloudWatch 지표 기반의 기초 사용량만 표시한다. 실제 청구액은 Budgets와 Billing 콘솔에서 확인한다.
 
 ## 데이터 설계
 

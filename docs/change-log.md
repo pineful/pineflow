@@ -80,3 +80,6 @@
 - 버튼, 입력 필드, 선택 컨트롤, 보조 실행, 주요 실행, 위험 실행의 radius, border, focus ring 위계를 분리했습니다.
 - 계정 메뉴의 로그아웃과 최근 기록 삭제 버튼을 일반 보조 버튼과 다른 danger 문법으로 정리했습니다.
 - `docs/modules/ui-controls.md`와 `docs/research/groupware-control-shape-2026-06-04.md`를 추가해 이후 LLM 작업자가 같은 설계 기준을 이어갈 수 있게 했습니다.
+- `Request failed.` 같은 일반 오류 문구를 사용자가 이해할 수 있는 상태별 문구로 바꿨습니다.
+- 앱 하단에 CloudWatch 기반 AWS 운영 사용량 패널을 추가했습니다. 실제 청구액 계산은 하지 않고 API Gateway, Lambda, DynamoDB, CloudFront, S3의 이번 달 기초 사용량만 표시합니다.
+- 운영 사용량 조회가 `/api/state`와 동시에 호출되어 throttling을 유발하지 않도록 짧은 지연 조회로 분리했습니다.

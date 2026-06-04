@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-06-03
+마지막 업데이트: 2026-06-04
 
 ## 현재 상태 요약
 
@@ -72,6 +72,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 기록 수정 패널에서 오늘이 아닌 날짜를 선택 중이면 경고와 `오늘 현재로` 빠른 보정 버튼을 표시.
 - 잘못 생성된 기록을 정리할 수 있도록 `DELETE /api/records/{recordId}`와 최근 기록 카드의 세션 전체 삭제 확인 UI를 추가.
 - 그룹웨어 UI 리서치 기준으로 컨트롤 외곽을 `Structured Soft Rectangle` 체계로 정리하고, 입력/선택/보조 실행/주요 실행/위험 실행의 shape, border, focus 위계를 분리.
+- 앱 하단에 CloudWatch 기반 AWS 운영 사용량 패널을 추가하고, API Gateway/Lambda/DynamoDB/CloudFront/S3의 이번 달 기초 지표를 표시.
+- `Request failed.` 같은 일반 오류 문구를 상태 코드별 사용자 문구로 바꾸고, 초기 상태 조회 직후 기록 버튼이 API Gateway throttling에 걸릴 가능성을 줄이도록 짧은 쿨다운과 지연 사용량 조회를 적용.
 
 ## 검증됨
 

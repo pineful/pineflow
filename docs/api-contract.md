@@ -1,6 +1,6 @@
 # API 계약
 
-마지막 업데이트: 2026-06-03
+마지막 업데이트: 2026-06-04
 
 모든 API는 API Gateway HTTP API 뒤에 있으며, Cognito JWT authorizer를 통과해야 한다. 클라이언트는 `Authorization: Bearer <access_token>` 헤더를 보낸다.
 
@@ -74,6 +74,54 @@
 
 - `records`는 세션 시작 시각이 아니라 각 출근/퇴근 이벤트의 실제 `timestamp` 기준 최신순으로 반환한다.
 - 자정을 넘긴 세션이나 퇴근 시각만 보정된 세션도 이벤트 시각 기준 위치에 보여야 한다.
+
+## GET /api/usage
+
+목적: 앱 하단 운영 패널에 표시할 이번 달 AWS 기초 사용량을 조회한다.
+
+요청 body: 없음.
+
+응답:
+
+```json
+{
+  "generatedAt": "2026-06-04T00:00:00.000Z",
+  "periodStart": "2026-06-01T00:00:00.000Z",
+  "periodEnd": "2026-06-04T00:00:00.000Z",
+  "source": "cloudwatch",
+  "note": "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량만 보여줍니다.",
+  "modules": [
+    {
+      "id": "lambda",
+      "label": "Lambda",
+      "caption": "출퇴근 API 실행",
+      "metrics": [
+        {
+          "id": "invocations",
+          "label": "호출",
+          "value": 10,
+          "unit": "count"
+        }
+      ]
+    }
+  ]
+}
+```
+
+현재 표시 대상:
+
+- API Gateway 요청 수.
+- Lambda 호출 수와 오류 수.
+- DynamoDB consumed read/write capacity units.
+- CloudFront 요청 수와 다운로드 전송량.
+- S3 저장량과 객체 수.
+
+설계 제약:
+
+- 이 API는 Cost Explorer를 호출하지 않는다. Cost Explorer 권한을 앱 Lambda에 주지 않는다.
+- 실제 청구액 판단은 AWS Budgets 알림과 Billing 콘솔에서 한다.
+- 앱은 이 API를 화면 진입 직후 즉시 호출하지 않고, `/api/state`와 겹쳐 throttling을 유발하지 않도록 짧게 지연 호출한다.
+- 운영 지표 조회 실패는 기록 기능 실패로 보여주지 않고, 하단 운영 패널 안에서만 `불러올 수 없음`으로 표시한다.
 
 ## POST /api/check-in
 

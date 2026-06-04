@@ -161,7 +161,9 @@ export class PineflowServerlessStack extends cdk.Stack {
       reservedConcurrentExecutions: 1,
       logGroup: apiLogGroup,
       environment: {
-        TABLE_NAME: table.tableName
+        TABLE_NAME: table.tableName,
+        FRONTEND_BUCKET_NAME: frontendBucket.bucketName,
+        CLOUDFRONT_DISTRIBUTION_ID: distribution.distributionId
       }
     });
 
@@ -176,6 +178,12 @@ export class PineflowServerlessStack extends cdk.Stack {
           "dynamodb:TransactWriteItems"
         ],
         resources: [table.tableArn]
+      })
+    );
+    apiFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["cloudwatch:GetMetricData"],
+        resources: ["*"]
       })
     );
 
@@ -194,6 +202,8 @@ export class PineflowServerlessStack extends cdk.Stack {
         maxAge: cdk.Duration.days(1)
       }
     });
+    apiFunction.addEnvironment("API_ID", httpApi.apiId);
+    apiFunction.addEnvironment("API_STAGE", "$default");
 
     const defaultStage = httpApi.defaultStage?.node.defaultChild as apigwv2.CfnStage | undefined;
     if (defaultStage) {
@@ -216,6 +226,7 @@ export class PineflowServerlessStack extends cdk.Stack {
     for (const route of [
       { path: "/api/health", method: apigwv2.HttpMethod.GET },
       { path: "/api/state", method: apigwv2.HttpMethod.GET },
+      { path: "/api/usage", method: apigwv2.HttpMethod.GET },
       { path: "/api/check-in", method: apigwv2.HttpMethod.POST },
       { path: "/api/check-out", method: apigwv2.HttpMethod.POST },
       { path: "/api/records/{recordId}", method: apigwv2.HttpMethod.PATCH },

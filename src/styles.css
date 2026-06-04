@@ -749,6 +749,119 @@ h1 {
   background: #f9fbf6;
 }
 
+.usageBand {
+  grid-column: 1 / -1;
+}
+
+.usagePanel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #dfe6d6;
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 250, 244, 0.94)),
+    #fbfcf8;
+}
+
+.usageIntro {
+  display: grid;
+  gap: 5px;
+}
+
+.usageIntro strong {
+  color: #17231e;
+  font-size: 0.92rem;
+}
+
+.usageIntro span,
+.usageTimestamp,
+.usageFallback {
+  color: #66746a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.usageGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.usageModule {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dfe6d6;
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.usageModule > div {
+  display: grid;
+  gap: 3px;
+}
+
+.usageModule strong {
+  overflow: hidden;
+  color: #17231e;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.usageModule span {
+  color: #66746a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.usageModule dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.usageModule dl div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.usageModule dt {
+  color: #66746a;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.usageModule dd {
+  margin: 0;
+  overflow: hidden;
+  color: #27715c;
+  font-size: 0.86rem;
+  font-weight: 950;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.usageTimestamp {
+  margin: 0;
+  text-align: right;
+}
+
+.usageFallback {
+  margin: 0;
+  padding: 12px;
+  border-radius: var(--radius-control);
+  background: #f3f7ef;
+}
+
 .weatherForecastScroller {
   grid-column: 1 / -1;
   overflow-x: auto;
@@ -2155,6 +2268,10 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .usageGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .weatherMain,
   .weatherDetails,
   .weatherForecastScroller {
@@ -2260,5 +2377,9 @@ h1 {
   .chartLegend strong {
     grid-column: 1 / -1;
     justify-self: start;
+  }
+
+  .usageGrid {
+    grid-template-columns: 1fr;
   }
 }

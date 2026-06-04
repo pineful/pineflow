@@ -1,6 +1,6 @@
 # AWS Serverless 배포 전 점검표
 
-마지막 업데이트: 2026-06-03
+마지막 업데이트: 2026-06-04
 
 ## 생성 순서
 
@@ -31,6 +31,7 @@
 - CloudFront만 S3에 접근할 수 있다.
 - WAF, Route 53, custom domain, NAT Gateway, VPC Lambda, provisioned concurrency는 사용하지 않는다.
 - GitHub OIDC Role 템플릿 자체는 IAM 리소스만 만들며 월 비용을 만들지 않는다.
+- 앱 하단 운영 사용량 패널은 CloudWatch `GetMetricData`만 사용한다. Cost Explorer API 권한은 앱 Lambda에 없어야 한다.
 
 ## 배포가 만드는 리소스
 
@@ -54,6 +55,8 @@
 - Cognito self sign-up이 켜져 있음.
 - API route 중 JWT authorizer가 없는 route가 있음.
 - `DELETE /api/records/{recordId}` route가 JWT authorizer 없이 생성됨.
+- `GET /api/usage` route가 JWT authorizer 없이 생성됨.
+- 앱 Lambda IAM 정책에 Cost Explorer API 권한이 추가됨.
 
 ## 현재 검증 결과
 

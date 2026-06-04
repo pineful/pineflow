@@ -5,6 +5,7 @@ import {
   QueryCommand,
   TransactWriteItemsCommand
 } from "@aws-sdk/client-dynamodb";
+import { CloudWatchClient, GetMetricDataCommand } from "@aws-sdk/client-cloudwatch";
 import { randomUUID } from "node:crypto";
 
 const tableName = process.env.TABLE_NAME;
@@ -14,9 +15,16 @@ if (!tableName) {
 }
 
 const dynamodb = new DynamoDBClient({});
+const cloudwatch = new CloudWatchClient({});
+const cloudwatchGlobal = new CloudWatchClient({ region: "us-east-1" });
 const allowedModes = new Set(["focus", "remote", "study", "project"]);
 const defaultDailyGoalMinutes = 480;
 const maxBodyBytes = 4096;
+const frontendBucketName = process.env.FRONTEND_BUCKET_NAME ?? "";
+const cloudFrontDistributionId = process.env.CLOUDFRONT_DISTRIBUTION_ID ?? "";
+const apiId = process.env.API_ID ?? "";
+const apiStage = process.env.API_STAGE ?? "$default";
+const apiFunctionName = process.env.AWS_LAMBDA_FUNCTION_NAME ?? "pineflow-api";
 
 function json(statusCode, body) {
   return {
@@ -131,6 +139,233 @@ function sortRecordsByTimestampDesc(records) {
 
     return left.type === "check-out" ? -1 : 1;
   });
+}
+
+function startOfMonth(date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0));
+}
+
+function sumMetric(results, id) {
+  const result = results.find((item) => item.Id === id);
+  return Math.round((result?.Values ?? []).reduce((sum, value) => sum + Number(value || 0), 0));
+}
+
+function latestMetric(results, id) {
+  const result = results.find((item) => item.Id === id);
+  const values = result?.Values ?? [];
+  const latest = values.findLast((value) => Number.isFinite(Number(value)));
+  return Math.round(Number(latest ?? 0));
+}
+
+function metricQuery(id, namespace, metricName, dimensions, stat = "Sum") {
+  return {
+    Id: id,
+    MetricStat: {
+      Metric: {
+        Namespace: namespace,
+        MetricName: metricName,
+        Dimensions: dimensions
+      },
+      Period: 86400,
+      Stat: stat
+    },
+    ReturnData: true
+  };
+}
+
+async function readMetrics(client, metricDataQueries, startTime, endTime) {
+  if (metricDataQueries.length === 0) return [];
+
+  const result = await client.send(
+    new GetMetricDataCommand({
+      StartTime: startTime,
+      EndTime: endTime,
+      MetricDataQueries: metricDataQueries
+    })
+  );
+
+  return result.MetricDataResults ?? [];
+}
+
+async function safeReadMetrics(client, metricDataQueries, startTime, endTime, scope) {
+  try {
+    return await readMetrics(client, metricDataQueries, startTime, endTime);
+  } catch (error) {
+    console.warn("CloudWatch usage metrics unavailable", { scope, name: error?.name });
+    return [];
+  }
+}
+
+async function loadUsageSnapshot() {
+  const now = new Date();
+  const periodStart = startOfMonth(now);
+  const localMetricQueries = [
+    metricQuery("lambdaInvocations", "AWS/Lambda", "Invocations", [
+      { Name: "FunctionName", Value: apiFunctionName }
+    ]),
+    metricQuery("lambdaErrors", "AWS/Lambda", "Errors", [
+      { Name: "FunctionName", Value: apiFunctionName }
+    ]),
+    metricQuery("dynamodbRead", "AWS/DynamoDB", "ConsumedReadCapacityUnits", [
+      { Name: "TableName", Value: tableName }
+    ]),
+    metricQuery("dynamodbWrite", "AWS/DynamoDB", "ConsumedWriteCapacityUnits", [
+      { Name: "TableName", Value: tableName }
+    ])
+  ];
+
+  if (apiId) {
+    localMetricQueries.push(
+      metricQuery("apiRequests", "AWS/ApiGateway", "Count", [
+        { Name: "ApiId", Value: apiId },
+        { Name: "Stage", Value: apiStage }
+      ])
+    );
+  }
+
+  if (frontendBucketName) {
+    localMetricQueries.push(
+      metricQuery(
+        "s3Bytes",
+        "AWS/S3",
+        "BucketSizeBytes",
+        [
+          { Name: "BucketName", Value: frontendBucketName },
+          { Name: "StorageType", Value: "StandardStorage" }
+        ],
+        "Average"
+      ),
+      metricQuery(
+        "s3Objects",
+        "AWS/S3",
+        "NumberOfObjects",
+        [
+          { Name: "BucketName", Value: frontendBucketName },
+          { Name: "StorageType", Value: "AllStorageTypes" }
+        ],
+        "Average"
+      )
+    );
+  }
+
+  const globalMetricQueries = cloudFrontDistributionId
+    ? [
+        metricQuery("cloudfrontRequests", "AWS/CloudFront", "Requests", [
+          { Name: "DistributionId", Value: cloudFrontDistributionId },
+          { Name: "Region", Value: "Global" }
+        ]),
+        metricQuery("cloudfrontBytes", "AWS/CloudFront", "BytesDownloaded", [
+          { Name: "DistributionId", Value: cloudFrontDistributionId },
+          { Name: "Region", Value: "Global" }
+        ])
+      ]
+    : [];
+
+  const [localMetrics, globalMetrics] = await Promise.all([
+    safeReadMetrics(cloudwatch, localMetricQueries, periodStart, now, "regional"),
+    safeReadMetrics(cloudwatchGlobal, globalMetricQueries, periodStart, now, "global")
+  ]);
+
+  return {
+    generatedAt: now.toISOString(),
+    periodStart: periodStart.toISOString(),
+    periodEnd: now.toISOString(),
+    source: "cloudwatch",
+    note: "실제 청구액은 AWS Budgets 알림과 Billing 콘솔에서 최종 확인합니다. 이 화면은 비용을 유발하는 기초 사용량만 보여줍니다.",
+    modules: [
+      {
+        id: "api",
+        label: "API Gateway",
+        caption: "인증된 앱 요청 입구",
+        metrics: [
+          {
+            id: "requests",
+            label: "요청",
+            value: sumMetric(localMetrics, "apiRequests"),
+            unit: "count",
+            caption: "이번 달 Count"
+          }
+        ]
+      },
+      {
+        id: "lambda",
+        label: "Lambda",
+        caption: "출퇴근 API 실행",
+        metrics: [
+          {
+            id: "invocations",
+            label: "호출",
+            value: sumMetric(localMetrics, "lambdaInvocations"),
+            unit: "count"
+          },
+          {
+            id: "errors",
+            label: "오류",
+            value: sumMetric(localMetrics, "lambdaErrors"),
+            unit: "count"
+          }
+        ]
+      },
+      {
+        id: "dynamodb",
+        label: "DynamoDB",
+        caption: "기록 저장소 소비량",
+        metrics: [
+          {
+            id: "read",
+            label: "읽기",
+            value: sumMetric(localMetrics, "dynamodbRead"),
+            unit: "capacity-unit"
+          },
+          {
+            id: "write",
+            label: "쓰기",
+            value: sumMetric(localMetrics, "dynamodbWrite"),
+            unit: "capacity-unit"
+          }
+        ]
+      },
+      {
+        id: "cloudfront",
+        label: "CloudFront",
+        caption: "정적 앱 전송",
+        metrics: [
+          {
+            id: "requests",
+            label: "요청",
+            value: sumMetric(globalMetrics, "cloudfrontRequests"),
+            unit: "count"
+          },
+          {
+            id: "bytes",
+            label: "전송량",
+            value: sumMetric(globalMetrics, "cloudfrontBytes"),
+            unit: "bytes"
+          }
+        ]
+      },
+      {
+        id: "s3",
+        label: "S3",
+        caption: "프론트엔드 파일 보관",
+        metrics: [
+          {
+            id: "bytes",
+            label: "저장량",
+            value: latestMetric(localMetrics, "s3Bytes"),
+            unit: "bytes",
+            caption: "일 단위 지표"
+          },
+          {
+            id: "objects",
+            label: "객체",
+            value: latestMetric(localMetrics, "s3Objects"),
+            unit: "count"
+          }
+        ]
+      }
+    ]
+  };
 }
 
 function parseRecordId(recordId) {
@@ -592,6 +827,9 @@ export async function handler(event) {
 
     if (method === "GET" && path === "/api/health") {
       return json(200, { ok: true, service: "pineflow-api" });
+    }
+    if (method === "GET" && path === "/api/usage") {
+      return json(200, await loadUsageSnapshot());
     }
 
     const body = parseBody(event);
