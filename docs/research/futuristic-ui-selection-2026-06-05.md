@@ -35,6 +35,18 @@ Pineflow의 첫 화면 우선순위는 여전히 `Calm Live Board -> 기록 조�
 - 시간 그래프는 실제 기록 기반 데이터 시각화로 유지하되, grid, line weight, marker의 정밀감을 높인다.
 - 날씨는 `Forecast Ribbon` 안에서만 하늘빛과 햇빛 골드를 보조 색으로 쓴다.
 - 비용/운영 사용량은 CloudWatch/Free Tier 요약을 읽는 하단 telemetry card로 보이게 한다.
+- I/O 컨트롤은 새 스타일의 핵심이다. 버튼은 낮은 패널 버튼, 강한 CTA, selected toggle, danger action으로 분리하고, 입력창은 왼쪽 mint accent와 inset shadow가 있는 데이터 슬롯처럼 보이게 한다.
+
+## 2026-06-05 I/O 스타일 보강
+
+초기 적용은 카드와 배경 표면에 치우쳐 사용자가 전체 UI 변화를 체감하기 어려웠다. 후속 보강에서는 다음 요소를 더 분명히 바꿨다.
+
+- 출근/퇴근 CTA: 골드에서 파인 그린으로 이어지는 강한 command button.
+- 기록 종류와 업무 메모 후보: selected 상태가 딥 그린/mint/gold accent로 확실히 보이는 toggle.
+- 텍스트 입력: 일반 흰 박스가 아니라 mint side rail과 inset shadow가 있는 data input slot.
+- 기록 수정 화면: 날짜 rail, 오전/오후 segmented control, 시/분 입력, 빠른 보정, 저장/취소 버튼을 서로 다른 역할로 분리.
+- 계정 메뉴, 상세 펼침, 목표 수정: 낮은 보조 패널 버튼으로 통일.
+- 삭제/로그아웃: coral danger surface로 일반 보조 실행과 분리.
 
 ## 버린 요소
 

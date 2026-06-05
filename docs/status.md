@@ -84,6 +84,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - Dribbble `futuristic-ui` 리서치와 세 팀 분석 결과를 반영해 전체 UI 표면을 `Quiet Telemetry Glass` 방향으로 업그레이드.
 - 상단 히어로, Calm Live Board, 기록 입력, 최근 기록, 날씨, 운영 사용량 패널의 border, shadow, grid, chart line, CTA 표면을 같은 미래형 계기판 언어로 정리.
 - `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 관련 UI/요약/날씨 문서에 채택/금지 기준을 반영.
+- 사용자가 UI 변화 체감이 약하다고 지적한 뒤, 버튼/입력창/선택 토글/날짜 레일/시간 보정/저장/취소/삭제까지 I/O 컨트롤 전체를 `Quiet Telemetry Glass` 문법으로 더 강하게 재정리.
 
 ## 검증됨
 

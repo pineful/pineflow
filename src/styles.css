@@ -15,6 +15,19 @@
   --surface-glass: rgba(255, 255, 255, 0.78);
   --border-luminous: rgba(184, 243, 211, 0.24);
   --grid-line-soft: rgba(47, 107, 79, 0.052);
+  --control-face: #f4faf1;
+  --control-face-alt: #e8f1e4;
+  --control-border: #bfd3b9;
+  --control-border-strong: #7cae91;
+  --control-active: #237b61;
+  --control-active-deep: #14533f;
+  --control-active-soft: #d9f7e5;
+  --control-ink: #183128;
+  --input-face: #fffef9;
+  --input-border: #9fbea0;
+  --input-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72), inset 0 2px 8px rgba(31, 74, 57, 0.055);
+  --button-shadow: 0 7px 16px rgba(23, 49, 38, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  --button-shadow-active: 0 10px 22px rgba(35, 123, 97, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   --radius-card: 8px;
   --radius-control: 6px;
   --radius-field: 6px;
@@ -74,12 +87,14 @@ button {
   transition:
     transform var(--motion-fast) var(--ease-out),
     background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
     box-shadow var(--motion-ui) var(--ease-out),
     opacity var(--motion-fast) var(--ease-out);
 }
 
 button:focus-visible {
-  outline: 3px solid rgba(103, 180, 142, 0.45);
+  outline: 3px solid rgba(100, 220, 160, 0.42);
   outline-offset: 2px;
 }
 
@@ -95,6 +110,11 @@ textarea {
   user-select: text;
   -webkit-user-select: text;
   caret-color: auto;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(63, 82, 72, 0.58);
 }
 
 button:active:not(:disabled) {
@@ -318,12 +338,14 @@ h1 {
   min-width: 52px;
   min-height: 42px;
   padding: 4px 8px 4px 4px;
-  border: 1px solid rgba(184, 243, 211, 0.24);
+  border: 1px solid rgba(184, 243, 211, 0.38);
   border-radius: var(--radius-pill);
   background:
-    linear-gradient(135deg, rgba(249, 255, 249, 0.16), rgba(249, 255, 249, 0.06)),
+    linear-gradient(135deg, rgba(249, 255, 249, 0.22), rgba(120, 223, 173, 0.08)),
     rgba(6, 22, 17, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 10px 20px rgba(6, 22, 17, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -542,8 +564,10 @@ h1 {
   min-height: 40px;
   padding: 0 10px;
   border-radius: var(--radius-control);
-  color: #2f4038;
-  background: transparent;
+  color: var(--control-ink);
+  border: 1px solid transparent;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(239, 247, 235, 0.34));
   text-align: left;
   font-size: 0.84rem;
   font-weight: 850;
@@ -551,7 +575,9 @@ h1 {
 }
 
 .accountPopover button:hover:not(:disabled) {
-  background: #eef3e9;
+  border-color: var(--control-border);
+  background: var(--control-face);
+  box-shadow: var(--button-shadow);
 }
 
 .accountPopover button:disabled {
@@ -561,9 +587,11 @@ h1 {
 
 .accountPopover .logoutAction {
   margin-top: 4px;
-  border: 1px solid rgba(185, 74, 58, 0.18);
+  border: 1px solid rgba(185, 74, 58, 0.28);
   color: #8f3d31;
-  background: #fff7f4;
+  background:
+    linear-gradient(180deg, #fff9f6, #fdebe5),
+    #fff7f4;
 }
 
 .accountPopover .logoutAction:hover:not(:disabled) {
@@ -640,12 +668,15 @@ h1 {
 .recordSetup .modeControl.compact button {
   min-height: 62px;
   padding: 10px;
-  border: 1px solid rgba(184, 243, 211, 0.18);
+  border: 1px solid rgba(184, 243, 211, 0.26);
   border-radius: var(--radius-control);
   color: #eaf7ed;
   background:
-    linear-gradient(150deg, rgba(249, 255, 249, 0.14), rgba(249, 255, 249, 0.06)),
-    rgba(255, 255, 255, 0.08);
+    linear-gradient(150deg, rgba(249, 255, 249, 0.18), rgba(120, 223, 173, 0.06)),
+    rgba(255, 255, 255, 0.07);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(5, 20, 15, 0.2);
 }
 
 .recordSetup .modeControl.compact button:hover:not(:disabled),
@@ -657,12 +688,14 @@ h1 {
 }
 
 .recordSetup .modeControl.compact button.selected {
-  border-color: rgba(185, 243, 211, 0.7);
-  color: #173126;
-  background: #b9f3d3;
+  border-color: rgba(185, 243, 211, 0.92);
+  color: #0f2b22;
+  background:
+    linear-gradient(145deg, #d2ffe2 0%, #a8f2c8 62%, #f2cf5f 160%),
+    #b9f3d3;
   box-shadow:
     inset 0 0 0 1px rgba(23, 49, 38, 0.12),
-    0 10px 18px rgba(62, 218, 148, 0.14);
+    0 12px 24px rgba(62, 218, 148, 0.24);
 }
 
 .recordSetup .modeControl.compact button span {
@@ -687,9 +720,12 @@ h1 {
   min-height: 42px;
   padding: 8px 10px;
   border-radius: var(--radius-control);
-  border-color: rgba(184, 243, 211, 0.2);
+  border-color: rgba(184, 243, 211, 0.28);
   color: #f4f8ee;
-  background: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(249, 255, 249, 0.14), rgba(249, 255, 249, 0.06)),
+    rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   line-height: 1.18;
   overflow-wrap: anywhere;
   text-align: center;
@@ -697,9 +733,14 @@ h1 {
 }
 
 .recordSetup .planChips.compact button.selected {
-  border-color: #f6c247;
+  border-color: #ffdb6a;
   color: #173126;
-  background: #f6c247;
+  background:
+    linear-gradient(135deg, #ffe27d 0%, #f6c247 62%, #7bdcae 150%),
+    #f6c247;
+  box-shadow:
+    0 10px 20px rgba(246, 194, 71, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
 }
 
 .recordSetup .noteField.compact span {
@@ -708,9 +749,14 @@ h1 {
 
 .recordSetup .noteField.compact input {
   min-height: 44px;
-  border-color: rgba(184, 243, 211, 0.24);
+  border-color: rgba(184, 243, 211, 0.38);
   color: #f9fff9;
-  background: rgba(249, 255, 249, 0.1);
+  background:
+    linear-gradient(180deg, rgba(249, 255, 249, 0.16), rgba(249, 255, 249, 0.08)),
+    rgba(10, 34, 26, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 4px 0 0 rgba(120, 223, 173, 0.52);
 }
 
 .recordSetup .noteField.compact input::placeholder {
@@ -769,10 +815,15 @@ h1 {
   width: 100%;
   min-height: 54px;
   padding: 0 14px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(184, 243, 211, 0.34);
   border-radius: var(--radius-field);
   color: #f9fff9;
-  background: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(249, 255, 249, 0.16), rgba(249, 255, 249, 0.08)),
+    rgba(10, 34, 26, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 4px 0 0 rgba(120, 223, 173, 0.52);
   outline: none;
 }
 
@@ -788,11 +839,12 @@ h1 {
   padding: 20px;
   border-radius: var(--radius-card);
   color: #173126;
-  border: 1px solid rgba(255, 245, 185, 0.72);
+  border: 1px solid rgba(255, 245, 185, 0.88);
   background:
-    linear-gradient(135deg, #ffd764 0%, #f6c247 54%, #e6b441 100%);
+    linear-gradient(135deg, #ffe07a 0%, #f6c247 44%, #e7ad32 76%, #65d79d 150%);
   box-shadow:
-    0 12px 26px rgba(0, 0, 0, 0.16),
+    0 16px 32px rgba(0, 0, 0, 0.2),
+    0 0 0 3px rgba(246, 194, 71, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.42),
     inset 0 -1px 0 rgba(112, 82, 0, 0.16);
   cursor: pointer;
@@ -1139,12 +1191,19 @@ h1 {
   cursor: pointer;
   width: fit-content;
   padding: 8px 10px;
-  border: 1px solid #cfe0ca;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
   color: #1d6e55;
-  background: #eef6ea;
+  background:
+    linear-gradient(180deg, var(--control-face), var(--control-face-alt)),
+    #eef6ea;
   font-size: 0.76rem;
   font-weight: 950;
+  box-shadow: var(--button-shadow);
+}
+
+.usageDetails summary:hover {
+  border-color: var(--control-border-strong);
 }
 
 .usageDetails summary::marker {
@@ -1609,18 +1668,24 @@ h1 {
 .goalEditorActions button {
   min-height: 34px;
   padding: 0 11px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
-  color: #173126;
-  background: #e7ede2;
+  color: var(--control-ink);
+  background:
+    linear-gradient(180deg, var(--control-face), var(--control-face-alt)),
+    #e7ede2;
   font-size: 0.78rem;
   font-weight: 900;
   cursor: pointer;
+  box-shadow: var(--button-shadow);
 }
 
 .goalReadout button:hover:not(:disabled),
 .goalEditorActions button:hover:not(:disabled) {
-  background: #d8e5d2;
+  border-color: var(--control-border-strong);
+  background:
+    linear-gradient(180deg, #ffffff, #e4f1de),
+    #d8e5d2;
 }
 
 .goalReadout button:disabled,
@@ -1653,6 +1718,7 @@ h1 {
 .goalEditor input {
   width: 100%;
   accent-color: #27715c;
+  cursor: pointer;
 }
 
 .goalEditorActions {
@@ -2005,25 +2071,33 @@ h1 {
   gap: 5px;
   min-height: 74px;
   padding: 12px;
-  border: 1px solid #d3ddcf;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
-  color: #2f4038;
+  color: var(--control-ink);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(232, 237, 226, 0.88)),
+    linear-gradient(180deg, var(--control-face), var(--control-face-alt)),
     #e7ede2;
   text-align: left;
   cursor: pointer;
+  box-shadow: var(--button-shadow);
+}
+
+.modeControl button:hover:not(:disabled) {
+  border-color: var(--control-border-strong);
+  box-shadow:
+    0 10px 20px rgba(35, 123, 97, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 .modeControl button.selected {
-  border-color: #27715c;
+  border-color: #8be6b3;
   color: #f9fff9;
   background:
-    linear-gradient(135deg, #2e8364, #27715c),
-    #27715c;
+    linear-gradient(135deg, #2d9b75 0%, var(--control-active) 56%, var(--control-active-deep) 100%),
+    var(--control-active);
   box-shadow:
-    inset 0 0 0 1px rgba(249, 255, 249, 0.16),
-    0 8px 16px rgba(39, 113, 92, 0.12);
+    var(--button-shadow-active),
+    inset 4px 0 0 rgba(246, 194, 71, 0.85);
 }
 
 .modeControl button strong {
@@ -2058,21 +2132,25 @@ h1 {
   flex: 0 0 auto;
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid #d4dfcf;
-  border-radius: var(--radius-pill);
-  color: #2f4038;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
+  color: var(--control-ink);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 251, 246, 0.76)),
+    linear-gradient(180deg, var(--control-face), var(--control-face-alt)),
     rgba(255, 255, 255, 0.74);
   font-size: 0.8rem;
   font-weight: 850;
   cursor: pointer;
+  box-shadow: var(--button-shadow);
 }
 
 .planChips button.selected {
-  border-color: #27715c;
+  border-color: #8be6b3;
   color: #f9fff9;
-  background: #27715c;
+  background:
+    linear-gradient(135deg, #2d9b75 0%, var(--control-active) 58%, var(--control-active-deep) 100%),
+    var(--control-active);
+  box-shadow: var(--button-shadow-active);
 }
 
 .activePlan {
@@ -2116,10 +2194,15 @@ h1 {
   width: 100%;
   min-height: 48px;
   padding: 0 14px;
-  border: 1px solid #d3ddcf;
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-field);
   color: #17231e;
-  background: rgba(255, 255, 255, 0.86);
+  background:
+    linear-gradient(180deg, var(--input-face), #f7fbf2),
+    rgba(255, 255, 255, 0.86);
+  box-shadow:
+    var(--input-shadow),
+    inset 4px 0 0 rgba(120, 223, 173, 0.5);
   outline: none;
 }
 
@@ -2241,25 +2324,33 @@ h1 {
 .timeEditor button {
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
-  color: #173126;
-  background: #e7ede2;
+  color: var(--control-ink);
+  background:
+    linear-gradient(180deg, var(--control-face), var(--control-face-alt)),
+    #e7ede2;
   font-size: 0.76rem;
   font-weight: 900;
   white-space: nowrap;
   cursor: pointer;
+  box-shadow: var(--button-shadow);
 }
 
 .timelineActions button:hover:not(:disabled),
 .timeEditor button:hover:not(:disabled) {
-  background: #d8e5d2;
+  border-color: var(--control-border-strong);
+  background:
+    linear-gradient(180deg, #ffffff, #e4f1de),
+    #d8e5d2;
 }
 
 .timelineActions button.delete {
-  border-color: rgba(185, 74, 58, 0.16);
+  border-color: rgba(185, 74, 58, 0.28);
   color: #8f3d31;
-  background: #fff7f4;
+  background:
+    linear-gradient(180deg, #fff9f6, #fdebe5),
+    #fff7f4;
 }
 
 .timelineActions button.delete:hover:not(:disabled) {
@@ -2267,9 +2358,14 @@ h1 {
 }
 
 .timelineActions button.danger {
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 190, 180, 0.48);
   color: #fffaf4;
-  background: #a64635;
+  background:
+    linear-gradient(135deg, #c35643, #a64635),
+    #a64635;
+  box-shadow:
+    0 10px 20px rgba(166, 70, 53, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .timelineActions button.danger:hover:not(:disabled) {
@@ -2338,7 +2434,13 @@ h1 {
 .editorDateNotice button {
   min-height: 30px;
   color: #173126;
-  background: #f6c247;
+  border-color: rgba(224, 177, 56, 0.68);
+  background:
+    linear-gradient(135deg, #ffe27d, #f6c247),
+    #f6c247;
+  box-shadow:
+    0 8px 14px rgba(246, 194, 71, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
 }
 
 .editorDateNotice button:hover:not(:disabled) {
@@ -2385,11 +2487,11 @@ h1 {
   min-width: 0;
   min-height: 44px;
   padding: 6px 8px;
-  border: 1px solid #d2e0cc;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
-  color: #344b40;
+  color: var(--control-ink);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 251, 246, 0.74)),
+    linear-gradient(180deg, var(--control-face), var(--control-face-alt)),
     rgba(255, 255, 255, 0.66);
   font-size: 0.78rem;
   font-weight: 900;
@@ -2397,15 +2499,26 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  box-shadow: var(--button-shadow);
+}
+
+.recordEditModes button:hover:not(:disabled),
+.dateRail button:hover:not(:disabled) {
+  border-color: var(--control-border-strong);
+  box-shadow:
+    0 10px 20px rgba(35, 123, 97, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 .recordEditModes button.selected {
-  border-color: #27715c;
-  color: #1f624e;
-  background: #e6f5eb;
+  border-color: #8be6b3;
+  color: #f9fff9;
+  background:
+    linear-gradient(135deg, #2d9b75 0%, var(--control-active) 58%, var(--control-active-deep) 100%),
+    var(--control-active);
   box-shadow:
-    inset 0 0 0 1px rgba(39, 113, 92, 0.18),
-    0 8px 16px rgba(39, 113, 92, 0.08);
+    var(--button-shadow-active),
+    inset 4px 0 0 rgba(246, 194, 71, 0.88);
 }
 
 .recordEditModes button.selected::before {
@@ -2414,8 +2527,8 @@ h1 {
   width: 16px;
   height: 16px;
   border-radius: var(--radius-pill);
-  color: #f9fff9;
-  background: #27715c;
+  color: #113023;
+  background: #f6c247;
   font-size: 0.62rem;
   line-height: 1;
   content: "✓";
@@ -2428,12 +2541,15 @@ h1 {
   min-width: 0;
   min-height: 58px;
   padding: 6px 4px;
-  border: 1px solid #d2e0cc;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
-  color: #344b40;
+  color: var(--control-ink);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 251, 246, 0.78)),
+    linear-gradient(180deg, var(--input-face), #f2f8ee),
     rgba(255, 255, 255, 0.66);
+  box-shadow:
+    var(--button-shadow),
+    inset 0 -3px 0 rgba(120, 223, 173, 0.13);
 }
 
 .dateRail button span {
@@ -2465,14 +2581,15 @@ h1 {
 }
 
 .dateRail button.selected {
-  border-color: #27715c;
+  border-color: #8be6b3;
   color: #f9fff9;
   background:
-    linear-gradient(155deg, #2e8364, #27715c),
-    #27715c;
+    linear-gradient(155deg, #2d9b75 0%, var(--control-active) 55%, var(--control-active-deep) 100%),
+    var(--control-active);
   box-shadow:
-    0 8px 16px rgba(39, 113, 92, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    var(--button-shadow-active),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -4px 0 rgba(246, 194, 71, 0.9);
 }
 
 .dateRail button.selected span {
@@ -2497,17 +2614,21 @@ h1 {
   grid-template-columns: 1fr 1fr;
   min-height: 42px;
   padding: 3px;
-  border: 1px solid #c8d9c2;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
   background:
-    linear-gradient(180deg, #f4f8ef, #e9f1e4),
+    linear-gradient(180deg, #f8fcf4, #e6f0e0),
     #edf3e8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.76),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.48);
 }
 
 .periodControl button {
   min-height: 34px;
   padding-inline: 10px;
   border-radius: var(--radius-compact);
+  color: var(--control-ink);
   background: transparent;
   line-height: 1;
 }
@@ -2515,8 +2636,11 @@ h1 {
 .periodControl button.selected {
   color: #f9fff9;
   background:
-    linear-gradient(135deg, #2e8364, #27715c),
-    #27715c;
+    linear-gradient(135deg, #2d9b75, var(--control-active-deep)),
+    var(--control-active);
+  box-shadow:
+    0 6px 12px rgba(35, 123, 97, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .timeNumberField {
@@ -2535,12 +2659,17 @@ h1 {
   min-width: 0;
   min-height: 42px;
   padding: 0 10px;
-  border: 1px solid #a9c4a5;
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-field);
   color: #17231e;
-  background: #fff;
+  background:
+    linear-gradient(180deg, var(--input-face), #f7fbf2),
+    #fff;
   font-size: 0.92rem;
   font-weight: 900;
+  box-shadow:
+    var(--input-shadow),
+    inset 4px 0 0 rgba(120, 223, 173, 0.5);
   outline: none;
   text-align: center;
 }
@@ -2565,12 +2694,17 @@ h1 {
 .recordEditNote input {
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid #a9c4a5;
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-field);
   color: #17231e;
-  background: #fff;
+  background:
+    linear-gradient(180deg, var(--input-face), #f7fbf2),
+    #fff;
   font-size: 0.86rem;
   font-weight: 800;
+  box-shadow:
+    var(--input-shadow),
+    inset 4px 0 0 rgba(120, 223, 173, 0.5);
   outline: none;
 }
 
@@ -2589,12 +2723,15 @@ h1 {
 .timeNudges button {
   min-height: 34px;
   padding-inline: 4px;
-  border: 1px solid transparent;
+  border: 1px solid #d2e2cc;
   border-radius: var(--radius-compact);
   color: #2d6e58;
-  background: rgba(238, 245, 237, 0.74);
+  background:
+    linear-gradient(180deg, #f5faf1, #e8f1e4),
+    rgba(238, 245, 237, 0.74);
   font-size: 0.72rem;
   line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
 .timeNudges button:hover:not(:disabled),
@@ -2616,17 +2753,23 @@ h1 {
   min-height: 40px;
   min-width: 82px;
   padding-inline: 14px;
-  border: 1px solid transparent;
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
-  color: #173126;
-  background: #e7ede2;
+  color: var(--control-ink);
+  background:
+    linear-gradient(180deg, var(--control-face), var(--control-face-alt)),
+    #e7ede2;
   font-size: 0.8rem;
   font-weight: 900;
   cursor: pointer;
+  box-shadow: var(--button-shadow);
 }
 
 .timelineEditFooter button:hover:not(:disabled) {
-  background: #d8e5d2;
+  border-color: var(--control-border-strong);
+  background:
+    linear-gradient(180deg, #ffffff, #e4f1de),
+    #d8e5d2;
 }
 
 .timelineEditFooter .save:hover:not(:disabled) {
@@ -2641,8 +2784,10 @@ h1 {
 .timelineEditFooter .save {
   color: #f9fff9;
   background:
-    linear-gradient(135deg, #2e8364, #27715c),
-    #27715c;
+    linear-gradient(135deg, #2d9b75 0%, var(--control-active) 58%, var(--control-active-deep) 100%),
+    var(--control-active);
+  border-color: #8be6b3;
+  box-shadow: var(--button-shadow-active);
 }
 
 .dot {

@@ -89,5 +89,6 @@
 - Dribbble `futuristic-ui` 레퍼런스와 세 팀 분석 결과를 바탕으로 Pineflow에 맞는 `Quiet Telemetry Glass` 스타일을 정의했습니다.
 - 상단 히어로를 딥 파인 그린 계기판, 미세 grid, 얇은 luminous border, 낮은 shadow 중심으로 업그레이드했습니다.
 - `Calm Live Board`, 기록 입력, 최근 기록, 날씨 리본, 운영 사용량 패널의 표면과 chart treatment를 같은 미래형 데이터 카드 문법으로 정리했습니다.
+- 버튼, 입력창, 선택 토글, 날짜 레일, 시간 보정, 저장/취소/삭제 버튼까지 I/O 컨트롤 전체가 새 스타일을 체감할 수 있도록 border, fill, accent, shadow를 재정리했습니다.
 - cyberpunk/Web3식 네온, 항공 HUD 조준선, 자동 scanline/shimmer/pulse/line draw를 쓰지 않는 금지 기준을 문서화했습니다.
 - `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 `docs/modules/ui-controls.md`, `docs/modules/summary.md`, `docs/modules/weather.md`, `docs/llm-context.md`, `docs/workstreams.md`, `docs/status.md`를 갱신했습니다.
