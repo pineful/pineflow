@@ -67,6 +67,19 @@ Pineflow의 첫 화면 우선순위는 여전히 `Calm Live Board -> 기록 조�
 - 계정 메뉴, 상세 펼침, 목표 수정: 낮은 보조 패널 버튼으로 통일.
 - 삭제/로그아웃: coral danger surface로 일반 보조 실행과 분리.
 
+## 2026-06-05 IA와 컨트롤 형태 재검토
+
+추가 검토 결과, 색과 표면을 바꾸는 것만으로는 사용자가 말한 “전면적인 futuristic UI”가 되지 않았다. 기존 구조는 여전히 `그래프 옆의 일반 폼`과 `2x2 카드 버튼`에 가까웠고, 입력/선택/실행이 낡은 업무 폼처럼 읽혔다.
+
+따라서 기록 조작 영역은 `Command Deck`으로 재정의한다.
+
+- 상단 히어로는 CSS grid area로 `top -> cost signal -> flow graph -> clock -> session command -> primary action`의 역할을 명확히 분리한다.
+- 기록 시작 전 영역은 일반 설정 폼이 아니라 `세션 커맨드`다. 모드 선택은 세로 command tile, 빠른 메모는 compact command chip, 직접 메모는 data input slot으로 보이게 한다.
+- 출근/퇴근 CTA는 기록 패널과 시각적으로 이어지는 docked command button이어야 하며, 모드/메모를 고른 뒤 시선이 멀리 이동하지 않아야 한다.
+- 기록 수정 화면도 같은 문법을 따른다. 날짜, 오전/오후, 시/분, 빠른 보정, 저장/취소는 일반 rectangle form이 아니라 notched command control로 보이되 기능 역할은 서로 구분되어야 한다.
+- Notched corner는 장식이 아니라 입력/선택/실행을 기존 사각 폼에서 분리하는 형태 언어로 사용한다. 반복 카드 전체를 과하게 꾸미지 않고 조작 가능한 control에 우선 적용한다.
+- 추가 리뷰에서 작은 화면 2열 강제, 일반 input처럼 보이는 메모/시간 입력, 밀집된 삭제 확인 버튼이 약점으로 확인됐다. 따라서 data slot rail, confirmation deck, 380px 이하 1열 fallback을 필수 보완 기준으로 추가한다.
+
 ## 2026-06-05 시각 체감 보강
 
 I/O 보강 이후에도 상단 `Calm Live Board`와 아래 반복 카드가 기존의 밝은 흰 카드로 남아 있으면 전체 화면은 거의 바뀌지 않은 것처럼 보인다. 따라서 스타일 적용의 기준을 “작은 컨트롤 변경”에서 “첫 화면 핵심 면적 변경”으로 높였다.

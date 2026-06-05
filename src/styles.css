@@ -4115,3 +4115,431 @@ button.delete {
   fill: #5bdcff;
   background: #5bdcff;
 }
+
+/* 2026-06-05 Command Deck IA refresh.
+   This layer changes control structure and affordance, not only color. */
+:root {
+  --clip-command: polygon(0 0, calc(100% - 13px) 0, 100% 13px, 100% 100%, 13px 100%, 0 calc(100% - 13px));
+  --clip-compact-command: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  --command-edge: rgba(91, 220, 255, 0.34);
+  --command-edge-hot: rgba(255, 180, 77, 0.56);
+}
+
+.heroPanel {
+  gap: 16px;
+}
+
+.recordSetup,
+.timeEditor,
+.goalEditor,
+.costSignal,
+.weatherBand,
+.usagePanel {
+  position: relative;
+  overflow: hidden;
+}
+
+.recordSetup {
+  padding: 14px;
+  border-radius: 0;
+  clip-path: var(--clip-command);
+  background:
+    linear-gradient(150deg, rgba(18, 24, 36, 0.98), rgba(10, 14, 23, 0.98)),
+    #0d121d;
+}
+
+.recordSetup::after,
+.timeEditor::after {
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  border: 1px solid rgba(91, 220, 255, 0.13);
+  clip-path: inherit;
+  content: "";
+}
+
+.recordSetupTitle {
+  align-items: center;
+  min-height: 36px;
+  padding: 0 2px 10px;
+  border-bottom: 1px solid rgba(126, 158, 200, 0.24);
+}
+
+.recordSetupTitle strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recordSetupTitle strong::before {
+  width: 8px;
+  height: 22px;
+  background: linear-gradient(180deg, #5bdcff, #ffb44d);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 38% 100%, 0 100%);
+  content: "";
+}
+
+.recordSetup .modeControl.compact {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.recordSetup .modeControl.compact button,
+.recordEditModes button {
+  position: relative;
+  justify-content: start;
+  min-height: 50px;
+  padding: 9px 12px 9px 18px;
+  border-radius: 0;
+  clip-path: var(--clip-command);
+  text-align: left;
+}
+
+.recordSetup .modeControl.compact button {
+  display: grid;
+  grid-template-columns: minmax(92px, 0.52fr) minmax(0, 1fr);
+  align-items: center;
+}
+
+.recordSetup .modeControl.compact button::before,
+.recordEditModes button::before,
+.dateRail button::before,
+.timeNudges button::before {
+  position: absolute;
+  top: 8px;
+  left: 7px;
+  width: 4px;
+  height: calc(100% - 16px);
+  background: rgba(91, 220, 255, 0.34);
+  content: "";
+}
+
+.recordSetup .modeControl.compact button.selected::before,
+.recordEditModes button.selected::before,
+.dateRail button.selected::before {
+  background: #ffb44d;
+}
+
+.recordSetup .modeControl.compact button strong {
+  font-size: 0.86rem;
+  line-height: 1.12;
+}
+
+.recordSetup .modeControl.compact button span {
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  opacity: 0.78;
+}
+
+.recordSetup .planChips.compact {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.recordSetup .planChips.compact button,
+.timeNudges button,
+.timelineActions button,
+.timelineEditFooter button,
+.accountPopover button,
+.goalReadout button,
+.goalEditorActions button,
+.editorDateNotice button {
+  border-radius: 0;
+  clip-path: var(--clip-compact-command);
+}
+
+.recordSetup .planChips.compact button {
+  min-height: 38px;
+  padding: 7px 8px;
+  font-size: 0.74rem;
+}
+
+.recordSetup .noteField.compact,
+.recordEditNote {
+  position: relative;
+}
+
+.recordSetup .noteField.compact span,
+.recordEditNote span,
+.timeNumberField span {
+  display: inline-flex;
+  width: fit-content;
+  padding: 2px 7px;
+  color: #dff8ff;
+  border: 1px solid rgba(91, 220, 255, 0.22);
+  background: rgba(91, 220, 255, 0.08);
+  clip-path: var(--clip-compact-command);
+}
+
+.recordSetup .noteField.compact input,
+.recordEditNote input,
+.timeNumberField input,
+.accessForm input {
+  border-radius: 0;
+  clip-path: var(--clip-command);
+}
+
+.actionPanel {
+  position: relative;
+}
+
+.primaryAction {
+  position: relative;
+  min-height: 86px;
+  justify-items: start;
+  padding: 18px 22px;
+  border-radius: 0;
+  clip-path: var(--clip-command);
+  text-align: left;
+}
+
+.primaryAction::after {
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  border: 1px solid rgba(17, 16, 21, 0.16);
+  clip-path: inherit;
+  content: "";
+}
+
+.primaryAction span {
+  font-size: 1.08rem;
+  line-height: 1.1;
+}
+
+.timeEditor {
+  border-radius: 0;
+  clip-path: var(--clip-command);
+}
+
+.timeEditorHeader {
+  align-items: center;
+  min-height: 38px;
+  padding: 0 2px 10px;
+}
+
+.editorGroupLabel {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 24px;
+  align-items: center;
+  padding: 2px 8px;
+  color: #dff8ff;
+  border: 1px solid rgba(91, 220, 255, 0.2);
+  background: rgba(91, 220, 255, 0.08);
+  clip-path: var(--clip-compact-command);
+}
+
+.recordEditModes {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.recordEditModes button {
+  display: inline-flex;
+  min-height: 48px;
+  justify-content: center;
+  padding-left: 16px;
+  text-align: center;
+}
+
+.dateRail {
+  gap: 6px;
+}
+
+.dateRail button {
+  min-height: 64px;
+  border-radius: 0;
+  clip-path: var(--clip-command);
+}
+
+.periodControl {
+  border-radius: 0;
+  clip-path: var(--clip-command);
+}
+
+.periodControl button {
+  border-radius: 0;
+  clip-path: var(--clip-compact-command);
+}
+
+.timeEditorControls {
+  align-items: stretch;
+}
+
+.timeNumberField input {
+  min-height: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeNudges {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.timeNudges button {
+  position: relative;
+  min-height: 38px;
+  padding-left: 12px;
+}
+
+.timelineItem {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 0 100%);
+}
+
+@media (min-width: 760px) {
+  .heroPanel {
+    grid-template-columns: minmax(0, 1.18fr) minmax(360px, 0.82fr);
+    grid-template-areas:
+      "top top"
+      "signal signal"
+      "flow clock"
+      "flow command"
+      "flow action";
+  }
+
+  .topBar {
+    grid-area: top;
+  }
+
+  .costSignal {
+    grid-area: signal;
+  }
+
+  .heroFlow {
+    grid-area: flow;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .clockBlock {
+    grid-area: clock;
+  }
+
+  .recordSetup {
+    grid-area: command;
+  }
+
+  .actionPanel {
+    grid-area: action;
+  }
+}
+
+@media (max-width: 560px) {
+  .recordSetup .modeControl.compact button {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .recordSetup .planChips.compact,
+  .recordEditModes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 2026-06-05 Command Deck hardening after IA review.
+   Inputs, destructive confirmations, and extra-small fallbacks must not fall back
+   into ordinary legacy form controls. */
+.appShell button,
+.appShell summary,
+.appShell [role="button"],
+.appShell [role="tab"],
+.appShell [role="option"] {
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.recordSetup .noteField.compact input,
+.recordEditNote input,
+.timeNumberField input,
+.accessForm input {
+  color: #f4f8ff;
+  border-color: rgba(91, 220, 255, 0.46);
+  background:
+    linear-gradient(90deg, rgba(91, 220, 255, 0.3) 0, rgba(91, 220, 255, 0.3) 7px, transparent 7px, transparent 100%),
+    linear-gradient(180deg, rgba(10, 15, 25, 0.98), rgba(18, 25, 38, 0.96)),
+    #0b111b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 0 1px rgba(91, 220, 255, 0.08),
+    0 10px 22px rgba(0, 0, 0, 0.2);
+}
+
+.recordSetup .noteField.compact input,
+.recordEditNote input,
+.accessForm input {
+  padding-left: 18px;
+}
+
+.timeNumberField input {
+  padding-inline: 14px;
+  text-align: center;
+}
+
+.recordSetup .noteField.compact input::placeholder,
+.recordEditNote input::placeholder,
+.accessForm input::placeholder {
+  color: rgba(216, 229, 247, 0.54);
+}
+
+.recordSetup .noteField.compact input:focus,
+.recordEditNote input:focus,
+.timeNumberField input:focus,
+.accessForm input:focus {
+  border-color: rgba(158, 238, 255, 0.98);
+  background:
+    linear-gradient(90deg, #ffb44d 0, #ffb44d 7px, transparent 7px, transparent 100%),
+    linear-gradient(180deg, rgba(14, 21, 34, 0.98), rgba(22, 31, 47, 0.96)),
+    #0e1623;
+}
+
+.recordSetup .planChips.compact button,
+.recordEditModes button,
+.timeNudges button,
+.timelineActions button,
+.timelineEditFooter button {
+  overflow-wrap: keep-all;
+  white-space: normal;
+}
+
+.timelineActions.confirming {
+  grid-template-columns: minmax(0, 1fr) minmax(76px, auto);
+  justify-items: stretch;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(255, 107, 95, 0.34);
+  background:
+    linear-gradient(180deg, rgba(47, 22, 24, 0.92), rgba(16, 16, 24, 0.96)),
+    #161018;
+  clip-path: var(--clip-command);
+}
+
+.timelineActions.confirming span {
+  grid-column: 1 / -1;
+  justify-self: start;
+  color: #ffd0c8;
+  text-align: left;
+}
+
+.timelineActions.confirming button {
+  width: 100%;
+  min-height: 38px;
+}
+
+@media (max-width: 420px) {
+  .timelineActions.confirming {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 380px) {
+  .recordSetup .planChips.compact,
+  .recordEditModes,
+  .timeEditorControls,
+  .timeNudges {
+    grid-template-columns: 1fr;
+  }
+}

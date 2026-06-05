@@ -92,5 +92,8 @@
 - 버튼, 입력창, 선택 토글, 날짜 레일, 시간 보정, 저장/취소/삭제 버튼까지 I/O 컨트롤 전체가 새 스타일을 체감할 수 있도록 border, fill, accent, shadow를 재정리했습니다.
 - 초기 적용이 너무 미묘해 변경 체감이 부족했던 문제를 보완하려고 한때 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량의 큰 표면을 딥 그린 telemetry shell로 다시 정리했지만, 이 역시 전면 스타일 교체로는 부족하다고 기록했습니다.
 - 녹색 계열을 계속 보존해 전면적인 새 스타일로 보이지 않던 문제를 인정하고, 전체 UI 표면을 carbon/graphite, cyan 데이터 선, amber command action 중심의 `Obsidian Command Glass`로 재선택했습니다. focus, hover, empty/error/toast, 날짜/시간 수정 컨트롤까지 같은 체계로 보강했습니다.
+- 후속 피드백을 반영해 버튼과 입력 UI가 여전히 낡은 폼 구조처럼 보이던 문제를 수정했습니다. 상단 기록 조작 영역을 `Command Deck` IA로 재정의하고, 모드 선택을 세로 command tile, 빠른 메모를 compact command chip, 직접 입력을 data slot, 출근/퇴근을 docked command button으로 보이게 했습니다.
+- `Command Deck` 검토 과정에서 작은 모바일 폭의 2열 강제, 일반 input처럼 보이는 메모/시간 입력, 밀집된 삭제 확인 버튼을 추가로 보완했습니다. 입력은 data slot rail을 갖고, 삭제 확인은 별도 confirmation deck으로 분리됩니다.
+- 기록 수정 화면의 날짜 레일, 오전/오후, 시/분 입력, 빠른 보정, 저장/취소도 같은 notched command control 문법으로 정리했습니다.
 - cyberpunk/Web3식 네온, 항공 HUD 조준선, 자동 scanline/shimmer/pulse/line draw를 쓰지 않는 금지 기준을 문서화했습니다.
 - `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 `docs/modules/ui-controls.md`, `docs/modules/summary.md`, `docs/modules/weather.md`, `docs/llm-context.md`, `docs/workstreams.md`, `docs/status.md`를 갱신했습니다.

@@ -10,9 +10,9 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 
 따라서 외곽 디자인은 귀엽거나 둥글게 보이는 것보다 조작 의미를 빨리 구분하게 하는 쪽이 우선입니다. 모든 것을 pill로 만들거나 모든 카드와 버튼을 같은 둥근 사각형으로 맞추면, 읽기 정보와 실행 버튼, 선택지와 입력 필드, 위험 동작이 서로 비슷해져 조작 실수가 늘어납니다.
 
-현재 기준은 `Structured Soft Rectangle`입니다. 사각형을 기본으로 하되 모서리는 딱딱하지 않게 낮은 반경을 주고, 상태 배지처럼 작은 보조 정보만 pill로 둡니다.
+기본 기준은 `Structured Soft Rectangle`였지만, `Obsidian Command Glass` 이후 상단 기록 조작과 수정 화면의 핵심 입력 컨트롤은 `Command Deck Control`로 격상합니다. 이는 일반 사각 폼이 아니라 잘린 모서리, 얇은 cyan edge, 작은 command rail, data slot 입력을 통해 “선택/입력/실행”을 즉시 구분하게 하는 문법입니다.
 
-2026-06-05 기준으로 Dribbble `futuristic-ui` 리서치를 반영한 표면 스타일은 `Obsidian Command Glass`입니다. 이는 기존 `Structured Soft Rectangle`의 shape 기준을 유지하면서, carbon/graphite 표면, cyan 데이터 선, amber command action, blue-gray border, 미세한 grid를 더하는 방식입니다.
+2026-06-05 기준으로 Dribbble `futuristic-ui` 리서치를 반영한 표면 스타일은 `Obsidian Command Glass`입니다. 이는 carbon/graphite 표면, cyan 데이터 선, amber command action, blue-gray border, 미세한 grid를 기본으로 하되, 실제 조작 영역은 `Command Deck Control` 형태로 한 단계 더 분리합니다.
 
 이 스타일은 배경이나 카드 표면만의 장식이 아니라 I/O 컨트롤 문법까지 포함합니다. 버튼, 입력창, 선택 토글, 날짜 레일, 시간 보정 버튼, 저장/취소/삭제 버튼은 각각 “누르는 것”, “입력하는 것”, “선택하는 것”, “위험한 것”이 시각적으로 구분되어야 합니다. 미래형 느낌은 단순 배경선이 아니라 조작 가능한 요소의 border, fill, left accent, inset shadow, active glow에서 체감되어야 합니다.
 
@@ -21,7 +21,8 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 ## 현재 규칙
 
 - 읽기 카드와 주요 패널은 `8px` 반경을 넘기지 않습니다.
-- 입력 필드, 선택 버튼, 보조 버튼은 `5-6px` 반경을 기본으로 합니다.
+- 상단 기록 조작, 기록 수정, 저장/취소처럼 직접 상태를 바꾸는 핵심 컨트롤은 notched command tile을 사용할 수 있습니다. 이때 모서리 잘림은 과한 SF 장식이 아니라 조작 가능 영역을 분리하는 affordance입니다.
+- 일반 입력 필드, 선택 버튼, 보조 버튼은 `5-6px` 반경 또는 compact notched edge를 사용합니다.
 - 상태 배지, 계정 아바타, 작은 칩, toast처럼 좁고 보조적인 요소만 pill을 사용합니다.
 - 텍스트 입력은 어두운 데이터 슬롯처럼 보여야 합니다. carbon 표면, 명확한 blue-gray border, 왼쪽 cyan accent, inset shadow, focus ring을 가져야 합니다.
 - 선택 컨트롤은 입력 필드처럼 보이면 안 됩니다. 선택 상태는 cyan fill, 밝은 border, amber secondary accent, 체크 표시 등으로 구분합니다.
@@ -33,7 +34,10 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 - futuristic 스타일을 적용하더라도 자동 scanline, shimmer, pulse, line draw는 쓰지 않습니다. hover/focus와 사용자 조작 피드백에만 짧은 반응을 둡니다.
 - graphite 계기판, cyan 데이터 accent, amber command accent, coral danger는 역할이 분명해야 합니다. Pineflow green은 브랜드 생명감으로만 제한하고 화면 전체를 녹색 계열로 맞추지 않습니다.
 - grid, luminous border, glass surface는 상단 히어로와 데이터 카드의 정밀감을 높이는 보조 장치입니다. 읽기 정보와 버튼/입력의 역할 구분을 흐리면 제거합니다.
-- 첫 화면에서 “변경됨”이 느껴지려면 가장 큰 면적의 카드부터 바뀌어야 합니다. 작은 버튼만 바꾸거나 배경선만 추가한 변경은 이 스타일 적용으로 보지 않습니다.
+- 첫 화면에서 “변경됨”이 느껴지려면 가장 큰 면적의 카드뿐 아니라 사용자가 실제로 누르고 입력하는 control deck까지 바뀌어야 합니다. 작은 버튼 색만 바꾸거나 배경선만 추가한 변경은 이 스타일 적용으로 보지 않습니다.
+- 직접 입력 필드는 흰색 일반 form field로 되돌리지 않습니다. 메모와 시간 숫자 입력은 어두운 data slot, 왼쪽 cyan rail, focus 시 amber rail로 구분되어야 합니다.
+- 삭제 확인처럼 위험한 조작은 일반 버튼 두 개를 한 줄에 붙이지 않습니다. 별도 confirmation deck으로 묶고 안내 문구와 실행 버튼을 분리합니다.
+- 380px 수준의 작은 모바일 폭에서는 command chip과 수정 모드 선택을 1열로 접습니다. 글자 줄임표로 기능명을 숨기거나 가로 스크롤을 만들지 않습니다.
 
 ## 구현 기준
 

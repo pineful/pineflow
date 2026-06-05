@@ -1785,8 +1785,8 @@ function App() {
 
         <div className="recordSetup">
           <div className="recordSetupTitle">
-            <strong>{isActive ? "진행 중인 기록" : "기록하고 바로 시작"}</strong>
-            <span>{isActive ? "현재 세션 내용" : "버튼 누르기 전에 여기서 끝냅니다"}</span>
+            <strong>{isActive ? "세션 모니터" : "세션 커맨드"}</strong>
+            <span>{isActive ? "현재 기록값" : "모드 · 메모 · 실행"}</span>
           </div>
           {isActive ? (
             <div className="activePlan compact">
