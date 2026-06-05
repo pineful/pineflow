@@ -28,6 +28,13 @@
   --input-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72), inset 0 2px 8px rgba(31, 74, 57, 0.055);
   --button-shadow: 0 7px 16px rgba(23, 49, 38, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
   --button-shadow-active: 0 10px 22px rgba(35, 123, 97, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --telemetry-ink: #f6fff8;
+  --telemetry-muted: rgba(232, 255, 239, 0.76);
+  --telemetry-soft: rgba(184, 243, 211, 0.12);
+  --telemetry-line: rgba(184, 243, 211, 0.24);
+  --telemetry-panel: #112b22;
+  --telemetry-panel-alt: #1a4434;
+  --telemetry-shadow: 0 24px 54px rgba(5, 17, 12, 0.26);
   --radius-card: 8px;
   --radius-control: 6px;
   --radius-field: 6px;
@@ -146,6 +153,9 @@ button:active:not(:disabled) {
 
 .heroPanel {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -201,9 +211,10 @@ button:active:not(:disabled) {
 
 .topBar {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
+  min-width: 0;
   position: relative;
 }
 
@@ -307,6 +318,7 @@ h1 {
 .brandWordmark {
   display: inline-flex;
   align-items: baseline;
+  max-width: 100%;
   margin: 0;
   font-family: "Avenir Next", "Segoe UI Variable Display", "Segoe UI", Inter, system-ui, sans-serif;
   font-size: clamp(2.05rem, 5vw, 2.7rem);
@@ -323,6 +335,10 @@ h1 {
 .brandWordmarkFlow {
   color: #f8fff8;
   font-weight: 520;
+}
+
+.topBar > div:not(.logoMark):not(.accountMenu) {
+  min-width: 0;
 }
 
 .accountMenu {
@@ -788,6 +804,7 @@ h1 {
 .accessForm {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .accessForm div {
@@ -809,6 +826,7 @@ h1 {
 .accessForm span {
   color: #d8ede0;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .accessForm input {
@@ -833,27 +851,45 @@ h1 {
 }
 
 .primaryAction {
+  position: relative;
   display: grid;
   gap: 5px;
   min-height: 88px;
   padding: 20px;
+  overflow: hidden;
   border-radius: var(--radius-card);
   color: #173126;
-  border: 1px solid rgba(255, 245, 185, 0.88);
+  border: 1px solid rgba(255, 245, 185, 0.95);
   background:
-    linear-gradient(135deg, #ffe07a 0%, #f6c247 44%, #e7ad32 76%, #65d79d 150%);
+    linear-gradient(135deg, #ffe98f 0%, #f6c247 48%, #dca02d 82%, #65d79d 158%);
   box-shadow:
     0 16px 32px rgba(0, 0, 0, 0.2),
-    0 0 0 3px rgba(246, 194, 71, 0.12),
+    0 0 0 1px rgba(6, 22, 17, 0.28),
+    0 0 0 4px rgba(246, 194, 71, 0.13),
     inset 0 1px 0 rgba(255, 255, 255, 0.42),
-    inset 0 -1px 0 rgba(112, 82, 0, 0.16);
+    inset 0 -14px 26px rgba(112, 82, 0, 0.14);
   cursor: pointer;
+}
+
+.primaryAction::before {
+  position: absolute;
+  inset: 6px;
+  pointer-events: none;
+  border: 1px solid rgba(23, 49, 38, 0.18);
+  border-radius: var(--radius-control);
+  content: "";
+}
+
+.primaryAction > * {
+  position: relative;
+  z-index: 1;
 }
 
 .primaryAction:hover:not(:disabled) {
   box-shadow:
     0 14px 30px rgba(0, 0, 0, 0.18),
-    0 0 0 3px rgba(246, 194, 71, 0.12),
+    0 0 0 1px rgba(6, 22, 17, 0.28),
+    0 0 0 4px rgba(246, 194, 71, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.42);
 }
 
@@ -896,6 +932,31 @@ h1 {
   color: #27715c;
   font-weight: 900;
   text-align: right;
+}
+
+.recentBand .sectionTitle,
+.weatherBand .sectionTitle,
+.usageBand .sectionTitle {
+  padding: 0 2px;
+}
+
+.recentBand .sectionTitle h2,
+.weatherBand .sectionTitle h2,
+.usageBand .sectionTitle h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recentBand .sectionTitle h2::before,
+.weatherBand .sectionTitle h2::before,
+.usageBand .sectionTitle h2::before {
+  width: 8px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #7de0b1, #f6c247);
+  box-shadow: 0 0 18px rgba(120, 223, 173, 0.2);
+  content: "";
 }
 
 .summaryGrid {
@@ -953,12 +1014,40 @@ h1 {
 }
 
 .weatherBand {
+  position: relative;
+  overflow: hidden;
   padding: 16px;
-  border-color: rgba(184, 205, 181, 0.94);
+  color: var(--telemetry-ink);
+  border-color: rgba(184, 243, 211, 0.3);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.94)),
-    linear-gradient(100deg, rgba(131, 183, 230, 0.16), transparent 42%, rgba(246, 194, 71, 0.13)),
-    #fbfcf8;
+    linear-gradient(145deg, rgba(13, 35, 29, 0.98), rgba(25, 72, 53, 0.94) 60%, rgba(15, 38, 31, 0.98)),
+    var(--telemetry-panel);
+  box-shadow:
+    0 20px 44px rgba(5, 17, 12, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.weatherBand::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(184, 243, 211, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 243, 211, 0.04) 1px, transparent 1px),
+    linear-gradient(116deg, transparent 0 72%, rgba(131, 183, 230, 0.1) 72.2% 72.8%, transparent 73% 100%);
+  background-size: 38px 38px, 38px 38px, auto;
+  content: "";
+}
+
+.weatherBand > * {
+  position: relative;
+  z-index: 1;
+}
+
+.weatherBand .sectionTitle h2,
+.weatherBand .sectionTitle span {
+  color: var(--telemetry-ink);
 }
 
 .weatherGrid {
@@ -976,6 +1065,9 @@ h1 {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(243, 248, 239, 0.94) 68%, rgba(255, 246, 210, 0.8) 100%),
     #fbfdf8;
+  box-shadow:
+    0 10px 20px rgba(5, 17, 12, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .weatherMain strong {
@@ -994,6 +1086,12 @@ h1 {
   gap: 8px;
   min-height: 112px;
   padding: 12px;
+  background:
+    linear-gradient(180deg, rgba(249, 255, 249, 0.9), rgba(240, 248, 235, 0.86)),
+    #f6faf2;
+  box-shadow:
+    0 10px 20px rgba(5, 17, 12, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .weatherDetails span {
@@ -1011,7 +1109,9 @@ h1 {
 .weatherFallback {
   padding: 14px;
   border-radius: var(--radius-card);
-  background: #f9fbf6;
+  color: var(--telemetry-muted);
+  border: 1px solid rgba(184, 243, 211, 0.18);
+  background: rgba(249, 255, 249, 0.09);
 }
 
 .usageBand {
@@ -1022,13 +1122,15 @@ h1 {
   display: grid;
   gap: 12px;
   padding: 14px;
-  border: 1px solid var(--color-card-border);
+  color: var(--telemetry-ink);
+  border: 1px solid rgba(184, 243, 211, 0.28);
   border-radius: var(--radius-card);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.96)),
-    linear-gradient(90deg, rgba(47, 107, 79, 0.07), transparent 46%, rgba(131, 183, 230, 0.08)),
-    #fbfcf8;
-  box-shadow: var(--shadow-card-soft);
+    linear-gradient(145deg, rgba(13, 35, 29, 0.98), rgba(23, 62, 48, 0.95) 60%, rgba(13, 35, 29, 0.98)),
+    var(--telemetry-panel);
+  box-shadow:
+    0 20px 44px rgba(5, 17, 12, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .usageIntro {
@@ -1037,14 +1139,14 @@ h1 {
 }
 
 .usageIntro strong {
-  color: #17231e;
+  color: var(--telemetry-ink);
   font-size: 0.92rem;
 }
 
 .usageIntro span,
 .usageTimestamp,
 .usageFallback {
-  color: #66746a;
+  color: var(--telemetry-muted);
   font-size: 0.78rem;
   font-weight: 800;
   line-height: 1.45;
@@ -1388,12 +1490,18 @@ h1 {
   background: #f3f7ef;
 }
 
+.usagePanel .usageFallback {
+  color: var(--telemetry-muted);
+  border: 1px solid rgba(184, 243, 211, 0.18);
+  background: rgba(249, 255, 249, 0.09);
+}
+
 .weatherForecastScroller {
   grid-column: 1 / -1;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   padding: 2px 2px 10px;
-  scrollbar-color: rgba(47, 107, 79, 0.52) rgba(227, 234, 220, 0.9);
+  scrollbar-color: rgba(126, 224, 177, 0.72) rgba(8, 27, 22, 0.42);
   scrollbar-width: thin;
 }
 
@@ -1406,14 +1514,14 @@ h1 {
 
 .weatherChart {
   padding: 14px 0 10px;
-  border: 1px solid #d7e5d2;
+  border: 1px solid rgba(184, 243, 211, 0.22);
   border-radius: var(--radius-card);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 250, 244, 0.92)),
-    linear-gradient(90deg, rgba(131, 183, 230, 0.12), rgba(246, 194, 71, 0.13));
+    linear-gradient(180deg, rgba(249, 255, 249, 0.93), rgba(238, 247, 234, 0.88)),
+    linear-gradient(90deg, rgba(131, 183, 230, 0.15), rgba(246, 194, 71, 0.15));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.74),
-    0 8px 18px rgba(24, 48, 36, 0.06);
+    0 10px 20px rgba(5, 17, 12, 0.1);
 }
 
 .weatherChart svg {
@@ -1521,12 +1629,14 @@ h1 {
   gap: 6px 8px;
   min-height: 130px;
   padding: 12px;
-  border: 1px solid #d7e5d2;
+  border: 1px solid rgba(184, 243, 211, 0.22);
   border-radius: var(--radius-card);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 250, 244, 0.86)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 248, 236, 0.88)),
     #f9fbf6;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+  box-shadow:
+    0 10px 18px rgba(5, 17, 12, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
@@ -1745,6 +1855,11 @@ h1 {
     inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
+.timeFlowGraph > * {
+  position: relative;
+  z-index: 1;
+}
+
 .timeFlowGraph::before {
   position: absolute;
   top: 0;
@@ -1758,15 +1873,42 @@ h1 {
 
 .heroFlow {
   margin-top: 0;
-  color: var(--color-text);
-  border-color: rgba(184, 243, 211, 0.18);
+  color: var(--telemetry-ink);
+  border-color: rgba(184, 243, 211, 0.36);
+  background:
+    linear-gradient(145deg, rgba(12, 31, 25, 0.98) 0%, rgba(22, 58, 44, 0.96) 54%, rgba(12, 35, 29, 0.98) 100%),
+    var(--telemetry-panel);
   box-shadow:
-    0 22px 48px rgba(5, 17, 12, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    var(--telemetry-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 1px rgba(184, 243, 211, 0.06);
 }
 
 .heroFlow::before {
-  content: none;
+  inset: 0;
+  z-index: 0;
+  width: auto;
+  height: auto;
+  border-radius: inherit;
+  background:
+    linear-gradient(rgba(184, 243, 211, 0.072) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 243, 211, 0.055) 1px, transparent 1px),
+    linear-gradient(118deg, transparent 0 64%, rgba(131, 183, 230, 0.12) 64.2% 64.8%, transparent 65% 100%),
+    linear-gradient(90deg, transparent 0 70%, rgba(246, 194, 71, 0.08) 70% 70.4%, transparent 70.8% 100%);
+  background-size: 42px 42px, 42px 42px, auto, auto;
+  content: "";
+  opacity: 0.76;
+}
+
+.heroFlow::after {
+  position: absolute;
+  inset: 10px;
+  z-index: 0;
+  pointer-events: none;
+  border: 1px solid rgba(184, 243, 211, 0.14);
+  border-radius: var(--radius-control);
+  box-shadow: inset 0 0 26px rgba(120, 223, 173, 0.06);
+  content: "";
 }
 
 .timeFlowKicker {
@@ -1814,6 +1956,20 @@ h1 {
   background: #d9f0df;
 }
 
+.heroFlow .timeFlowKicker span {
+  color: #c7f6d8;
+  border: 1px solid rgba(184, 243, 211, 0.18);
+  background: rgba(184, 243, 211, 0.1);
+}
+
+.heroFlow .timeFlowKicker span.live {
+  color: #10231d;
+  border-color: rgba(255, 255, 255, 0.38);
+  background:
+    linear-gradient(135deg, #c7f6d8 0%, #8ee9b6 68%, #f6c247 160%),
+    #b9f3d3;
+}
+
 .timeFlowKicker span.live::before {
   background: var(--color-pine);
   box-shadow: 0 0 0 4px rgba(47, 107, 79, 0.14);
@@ -1823,6 +1979,11 @@ h1 {
   color: var(--color-muted);
   font-size: 0.74rem;
   font-weight: 900;
+}
+
+.heroFlow .flowCarryStatus,
+.heroFlow .timeFlowKicker small {
+  color: var(--telemetry-muted);
 }
 
 .timeFlowHeader,
@@ -1855,11 +2016,24 @@ h1 {
   font-size: 0.86rem;
 }
 
+.heroFlow .flowMessage {
+  color: var(--telemetry-muted);
+}
+
+.heroFlow .flowMessage strong {
+  color: #c7f6d8;
+}
+
 .timeFlowHeader span,
 .timeFlowFooter span {
   color: var(--color-muted);
   font-size: 0.78rem;
   font-weight: 850;
+}
+
+.heroFlow .timeFlowHeader span,
+.heroFlow .timeFlowFooter span {
+  color: var(--telemetry-muted);
 }
 
 .timeFlowHeader strong {
@@ -1873,6 +2047,12 @@ h1 {
   font-size: 1.58rem;
 }
 
+.heroFlow .timeFlowHeader strong,
+.heroFlow .timeFlowHeader div:first-child strong {
+  color: var(--telemetry-ink);
+  text-shadow: 0 8px 24px rgba(3, 14, 10, 0.28);
+}
+
 .timeFlowCanvas {
   position: relative;
   height: 132px;
@@ -1881,6 +2061,17 @@ h1 {
   background:
     linear-gradient(90deg, rgba(47, 107, 79, 0.09), rgba(53, 111, 140, 0.065), rgba(226, 184, 75, 0.09)),
     var(--color-surface-subtle);
+}
+
+.heroFlow .timeFlowCanvas {
+  border: 1px solid rgba(184, 243, 211, 0.2);
+  background:
+    linear-gradient(90deg, rgba(120, 223, 173, 0.14), rgba(53, 111, 140, 0.1), rgba(246, 194, 71, 0.11)),
+    linear-gradient(180deg, rgba(249, 255, 249, 0.065), rgba(249, 255, 249, 0.025)),
+    #102920;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -28px 42px rgba(4, 18, 14, 0.16);
 }
 
 .timeFlowCanvas::before {
@@ -1893,6 +2084,13 @@ h1 {
     linear-gradient(90deg, rgba(47, 107, 79, 0.055) 1px, transparent 1px);
   background-size: 48px 44px;
   content: "";
+}
+
+.heroFlow .timeFlowCanvas::before {
+  background:
+    linear-gradient(rgba(184, 243, 211, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 243, 211, 0.06) 1px, transparent 1px);
+  background-size: 48px 44px;
 }
 
 .timeFlowCanvas svg {
@@ -1910,6 +2108,10 @@ h1 {
   stroke-linecap: round;
 }
 
+.heroFlow .timeFlowGrid {
+  stroke: rgba(184, 243, 211, 0.18);
+}
+
 .timeGoalLine,
 .timeNowLine,
 .timeFlowArea,
@@ -1924,15 +2126,27 @@ h1 {
   stroke-width: 2;
 }
 
+.heroFlow .timeGoalLine {
+  stroke: rgba(246, 194, 71, 0.94);
+}
+
 .timeNowLine {
   stroke: rgba(47, 107, 79, 0.48);
   stroke-dasharray: 3 7;
   stroke-width: 2;
 }
 
+.heroFlow .timeNowLine {
+  stroke: rgba(120, 223, 173, 0.62);
+}
+
 .timeFlowArea {
   fill: rgba(47, 107, 79, 0.16);
   stroke: none;
+}
+
+.heroFlow .timeFlowArea {
+  fill: rgba(120, 223, 173, 0.18);
 }
 
 .timeFlowLine {
@@ -1945,6 +2159,12 @@ h1 {
   stroke: #2f7d5b;
 }
 
+.heroFlow .timeFlowLine,
+.heroFlow.active .timeFlowLine {
+  stroke: #7de0b1;
+  filter: drop-shadow(0 5px 12px rgba(120, 223, 173, 0.24));
+}
+
 .timeFlowMarker {
   fill: #fbfcf8;
   stroke: var(--color-pine);
@@ -1952,8 +2172,18 @@ h1 {
   filter: drop-shadow(0 5px 12px rgba(47, 107, 79, 0.18));
 }
 
+.heroFlow .timeFlowMarker {
+  fill: #123025;
+  stroke: #8ee9b6;
+  filter: drop-shadow(0 6px 14px rgba(3, 14, 10, 0.36));
+}
+
 .timeFlowMarker.check-out {
   stroke: var(--color-gold);
+}
+
+.heroFlow .timeFlowMarker.check-out {
+  stroke: #f6c247;
 }
 
 .timeFlowMarker.now {
@@ -1964,10 +2194,19 @@ h1 {
   transform-origin: center;
 }
 
+.heroFlow .timeFlowMarker.now {
+  fill: #f6c247;
+  stroke: rgba(255, 255, 255, 0.92);
+}
+
 .timeAxisLabel {
   fill: var(--color-muted);
   font-size: 9px;
   font-weight: 850;
+}
+
+.heroFlow .timeAxisLabel {
+  fill: rgba(244, 255, 247, 0.72);
 }
 
 .accountPopover,
@@ -1981,12 +2220,20 @@ h1 {
   font-size: 0.9rem;
 }
 
+.heroFlow .timeFlowFooter strong {
+  color: #c7f6d8;
+}
+
 .flowInsights {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   padding-top: 12px;
   border-top: 1px solid rgba(102, 116, 106, 0.16);
+}
+
+.heroFlow .flowInsights {
+  border-top-color: rgba(184, 243, 211, 0.16);
 }
 
 .flowInsights div {
@@ -2000,6 +2247,10 @@ h1 {
   border-left: 1px solid rgba(102, 116, 106, 0.16);
 }
 
+.heroFlow .flowInsights div + div {
+  border-left-color: rgba(184, 243, 211, 0.16);
+}
+
 .flowInsights span {
   overflow: hidden;
   color: #66746a;
@@ -2009,12 +2260,20 @@ h1 {
   white-space: nowrap;
 }
 
+.heroFlow .flowInsights span {
+  color: rgba(232, 255, 239, 0.66);
+}
+
 .flowInsights strong {
   overflow: hidden;
   color: #17231e;
   font-size: 0.9rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.heroFlow .flowInsights strong {
+  color: var(--telemetry-ink);
 }
 
 @keyframes softPop {
@@ -2217,15 +2476,39 @@ h1 {
 }
 
 .timelineItem {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   padding: 13px;
-  box-shadow: var(--shadow-card-soft);
+  overflow: hidden;
+  color: var(--telemetry-ink);
+  border-color: rgba(184, 243, 211, 0.26);
+  background:
+    linear-gradient(145deg, rgba(13, 35, 29, 0.98), rgba(27, 73, 55, 0.94) 62%, rgba(13, 35, 29, 0.98)),
+    var(--telemetry-panel);
+  box-shadow:
+    0 14px 30px rgba(5, 17, 12, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
+}
+
+.timelineItem::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, #7de0b1, rgba(246, 194, 71, 0.94));
+  content: "";
+}
+
+.timelineItem:hover {
+  border-color: rgba(184, 243, 211, 0.42);
+  box-shadow:
+    0 18px 34px rgba(5, 17, 12, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .timelineItem.editing {
@@ -2246,10 +2529,12 @@ h1 {
 .timelineItem strong {
   display: block;
   margin-bottom: 3px;
+  color: var(--telemetry-ink);
 }
 
 .timelineItem p {
   min-width: 0;
+  color: var(--telemetry-muted);
 }
 
 .timelineMode {
@@ -2260,9 +2545,9 @@ h1 {
   margin-top: 7px;
   padding: 4px 8px;
   border-radius: var(--radius-pill);
-  color: #436154;
-  border: 1px solid #d7e6d1;
-  background: #eef5ed;
+  color: #c7f6d8;
+  border: 1px solid rgba(184, 243, 211, 0.18);
+  background: rgba(184, 243, 211, 0.1);
   font-size: 0.72rem;
   font-weight: 850;
 }
@@ -2273,7 +2558,7 @@ h1 {
   gap: 7px;
   max-width: 100%;
   margin-top: 8px;
-  color: #243b31;
+  color: #f4fff7;
   font-size: 0.86rem;
   font-weight: 850;
   line-height: 1.35;
@@ -2286,8 +2571,8 @@ h1 {
   width: 24px;
   height: 24px;
   border-radius: var(--radius-pill);
-  border: 1px solid #d7e6d1;
-  background: #eef5ed;
+  border: 1px solid rgba(184, 243, 211, 0.2);
+  background: rgba(184, 243, 211, 0.1);
   font-size: 0.82rem;
 }
 
@@ -2298,6 +2583,7 @@ h1 {
 
 .timelineItem small {
   justify-self: end;
+  color: rgba(232, 255, 239, 0.76);
   font-weight: 800;
 }
 
@@ -2314,7 +2600,7 @@ h1 {
 }
 
 .timelineActions.confirming span {
-  color: #6f4a35;
+  color: #f8e6ad;
   font-size: 0.76rem;
   font-weight: 900;
   text-align: right;
@@ -2850,6 +3136,30 @@ h1 {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 420px) {
+  .heroPanel {
+    padding: 14px;
+  }
+
+  .topBar {
+    gap: 10px;
+  }
+
+  .logoMark {
+    width: 56px;
+    height: 56px;
+  }
+
+  .logoMark svg {
+    width: 50px;
+    height: 50px;
+  }
+
+  .brandWordmark {
+    font-size: clamp(1.72rem, 10vw, 2.16rem);
   }
 }
 
