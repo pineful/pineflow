@@ -12,6 +12,8 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 
 현재 기준은 `Structured Soft Rectangle`입니다. 사각형을 기본으로 하되 모서리는 딱딱하지 않게 낮은 반경을 주고, 상태 배지처럼 작은 보조 정보만 pill로 둡니다.
 
+2026-06-05 기준으로 Dribbble `futuristic-ui` 리서치를 반영한 표면 스타일은 `Quiet Telemetry Glass`입니다. 이는 기존 `Structured Soft Rectangle`의 shape 기준을 유지하면서, 상단 계기판과 반복 카드에 얇은 발광 경계선, 낮은 그림자, 미세한 grid, 정돈된 숫자 표면을 더하는 방식입니다. 미래형 느낌은 control shape를 바꾸는 것이 아니라 정보 위계를 더 정밀하게 보이게 하는 데에만 사용합니다.
+
 ## 현재 규칙
 
 - 읽기 카드와 주요 패널은 `8px` 반경을 넘기지 않습니다.
@@ -24,6 +26,9 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 - 삭제, 로그아웃처럼 되돌리기 어렵거나 세션을 끝내는 동작은 일반 보조 버튼과 같은 외곽을 쓰지 않습니다. danger 색, border, focus ring으로 분리합니다.
 - elevation은 팝오버, toast, 임시 편집 패널처럼 화면 위에 뜨는 레이어에 우선 사용합니다. 반복되는 기록 카드와 날씨 카드에 강한 shadow를 남발하지 않습니다.
 - disabled 상태는 저장/삭제 중 같은 진행 상태와 아직 사용할 수 없는 기능을 구분해야 합니다. 진행 상태는 wait cursor를 쓸 수 있지만, 미구현/비활성 기능은 default cursor와 낮은 대비를 씁니다.
+- futuristic 스타일을 적용하더라도 자동 scanline, shimmer, pulse, line draw는 쓰지 않습니다. hover/focus와 사용자 조작 피드백에만 짧은 반응을 둡니다.
+- 딥 그린 계기판, 민트/골드 accent, 하늘빛 정보색은 역할이 분명해야 합니다. 장식 목적으로 보라/파랑 네온이나 과한 dark SaaS 팔레트를 새로 만들지 않습니다.
+- grid, luminous border, glass surface는 상단 히어로와 데이터 카드의 정밀감을 높이는 보조 장치입니다. 읽기 정보와 버튼/입력의 역할 구분을 흐리면 제거합니다.
 
 ## 구현 기준
 
@@ -40,6 +45,7 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 ## 참고 문서
 
 - `docs/research/groupware-control-shape-2026-06-04.md`
+- `docs/research/futuristic-ui-selection-2026-06-05.md`
 - `docs/modules/recording.md`
 - `docs/modules/microinteractions.md`
 - `docs/modules/branding.md`

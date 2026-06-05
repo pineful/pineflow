@@ -11,6 +11,10 @@
   --color-gold: #e2b84b;
   --color-info: #356f8c;
   --color-danger: #b94a3a;
+  --color-card-border: #d7e5d2;
+  --surface-glass: rgba(255, 255, 255, 0.78);
+  --border-luminous: rgba(184, 243, 211, 0.24);
+  --grid-line-soft: rgba(47, 107, 79, 0.052);
   --radius-card: 8px;
   --radius-control: 6px;
   --radius-field: 6px;
@@ -19,6 +23,8 @@
   --border-control: #cfdccc;
   --shadow-control: 0 1px 2px rgba(23, 35, 28, 0.08);
   --shadow-layer: 0 14px 30px rgba(23, 35, 28, 0.12);
+  --shadow-instrument: 0 24px 54px rgba(10, 32, 24, 0.2);
+  --shadow-card-soft: 0 8px 22px rgba(24, 48, 36, 0.07);
   --focus-ring: 0 0 0 3px rgba(39, 113, 92, 0.16);
   --focus-ring-warm: 0 0 0 3px rgba(246, 194, 71, 0.16);
   --focus-ring-danger: 0 0 0 3px rgba(185, 74, 58, 0.16);
@@ -45,8 +51,11 @@ body {
   min-height: 100vh;
   cursor: default;
   background:
-    radial-gradient(circle at top left, rgba(226, 184, 75, 0.16), transparent 30rem),
-    linear-gradient(180deg, #fbfaf5 0%, var(--color-bg) 100%);
+    linear-gradient(var(--grid-line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-soft) 1px, transparent 1px),
+    linear-gradient(180deg, #fbfaf5 0%, #f7f9f4 54%, #edf4ee 100%);
+  background-attachment: fixed;
+  background-size: 42px 42px, 42px 42px, auto;
 }
 
 button,
@@ -101,6 +110,7 @@ button:active:not(:disabled) {
   caret-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  isolation: isolate;
 }
 
 .appShell :where(input, textarea) {
@@ -115,16 +125,54 @@ button:active:not(:disabled) {
 }
 
 .heroPanel {
+  position: relative;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 18px;
   justify-content: flex-start;
   padding: 20px;
+  overflow: hidden;
   color: #f9fff9;
-  background: linear-gradient(155deg, rgba(16, 40, 32, 0.95), rgba(31, 84, 66, 0.9));
+  border: 1px solid var(--border-luminous);
   border-radius: var(--radius-card);
-  box-shadow: 0 24px 60px rgba(25, 45, 36, 0.24);
+  background:
+    linear-gradient(150deg, rgba(18, 41, 31, 0.98) 0%, rgba(24, 59, 45, 0.96) 48%, rgba(31, 74, 57, 0.94) 100%),
+    #17372c;
+  box-shadow:
+    var(--shadow-instrument),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.heroPanel::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(184, 243, 211, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 243, 211, 0.06) 1px, transparent 1px),
+    linear-gradient(118deg, transparent 0 62%, rgba(131, 183, 230, 0.12) 62.1% 62.5%, transparent 62.6% 100%);
+  background-size: 44px 44px, 44px 44px, auto;
+  content: "";
+  opacity: 0.58;
+}
+
+.heroPanel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgba(249, 255, 249, 0.06),
+    inset 0 -1px 0 rgba(8, 25, 19, 0.48);
+  content: "";
+}
+
+.heroPanel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .accessPanel {
@@ -146,12 +194,11 @@ button:active:not(:disabled) {
   place-items: center;
   border-radius: var(--radius-card);
   background:
-    radial-gradient(circle at 36% 24%, rgba(255, 255, 255, 0.92), transparent 1.2rem),
-    linear-gradient(145deg, #fbfdf7 0%, #edf5e8 100%);
+    linear-gradient(145deg, #ffffff 0%, #f2f8ef 100%);
   border: 1px solid rgba(216, 229, 210, 0.96);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.88),
-    0 10px 22px rgba(10, 30, 24, 0.16);
+    0 12px 24px rgba(10, 30, 24, 0.2);
   overflow: hidden;
 }
 
@@ -271,9 +318,12 @@ h1 {
   min-width: 52px;
   min-height: 42px;
   padding: 4px 8px 4px 4px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(184, 243, 211, 0.24);
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(135deg, rgba(249, 255, 249, 0.16), rgba(249, 255, 249, 0.06)),
+    rgba(6, 22, 17, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -300,12 +350,14 @@ h1 {
   gap: 10px;
   min-width: 0;
   padding: 9px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(184, 243, 211, 0.22);
   border-radius: var(--radius-control);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.06)),
-    rgba(13, 35, 28, 0.42);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    linear-gradient(135deg, rgba(249, 255, 249, 0.15), rgba(249, 255, 249, 0.05)),
+    rgba(8, 27, 22, 0.48);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(6, 22, 17, 0.08);
 }
 
 .costSignalLights {
@@ -314,7 +366,8 @@ h1 {
   gap: 4px;
   padding: 5px 6px;
   border-radius: var(--radius-pill);
-  background: rgba(8, 27, 22, 0.42);
+  border: 1px solid rgba(184, 243, 211, 0.12);
+  background: rgba(6, 22, 17, 0.48);
 }
 
 .costSignalLights i {
@@ -339,7 +392,9 @@ h1 {
 
 .costSignalLights .active {
   opacity: 1;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.12),
+    0 0 14px currentColor;
 }
 
 .costSignalCopy {
@@ -442,8 +497,12 @@ h1 {
   border: 1px solid rgba(20, 33, 28, 0.12);
   border-radius: var(--radius-card);
   color: #17231e;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: var(--shadow-layer);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 244, 0.96)),
+    #fbfcf8;
+  box-shadow:
+    var(--shadow-layer),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
 }
 
 .accountIdentity {
@@ -526,15 +585,17 @@ h1 {
   font-size: 3.6rem;
   line-height: 0.95;
   letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 12px 30px rgba(9, 28, 21, 0.22);
 }
 
 .clockBlock span {
   width: fit-content;
   padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(184, 243, 211, 0.24);
   border-radius: var(--radius-pill);
   color: #f4f8ee;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(249, 255, 249, 0.1);
   font-size: 0.83rem;
 }
 
@@ -542,9 +603,14 @@ h1 {
   display: grid;
   gap: 10px;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(184, 243, 211, 0.22);
   border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(249, 255, 249, 0.12), rgba(249, 255, 249, 0.06)),
+    rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 24px rgba(6, 22, 17, 0.08);
 }
 
 .recordSetupTitle {
@@ -574,17 +640,29 @@ h1 {
 .recordSetup .modeControl.compact button {
   min-height: 62px;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(184, 243, 211, 0.18);
   border-radius: var(--radius-control);
   color: #eaf7ed;
-  background: rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(150deg, rgba(249, 255, 249, 0.14), rgba(249, 255, 249, 0.06)),
+    rgba(255, 255, 255, 0.08);
+}
+
+.recordSetup .modeControl.compact button:hover:not(:disabled),
+.recordSetup .planChips.compact button:hover:not(:disabled) {
+  border-color: rgba(184, 243, 211, 0.34);
+  background:
+    linear-gradient(150deg, rgba(249, 255, 249, 0.18), rgba(249, 255, 249, 0.08)),
+    rgba(255, 255, 255, 0.1);
 }
 
 .recordSetup .modeControl.compact button.selected {
   border-color: rgba(185, 243, 211, 0.7);
   color: #173126;
   background: #b9f3d3;
-  box-shadow: inset 0 0 0 1px rgba(23, 49, 38, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(23, 49, 38, 0.12),
+    0 10px 18px rgba(62, 218, 148, 0.14);
 }
 
 .recordSetup .modeControl.compact button span {
@@ -609,9 +687,9 @@ h1 {
   min-height: 42px;
   padding: 8px 10px;
   border-radius: var(--radius-control);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(184, 243, 211, 0.2);
   color: #f4f8ee;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   line-height: 1.18;
   overflow-wrap: anywhere;
   text-align: center;
@@ -630,9 +708,9 @@ h1 {
 
 .recordSetup .noteField.compact input {
   min-height: 44px;
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(184, 243, 211, 0.24);
   color: #f9fff9;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(249, 255, 249, 0.1);
 }
 
 .recordSetup .noteField.compact input::placeholder {
@@ -645,8 +723,8 @@ h1 {
 }
 
 .recordSetup .activePlan.compact {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(184, 243, 211, 0.22);
+  background: rgba(249, 255, 249, 0.1);
 }
 
 .recordSetup .activePlan.compact span {
@@ -710,11 +788,21 @@ h1 {
   padding: 20px;
   border-radius: var(--radius-card);
   color: #173126;
-  background: #f6c247;
+  border: 1px solid rgba(255, 245, 185, 0.72);
+  background:
+    linear-gradient(135deg, #ffd764 0%, #f6c247 54%, #e6b441 100%);
   box-shadow:
     0 12px 26px rgba(0, 0, 0, 0.16),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(112, 82, 0, 0.16);
   cursor: pointer;
+}
+
+.primaryAction:hover:not(:disabled) {
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.18),
+    0 0 0 3px rgba(246, 194, 71, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
 }
 
 .primaryAction:disabled {
@@ -769,18 +857,29 @@ h1 {
 .weatherBand,
 .weatherMain,
 .weatherDetails {
-  border: 1px solid #dfe6d6;
+  border: 1px solid var(--color-card-border);
   border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(249, 251, 246, 0.76)),
+    var(--surface-glass);
+  box-shadow: var(--shadow-card-soft);
 }
 
 .metricCard {
   display: grid;
   gap: 6px;
   padding: 14px;
+  box-shadow: var(--shadow-card-soft);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
+}
+
+.metricCard:hover,
+.weatherSlot:hover,
+.timelineItem:hover {
+  border-color: rgba(47, 107, 79, 0.22);
+  box-shadow: 0 10px 24px rgba(24, 48, 36, 0.09);
 }
 
 .metricCard span,
@@ -803,11 +902,11 @@ h1 {
 
 .weatherBand {
   padding: 16px;
-  border-color: rgba(184, 205, 181, 0.9);
+  border-color: rgba(184, 205, 181, 0.94);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(246, 250, 242, 0.92)),
-    radial-gradient(circle at 12% 8%, rgba(131, 183, 230, 0.2), transparent 12rem),
-    radial-gradient(circle at 86% 18%, rgba(246, 194, 71, 0.16), transparent 14rem);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.94)),
+    linear-gradient(100deg, rgba(131, 183, 230, 0.16), transparent 42%, rgba(246, 194, 71, 0.13)),
+    #fbfcf8;
 }
 
 .weatherGrid {
@@ -823,8 +922,8 @@ h1 {
   min-height: 112px;
   padding: 16px;
   background:
-    radial-gradient(circle at 84% 24%, rgba(246, 194, 71, 0.28), transparent 4.5rem),
-    linear-gradient(145deg, #fbfdf8 0%, #f3f8ef 100%);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(243, 248, 239, 0.94) 68%, rgba(255, 246, 210, 0.8) 100%),
+    #fbfdf8;
 }
 
 .weatherMain strong {
@@ -851,7 +950,7 @@ h1 {
   min-height: 40px;
   border-radius: var(--radius-control);
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(232, 240, 226, 0.88)),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(232, 240, 226, 0.9)),
     #eef3e9;
   font-weight: 800;
   text-align: center;
@@ -871,11 +970,13 @@ h1 {
   display: grid;
   gap: 12px;
   padding: 14px;
-  border: 1px solid #dfe6d6;
+  border: 1px solid var(--color-card-border);
   border-radius: var(--radius-card);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 250, 244, 0.94)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.96)),
+    linear-gradient(90deg, rgba(47, 107, 79, 0.07), transparent 46%, rgba(131, 183, 230, 0.08)),
     #fbfcf8;
+  box-shadow: var(--shadow-card-soft);
 }
 
 .usageIntro {
@@ -901,11 +1002,13 @@ h1 {
   display: grid;
   gap: 12px;
   padding: 12px;
-  border: 1px solid #cddfcf;
+  border: 1px solid #c8deca;
   border-radius: var(--radius-card);
   background:
-    linear-gradient(135deg, rgba(237, 247, 235, 0.95), rgba(255, 251, 231, 0.78)),
+    linear-gradient(135deg, rgba(237, 247, 235, 0.96), rgba(255, 251, 231, 0.78)),
+    linear-gradient(90deg, rgba(65, 183, 127, 0.08), transparent),
     #f7fbf2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .costEstimateHeader {
@@ -962,9 +1065,12 @@ h1 {
   gap: 6px;
   min-width: 0;
   padding: 10px;
-  border: 1px solid #dce8d7;
+  border: 1px solid #d7e5d2;
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.74);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 251, 246, 0.78)),
+    rgba(255, 255, 255, 0.74);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
 }
 
 .usageTrendCard > div {
@@ -1033,7 +1139,7 @@ h1 {
   cursor: pointer;
   width: fit-content;
   padding: 8px 10px;
-  border: 1px solid #d7e5d1;
+  border: 1px solid #cfe0ca;
   border-radius: var(--radius-control);
   color: #1d6e55;
   background: #eef6ea;
@@ -1050,9 +1156,11 @@ h1 {
   gap: 9px;
   min-width: 0;
   padding: 10px;
-  border: 1px solid #dfe6d6;
+  border: 1px solid #dbe7d6;
   border-radius: var(--radius-control);
-  background: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 251, 246, 0.76)),
+    rgba(255, 255, 255, 0.72);
 }
 
 .costEstimateItem > div {
@@ -1151,9 +1259,11 @@ h1 {
   gap: 10px;
   min-width: 0;
   padding: 12px;
-  border: 1px solid #dfe6d6;
+  border: 1px solid #dbe7d6;
   border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.74);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 251, 246, 0.78)),
+    rgba(255, 255, 255, 0.74);
 }
 
 .usageModule > div {
@@ -1237,12 +1347,14 @@ h1 {
 
 .weatherChart {
   padding: 14px 0 10px;
-  border: 1px solid #dfe6d6;
+  border: 1px solid #d7e5d2;
   border-radius: var(--radius-card);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(247, 250, 244, 0.9)),
-    linear-gradient(90deg, rgba(131, 183, 230, 0.1), rgba(246, 194, 71, 0.13)),
-    radial-gradient(circle at top right, rgba(246, 194, 71, 0.18), transparent 16rem);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 250, 244, 0.92)),
+    linear-gradient(90deg, rgba(131, 183, 230, 0.12), rgba(246, 194, 71, 0.13));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.74),
+    0 8px 18px rgba(24, 48, 36, 0.06);
 }
 
 .weatherChart svg {
@@ -1263,7 +1375,7 @@ h1 {
   stroke: url("#temperatureLine");
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 4;
+  stroke-width: 4.5;
 }
 
 .rainBar {
@@ -1350,9 +1462,12 @@ h1 {
   gap: 6px 8px;
   min-height: 130px;
   padding: 12px;
-  border: 1px solid #dfe6d6;
+  border: 1px solid #d7e5d2;
   border-radius: var(--radius-card);
-  background: #f9fbf6;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 250, 244, 0.86)),
+    #f9fbf6;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
@@ -1554,16 +1669,21 @@ h1 {
   margin-top: 14px;
   padding: 14px;
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-card-border);
   border-radius: var(--radius-card);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 248, 244, 0.98));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 249, 244, 0.98)),
+    linear-gradient(90deg, rgba(47, 107, 79, 0.05), transparent 46%, rgba(226, 184, 75, 0.05));
+  box-shadow:
+    0 12px 28px rgba(24, 48, 36, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .timeFlowGraph::before {
   position: absolute;
   top: 0;
   left: 18px;
-  width: 58px;
+  width: 72px;
   height: 4px;
   border-radius: 0 0 var(--radius-pill) var(--radius-pill);
   background: linear-gradient(90deg, var(--color-pine), var(--color-gold));
@@ -1573,7 +1693,10 @@ h1 {
 .heroFlow {
   margin-top: 0;
   color: var(--color-text);
-  box-shadow: 0 18px 42px rgba(5, 17, 12, 0.18);
+  border-color: rgba(184, 243, 211, 0.18);
+  box-shadow:
+    0 22px 48px rgba(5, 17, 12, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .heroFlow::before {
@@ -1690,8 +1813,20 @@ h1 {
   overflow: hidden;
   border-radius: var(--radius-card);
   background:
-    linear-gradient(90deg, rgba(47, 107, 79, 0.08), rgba(53, 111, 140, 0.06), rgba(226, 184, 75, 0.08)),
+    linear-gradient(90deg, rgba(47, 107, 79, 0.09), rgba(53, 111, 140, 0.065), rgba(226, 184, 75, 0.09)),
     var(--color-surface-subtle);
+}
+
+.timeFlowCanvas::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(47, 107, 79, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(47, 107, 79, 0.055) 1px, transparent 1px);
+  background-size: 48px 44px;
+  content: "";
 }
 
 .timeFlowCanvas svg {
@@ -1704,7 +1839,7 @@ h1 {
 
 .timeFlowGrid {
   fill: none;
-  stroke: rgba(101, 113, 102, 0.18);
+  stroke: rgba(101, 113, 102, 0.2);
   stroke-dasharray: 4 9;
   stroke-linecap: round;
 }
@@ -1718,26 +1853,26 @@ h1 {
 }
 
 .timeGoalLine {
-  stroke: rgba(226, 184, 75, 0.78);
+  stroke: rgba(226, 184, 75, 0.84);
   stroke-dasharray: 5 8;
   stroke-width: 2;
 }
 
 .timeNowLine {
-  stroke: rgba(47, 107, 79, 0.42);
+  stroke: rgba(47, 107, 79, 0.48);
   stroke-dasharray: 3 7;
   stroke-width: 2;
 }
 
 .timeFlowArea {
-  fill: rgba(47, 107, 79, 0.14);
+  fill: rgba(47, 107, 79, 0.16);
   stroke: none;
 }
 
 .timeFlowLine {
   fill: none;
   stroke: var(--color-pine);
-  stroke-width: 5;
+  stroke-width: 5.5;
 }
 
 .timeFlowGraph.active .timeFlowLine {
@@ -1748,7 +1883,7 @@ h1 {
   fill: #fbfcf8;
   stroke: var(--color-pine);
   stroke-width: 3;
-  filter: drop-shadow(0 5px 12px rgba(47, 107, 79, 0.14));
+  filter: drop-shadow(0 5px 12px rgba(47, 107, 79, 0.18));
 }
 
 .timeFlowMarker.check-out {
@@ -1870,10 +2005,12 @@ h1 {
   gap: 5px;
   min-height: 74px;
   padding: 12px;
-  border: 1px solid transparent;
+  border: 1px solid #d3ddcf;
   border-radius: var(--radius-control);
   color: #2f4038;
-  background: #e7ede2;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(232, 237, 226, 0.88)),
+    #e7ede2;
   text-align: left;
   cursor: pointer;
 }
@@ -1881,8 +2018,12 @@ h1 {
 .modeControl button.selected {
   border-color: #27715c;
   color: #f9fff9;
-  background: #27715c;
-  box-shadow: inset 0 0 0 1px rgba(249, 255, 249, 0.14);
+  background:
+    linear-gradient(135deg, #2e8364, #27715c),
+    #27715c;
+  box-shadow:
+    inset 0 0 0 1px rgba(249, 255, 249, 0.16),
+    0 8px 16px rgba(39, 113, 92, 0.12);
 }
 
 .modeControl button strong {
@@ -1917,10 +2058,12 @@ h1 {
   flex: 0 0 auto;
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid #d3ddcf;
+  border: 1px solid #d4dfcf;
   border-radius: var(--radius-pill);
   color: #2f4038;
-  background: rgba(255, 255, 255, 0.74);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(248, 251, 246, 0.76)),
+    rgba(255, 255, 255, 0.74);
   font-size: 0.8rem;
   font-weight: 850;
   cursor: pointer;
@@ -1937,9 +2080,11 @@ h1 {
   grid-template-columns: 1fr 1fr;
   gap: 7px;
   padding: 14px;
-  border: 1px solid #dfe6d6;
+  border: 1px solid #dbe7d6;
   border-radius: var(--radius-card);
-  background: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 251, 246, 0.78)),
+    rgba(255, 255, 255, 0.72);
 }
 
 .activePlan div {
@@ -1994,7 +2139,7 @@ h1 {
   align-items: center;
   gap: 12px;
   padding: 13px;
-  box-shadow: var(--shadow-control);
+  box-shadow: var(--shadow-card-soft);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease;
@@ -2033,6 +2178,7 @@ h1 {
   padding: 4px 8px;
   border-radius: var(--radius-pill);
   color: #436154;
+  border: 1px solid #d7e6d1;
   background: #eef5ed;
   font-size: 0.72rem;
   font-weight: 850;
@@ -2057,6 +2203,7 @@ h1 {
   width: 24px;
   height: 24px;
   border-radius: var(--radius-pill);
+  border: 1px solid #d7e6d1;
   background: #eef5ed;
   font-size: 0.82rem;
 }
@@ -2141,12 +2288,15 @@ h1 {
   gap: 12px;
   margin-top: 12px;
   padding: 16px 18px 18px;
-  border: 1px solid #c9d8c4;
+  border: 1px solid #c4d9c0;
   border-radius: var(--radius-card);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(251, 252, 248, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(251, 252, 248, 0.98)),
+    linear-gradient(90deg, rgba(47, 107, 79, 0.055), transparent 42%, rgba(131, 183, 230, 0.045)),
     #fbfcf8;
-  box-shadow: 0 8px 20px rgba(47, 64, 56, 0.05);
+  box-shadow:
+    0 10px 24px rgba(47, 64, 56, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
 .timeEditorHeader {
@@ -2235,10 +2385,12 @@ h1 {
   min-width: 0;
   min-height: 44px;
   padding: 6px 8px;
-  border: 1px solid #d7e2d2;
+  border: 1px solid #d2e0cc;
   border-radius: var(--radius-control);
   color: #344b40;
-  background: rgba(255, 255, 255, 0.66);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 251, 246, 0.74)),
+    rgba(255, 255, 255, 0.66);
   font-size: 0.78rem;
   font-weight: 900;
   line-height: 1;
@@ -2251,7 +2403,9 @@ h1 {
   border-color: #27715c;
   color: #1f624e;
   background: #e6f5eb;
-  box-shadow: inset 0 0 0 1px rgba(39, 113, 92, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(39, 113, 92, 0.18),
+    0 8px 16px rgba(39, 113, 92, 0.08);
 }
 
 .recordEditModes button.selected::before {
@@ -2274,10 +2428,12 @@ h1 {
   min-width: 0;
   min-height: 58px;
   padding: 6px 4px;
-  border: 1px solid #d7e2d2;
+  border: 1px solid #d2e0cc;
   border-radius: var(--radius-control);
   color: #344b40;
-  background: rgba(255, 255, 255, 0.66);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 251, 246, 0.78)),
+    rgba(255, 255, 255, 0.66);
 }
 
 .dateRail button span {
@@ -2311,8 +2467,12 @@ h1 {
 .dateRail button.selected {
   border-color: #27715c;
   color: #f9fff9;
-  background: #27715c;
-  box-shadow: 0 5px 12px rgba(39, 113, 92, 0.12);
+  background:
+    linear-gradient(155deg, #2e8364, #27715c),
+    #27715c;
+  box-shadow:
+    0 8px 16px rgba(39, 113, 92, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .dateRail button.selected span {
@@ -2337,9 +2497,11 @@ h1 {
   grid-template-columns: 1fr 1fr;
   min-height: 42px;
   padding: 3px;
-  border: 1px solid #c9d8c4;
+  border: 1px solid #c8d9c2;
   border-radius: var(--radius-control);
-  background: #edf3e8;
+  background:
+    linear-gradient(180deg, #f4f8ef, #e9f1e4),
+    #edf3e8;
 }
 
 .periodControl button {
@@ -2352,7 +2514,9 @@ h1 {
 
 .periodControl button.selected {
   color: #f9fff9;
-  background: #27715c;
+  background:
+    linear-gradient(135deg, #2e8364, #27715c),
+    #27715c;
 }
 
 .timeNumberField {
@@ -2371,7 +2535,7 @@ h1 {
   min-width: 0;
   min-height: 42px;
   padding: 0 10px;
-  border: 1px solid #aac2a6;
+  border: 1px solid #a9c4a5;
   border-radius: var(--radius-field);
   color: #17231e;
   background: #fff;
@@ -2401,7 +2565,7 @@ h1 {
 .recordEditNote input {
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid #aac2a6;
+  border: 1px solid #a9c4a5;
   border-radius: var(--radius-field);
   color: #17231e;
   background: #fff;
@@ -2428,7 +2592,7 @@ h1 {
   border: 1px solid transparent;
   border-radius: var(--radius-compact);
   color: #2d6e58;
-  background: transparent;
+  background: rgba(238, 245, 237, 0.74);
   font-size: 0.72rem;
   line-height: 1;
 }
@@ -2476,7 +2640,9 @@ h1 {
 
 .timelineEditFooter .save {
   color: #f9fff9;
-  background: #27715c;
+  background:
+    linear-gradient(135deg, #2e8364, #27715c),
+    #27715c;
 }
 
 .dot {
@@ -2495,9 +2661,10 @@ h1 {
 
 .emptyState {
   padding: 18px;
-  border: 1px dashed #cbd7c6;
+  border: 1px dashed #c4d5bf;
   border-radius: var(--radius-card);
   color: #66746a;
+  background: rgba(255, 255, 255, 0.56);
   text-align: center;
 }
 

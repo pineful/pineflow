@@ -83,3 +83,11 @@
 - `Request failed.` 같은 일반 오류 문구를 사용자가 이해할 수 있는 상태별 문구로 바꿨습니다.
 - 앱 하단에 CloudWatch 기반 AWS 운영 사용량 패널을 추가했습니다. 실제 청구액 계산은 하지 않고 API Gateway, Lambda, DynamoDB, CloudFront, S3의 이번 달 기초 사용량만 표시합니다.
 - 운영 사용량 조회가 `/api/state`와 동시에 호출되어 throttling을 유발하지 않도록 짧은 지연 조회로 분리했습니다.
+
+## 2026-06-05
+
+- Dribbble `futuristic-ui` 레퍼런스와 세 팀 분석 결과를 바탕으로 Pineflow에 맞는 `Quiet Telemetry Glass` 스타일을 정의했습니다.
+- 상단 히어로를 딥 파인 그린 계기판, 미세 grid, 얇은 luminous border, 낮은 shadow 중심으로 업그레이드했습니다.
+- `Calm Live Board`, 기록 입력, 최근 기록, 날씨 리본, 운영 사용량 패널의 표면과 chart treatment를 같은 미래형 데이터 카드 문법으로 정리했습니다.
+- cyberpunk/Web3식 네온, 항공 HUD 조준선, 자동 scanline/shimmer/pulse/line draw를 쓰지 않는 금지 기준을 문서화했습니다.
+- `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 `docs/modules/ui-controls.md`, `docs/modules/summary.md`, `docs/modules/weather.md`, `docs/llm-context.md`, `docs/workstreams.md`, `docs/status.md`를 갱신했습니다.

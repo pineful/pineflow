@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-06-04
+마지막 업데이트: 2026-06-05
 
 ## 현재 상태 요약
 
@@ -81,6 +81,9 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 로그인 후 첫 화면에 Free Tier 기준 비용 신호등을 추가해 하단 운영 사용량 패널까지 내려가지 않아도 안정/주의/확인 필요 상태를 볼 수 있게 함.
 - 보안 리뷰 후 레거시 PoC compose의 DB 포트/비밀번호 기본값을 정리하고, Serverless API의 wildcard CORS 응답과 malformed record id 500 응답 가능성을 제거.
 - `docs/security.md`를 Cognito/JWT/GitHub OIDC 기반 Serverless 본선 보안 모델로 갱신하고, PoC access key 모델을 레거시 주의사항으로 분리.
+- Dribbble `futuristic-ui` 리서치와 세 팀 분석 결과를 반영해 전체 UI 표면을 `Quiet Telemetry Glass` 방향으로 업그레이드.
+- 상단 히어로, Calm Live Board, 기록 입력, 최근 기록, 날씨, 운영 사용량 패널의 border, shadow, grid, chart line, CTA 표면을 같은 미래형 계기판 언어로 정리.
+- `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 관련 UI/요약/날씨 문서에 채택/금지 기준을 반영.
 
 ## 검증됨
 
