@@ -89,6 +89,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 녹색 계열 보존이 과도해 전면적인 새 UI 스타일로 보이지 않는다는 지적을 반영해 `Obsidian Command Glass`로 재선택하고, carbon/graphite 표면, cyan 데이터 선, amber command action 중심으로 전체 UI 스타일을 다시 교체.
 - 버튼 모양과 IA가 여전히 예전 폼 구조에 머물러 있다는 후속 지적을 반영해 상단 기록 조작을 `Command Deck` IA로 재설계. 모드 선택, 빠른 메모, 직접 입력, 출근/퇴근 실행이 한 조작 도크로 읽히도록 notched command tile/control 문법을 적용.
 - `Command Deck` 추가 검토로 data slot 입력, 삭제 confirmation deck, 초소형 모바일 1열 fallback을 보강. 단순 색상 변경이 아니라 조작 구조와 affordance를 바꾸는 방향으로 유지.
+- 최근 기록이 공간을 과하게 차지하고 출근/퇴근 세트가 잘 보이지 않는 문제를 반영해 세션 단위 `Session Strip`으로 재설계. 같은 session id의 출근/퇴근을 한 카드 안의 `IN -> OUT` rail로 묶고 총 시간, 상태, 업무 유형, 메모를 요약.
 
 ## 검증됨
 

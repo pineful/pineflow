@@ -4543,3 +4543,274 @@ button.delete {
     grid-template-columns: 1fr;
   }
 }
+
+/* 2026-06-05 Session Strip history.
+   Recent history is a set of check-in/check-out sessions, not a tall event feed. */
+.sessionItem {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  padding: 10px 11px;
+}
+
+.sessionItem::before {
+  width: 3px;
+  background: linear-gradient(180deg, #5bdcff 0%, #5bdcff 44%, #ffb44d 56%, #ffb44d 100%);
+}
+
+.sessionItem .timelineBody {
+  width: 100%;
+}
+
+.sessionItem .timelineRecordHeader {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.sessionSummary {
+  min-width: 0;
+}
+
+.sessionTitleLine {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.sessionTitleLine strong {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #f4f8ff;
+  font-size: 0.92rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionStatus {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  color: #111015;
+  border: 1px solid rgba(255, 218, 153, 0.78);
+  background: #ffb44d;
+  font-size: 0.62rem;
+  font-weight: 950;
+  line-height: 1;
+  clip-path: var(--clip-compact-command);
+}
+
+.sessionStatus.open {
+  color: #061019;
+  border-color: rgba(158, 238, 255, 0.92);
+  background: #5bdcff;
+}
+
+.sessionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.sessionItem .timelineMode,
+.sessionDuration {
+  min-height: 24px;
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 0;
+  clip-path: var(--clip-compact-command);
+}
+
+.sessionDuration {
+  display: inline-flex;
+  align-items: center;
+  color: #ffdc9c;
+  border: 1px solid rgba(255, 180, 77, 0.28);
+  background: rgba(255, 180, 77, 0.1);
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.sessionActions {
+  justify-items: end;
+}
+
+.sessionActions button {
+  min-height: 30px;
+  padding-inline: 9px;
+  font-size: 0.68rem;
+}
+
+.sessionPair {
+  display: grid;
+  grid-template-columns: minmax(82px, 0.48fr) minmax(34px, 0.14fr) minmax(82px, 0.48fr);
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  padding: 6px;
+  border: 1px solid rgba(126, 158, 200, 0.2);
+  background:
+    linear-gradient(180deg, rgba(9, 13, 22, 0.74), rgba(18, 25, 38, 0.58)),
+    #0b111b;
+  clip-path: var(--clip-command);
+}
+
+.sessionEndpoint {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 7px;
+  align-items: center;
+  min-width: 0;
+  min-height: 48px;
+  padding: 7px 8px;
+  color: #edf6ff;
+  border: 1px solid rgba(126, 158, 200, 0.34);
+  background:
+    linear-gradient(180deg, rgba(24, 31, 44, 0.94), rgba(12, 18, 29, 0.94)),
+    #101722;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+  clip-path: var(--clip-compact-command);
+}
+
+button.sessionEndpoint {
+  cursor: pointer;
+}
+
+button.sessionEndpoint:hover:not(:disabled) {
+  border-color: rgba(158, 238, 255, 0.76);
+  background:
+    linear-gradient(180deg, rgba(31, 42, 59, 0.98), rgba(13, 21, 34, 0.98)),
+    #141e2d;
+}
+
+.sessionEndpoint.in {
+  border-left: 4px solid #5bdcff;
+}
+
+.sessionEndpoint.out {
+  border-left: 4px solid #ffb44d;
+}
+
+.sessionEndpoint.missing {
+  color: rgba(216, 229, 247, 0.62);
+  border-style: dashed;
+}
+
+.sessionEndpoint span {
+  grid-row: 1 / span 2;
+  color: #9eeeff;
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.sessionEndpoint.out span {
+  color: #ffdc9c;
+}
+
+.sessionEndpoint strong {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #f4f8ff;
+  font-size: 0.94rem;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionEndpoint small {
+  justify-self: start;
+  min-width: 0;
+  overflow: hidden;
+  color: #9fb0c5;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionConnector {
+  position: relative;
+  height: 24px;
+}
+
+.sessionConnector span {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #5bdcff, #ffb44d);
+  transform: translateY(-50%);
+}
+
+.sessionConnector::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-top: 3px solid #ffb44d;
+  border-right: 3px solid #ffb44d;
+  content: "";
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.sessionConnector.open span {
+  background: linear-gradient(90deg, #5bdcff 0, #5bdcff 58%, rgba(91, 220, 255, 0.24) 58%, rgba(91, 220, 255, 0.24) 100%);
+}
+
+.sessionConnector.open::after {
+  border-color: rgba(91, 220, 255, 0.42);
+}
+
+.sessionNote {
+  margin-top: 8px;
+  padding: 7px 8px;
+  border: 1px solid rgba(91, 220, 255, 0.18);
+  background: rgba(91, 220, 255, 0.07);
+  clip-path: var(--clip-compact-command);
+}
+
+@media (max-width: 520px) {
+  .sessionItem .timelineRecordHeader {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sessionActions {
+    justify-items: stretch;
+  }
+
+  .sessionActions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .sessionPair {
+    grid-template-columns: 1fr;
+  }
+
+  .sessionConnector {
+    height: 14px;
+  }
+
+  .sessionConnector span {
+    left: 14px;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #5bdcff, #ffb44d);
+  }
+
+  .sessionConnector::after {
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: 11px;
+    transform: rotate(135deg);
+  }
+}
