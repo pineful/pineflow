@@ -81,11 +81,12 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 로그인 후 첫 화면에 Free Tier 기준 비용 신호등을 추가해 하단 운영 사용량 패널까지 내려가지 않아도 안정/주의/확인 필요 상태를 볼 수 있게 함.
 - 보안 리뷰 후 레거시 PoC compose의 DB 포트/비밀번호 기본값을 정리하고, Serverless API의 wildcard CORS 응답과 malformed record id 500 응답 가능성을 제거.
 - `docs/security.md`를 Cognito/JWT/GitHub OIDC 기반 Serverless 본선 보안 모델로 갱신하고, PoC access key 모델을 레거시 주의사항으로 분리.
-- Dribbble `futuristic-ui` 리서치와 세 팀 분석 결과를 반영해 전체 UI 표면을 `Quiet Telemetry Glass` 방향으로 업그레이드.
+- Dribbble `futuristic-ui` 리서치와 세 팀 분석 결과를 반영해 초기에는 전체 UI 표면을 `Quiet Telemetry Glass` 방향으로 업그레이드했으나, 이 방향은 이후 `Obsidian Command Glass`로 대체됨.
 - 상단 히어로, Calm Live Board, 기록 입력, 최근 기록, 날씨, 운영 사용량 패널의 border, shadow, grid, chart line, CTA 표면을 같은 미래형 계기판 언어로 정리.
 - `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 관련 UI/요약/날씨 문서에 채택/금지 기준을 반영.
-- 사용자가 UI 변화 체감이 약하다고 지적한 뒤, 버튼/입력창/선택 토글/날짜 레일/시간 보정/저장/취소/삭제까지 I/O 컨트롤 전체를 `Quiet Telemetry Glass` 문법으로 더 강하게 재정리.
-- 후속 지적을 반영해 상단 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량의 큰 표면도 딥 그린 telemetry shell과 밝은 데이터 슬롯 대비로 재정리해 첫 화면에서 변경이 즉시 보이게 보강.
+- 사용자가 UI 변화 체감이 약하다고 지적한 뒤, 버튼/입력창/선택 토글/날짜 레일/시간 보정/저장/취소/삭제까지 I/O 컨트롤 전체를 더 강하게 재정리했으나, 녹색 계열 유지가 과하다는 결론에 도달함.
+- 후속 지적을 반영해 상단 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량의 큰 표면도 한때 딥 그린 telemetry shell로 보강했지만, 현재 기준에서는 이 방향을 완료 상태로 보지 않음.
+- 녹색 계열 보존이 과도해 전면적인 새 UI 스타일로 보이지 않는다는 지적을 반영해 `Obsidian Command Glass`로 재선택하고, carbon/graphite 표면, cyan 데이터 선, amber command action 중심으로 전체 UI 스타일을 다시 교체.
 
 ## 검증됨
 

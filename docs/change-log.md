@@ -86,10 +86,11 @@
 
 ## 2026-06-05
 
-- Dribbble `futuristic-ui` 레퍼런스와 세 팀 분석 결과를 바탕으로 Pineflow에 맞는 `Quiet Telemetry Glass` 스타일을 정의했습니다.
-- 상단 히어로를 딥 파인 그린 계기판, 미세 grid, 얇은 luminous border, 낮은 shadow 중심으로 업그레이드했습니다.
+- Dribbble `futuristic-ui` 레퍼런스와 세 팀 분석 결과를 바탕으로 처음에는 Pineflow에 맞는 `Quiet Telemetry Glass` 스타일을 정의했지만, 이 방향은 후속 검토에서 너무 녹색 계열을 보존한 중간안으로 판정했습니다.
+- 상단 히어로를 처음에는 딥 파인 그린 계기판, 미세 grid, 얇은 luminous border, 낮은 shadow 중심으로 업그레이드했지만, 현재 기준에서는 이 색상 방향을 최종 스타일로 보지 않습니다.
 - `Calm Live Board`, 기록 입력, 최근 기록, 날씨 리본, 운영 사용량 패널의 표면과 chart treatment를 같은 미래형 데이터 카드 문법으로 정리했습니다.
 - 버튼, 입력창, 선택 토글, 날짜 레일, 시간 보정, 저장/취소/삭제 버튼까지 I/O 컨트롤 전체가 새 스타일을 체감할 수 있도록 border, fill, accent, shadow를 재정리했습니다.
-- 초기 적용이 너무 미묘해 변경 체감이 부족했던 문제를 보완하기 위해 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량의 큰 표면을 딥 그린 telemetry shell로 다시 정리했습니다.
+- 초기 적용이 너무 미묘해 변경 체감이 부족했던 문제를 보완하려고 한때 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량의 큰 표면을 딥 그린 telemetry shell로 다시 정리했지만, 이 역시 전면 스타일 교체로는 부족하다고 기록했습니다.
+- 녹색 계열을 계속 보존해 전면적인 새 스타일로 보이지 않던 문제를 인정하고, 전체 UI 표면을 carbon/graphite, cyan 데이터 선, amber command action 중심의 `Obsidian Command Glass`로 재선택했습니다. focus, hover, empty/error/toast, 날짜/시간 수정 컨트롤까지 같은 체계로 보강했습니다.
 - cyberpunk/Web3식 네온, 항공 HUD 조준선, 자동 scanline/shimmer/pulse/line draw를 쓰지 않는 금지 기준을 문서화했습니다.
 - `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 `docs/modules/ui-controls.md`, `docs/modules/summary.md`, `docs/modules/weather.md`, `docs/llm-context.md`, `docs/workstreams.md`, `docs/status.md`를 갱신했습니다.

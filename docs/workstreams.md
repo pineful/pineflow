@@ -62,4 +62,4 @@
 - 최근 기록 목록은 사용자가 남긴 메모를 바로 보여줘야 한다.
 - 로고는 `v23 Leafy Crown + Saturn Flow Ring` 기준을 따른다.
 - UI 컨트롤 외곽은 `Structured Soft Rectangle` 기준을 따른다. 모든 버튼을 pill로 만들거나 모든 카드를 같은 8px 박스로만 처리하지 말고, 입력/선택/보조 실행/주요 실행/위험 실행을 형태로 구분한다.
-- Dribbble 기반 미래형 스타일은 `docs/research/futuristic-ui-selection-2026-06-05.md`와 `Quiet Telemetry Glass` 기준을 따른다. 전체 IA나 보안/비용 구조를 바꾸는 근거로 쓰지 않는다.
+- Dribbble 기반 미래형 스타일은 `docs/research/futuristic-ui-selection-2026-06-05.md`와 `Obsidian Command Glass` 기준을 따른다. 배경선만 추가하거나 녹색 shell을 유지한 변경은 완료로 보지 않으며, 전체 IA나 보안/비용 구조를 바꾸는 근거로 쓰지 않는다.

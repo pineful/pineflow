@@ -12,26 +12,26 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 
 현재 기준은 `Structured Soft Rectangle`입니다. 사각형을 기본으로 하되 모서리는 딱딱하지 않게 낮은 반경을 주고, 상태 배지처럼 작은 보조 정보만 pill로 둡니다.
 
-2026-06-05 기준으로 Dribbble `futuristic-ui` 리서치를 반영한 표면 스타일은 `Quiet Telemetry Glass`입니다. 이는 기존 `Structured Soft Rectangle`의 shape 기준을 유지하면서, 상단 계기판과 반복 카드에 얇은 발광 경계선, 낮은 그림자, 미세한 grid, 정돈된 숫자 표면을 더하는 방식입니다.
+2026-06-05 기준으로 Dribbble `futuristic-ui` 리서치를 반영한 표면 스타일은 `Obsidian Command Glass`입니다. 이는 기존 `Structured Soft Rectangle`의 shape 기준을 유지하면서, carbon/graphite 표면, cyan 데이터 선, amber command action, blue-gray border, 미세한 grid를 더하는 방식입니다.
 
 이 스타일은 배경이나 카드 표면만의 장식이 아니라 I/O 컨트롤 문법까지 포함합니다. 버튼, 입력창, 선택 토글, 날짜 레일, 시간 보정 버튼, 저장/취소/삭제 버튼은 각각 “누르는 것”, “입력하는 것”, “선택하는 것”, “위험한 것”이 시각적으로 구분되어야 합니다. 미래형 느낌은 단순 배경선이 아니라 조작 가능한 요소의 border, fill, left accent, inset shadow, active glow에서 체감되어야 합니다.
 
-초기 적용처럼 배경 grid나 미세한 테두리만 바꾸고 핵심 카드가 기존 흰 카드로 남으면 사용자는 스타일 변경을 체감하지 못합니다. `Quiet Telemetry Glass`를 적용한다고 기록할 때는 상단 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량처럼 첫 화면에서 큰 면적을 차지하는 표면도 같은 계열의 딥 그린 telemetry shell과 밝은 데이터 슬롯 대비를 가져야 합니다.
+초기 적용처럼 배경 grid나 미세한 테두리만 바꾸고 핵심 카드가 기존 흰 카드나 녹색 shell로 남으면 사용자는 스타일 변경을 체감하지 못합니다. `Obsidian Command Glass`를 적용한다고 기록할 때는 상단 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량처럼 첫 화면에서 큰 면적을 차지하는 표면도 같은 계열의 graphite shell과 cyan/amber 데이터 슬롯 대비를 가져야 합니다.
 
 ## 현재 규칙
 
 - 읽기 카드와 주요 패널은 `8px` 반경을 넘기지 않습니다.
 - 입력 필드, 선택 버튼, 보조 버튼은 `5-6px` 반경을 기본으로 합니다.
 - 상태 배지, 계정 아바타, 작은 칩, toast처럼 좁고 보조적인 요소만 pill을 사용합니다.
-- 텍스트 입력은 밝은 데이터 슬롯처럼 보여야 합니다. 흰 표면, 명확한 border, 왼쪽 mint accent, inset shadow, focus ring을 가져야 합니다.
-- 선택 컨트롤은 입력 필드처럼 보이면 안 됩니다. 선택 상태는 딥 그린 fill, mint border, gold side/accent, 체크 표시 등으로 구분합니다.
+- 텍스트 입력은 어두운 데이터 슬롯처럼 보여야 합니다. carbon 표면, 명확한 blue-gray border, 왼쪽 cyan accent, inset shadow, focus ring을 가져야 합니다.
+- 선택 컨트롤은 입력 필드처럼 보이면 안 됩니다. 선택 상태는 cyan fill, 밝은 border, amber secondary accent, 체크 표시 등으로 구분합니다.
 - 빠른 보정, 취소, 목표 수정 같은 보조 실행은 낮은 배경, 얇은 border, 작은 inset highlight를 사용합니다.
-- 출근/퇴근, 저장처럼 상태를 바꾸는 실행 버튼은 하나의 강한 CTA로 읽혀야 합니다. 골드/파인 그린 gradient, 선명한 border, shadow로 다른 버튼보다 즉시 눈에 들어와야 합니다.
+- 출근/퇴근, 저장처럼 상태를 바꾸는 실행 버튼은 하나의 강한 CTA로 읽혀야 합니다. amber/orange command gradient, 선명한 border, shadow로 다른 버튼보다 즉시 눈에 들어와야 합니다.
 - 삭제, 로그아웃처럼 되돌리기 어렵거나 세션을 끝내는 동작은 일반 보조 버튼과 같은 외곽을 쓰지 않습니다. danger 색, border, focus ring으로 분리합니다.
 - elevation은 팝오버, toast, 임시 편집 패널처럼 화면 위에 뜨는 레이어에 우선 사용합니다. 반복되는 기록 카드와 날씨 카드에 강한 shadow를 남발하지 않습니다.
 - disabled 상태는 저장/삭제 중 같은 진행 상태와 아직 사용할 수 없는 기능을 구분해야 합니다. 진행 상태는 wait cursor를 쓸 수 있지만, 미구현/비활성 기능은 default cursor와 낮은 대비를 씁니다.
 - futuristic 스타일을 적용하더라도 자동 scanline, shimmer, pulse, line draw는 쓰지 않습니다. hover/focus와 사용자 조작 피드백에만 짧은 반응을 둡니다.
-- 딥 그린 계기판, 민트/골드 accent, 하늘빛 정보색은 역할이 분명해야 합니다. 장식 목적으로 보라/파랑 네온이나 과한 dark SaaS 팔레트를 새로 만들지 않습니다.
+- graphite 계기판, cyan 데이터 accent, amber command accent, coral danger는 역할이 분명해야 합니다. Pineflow green은 브랜드 생명감으로만 제한하고 화면 전체를 녹색 계열로 맞추지 않습니다.
 - grid, luminous border, glass surface는 상단 히어로와 데이터 카드의 정밀감을 높이는 보조 장치입니다. 읽기 정보와 버튼/입력의 역할 구분을 흐리면 제거합니다.
 - 첫 화면에서 “변경됨”이 느껴지려면 가장 큰 면적의 카드부터 바뀌어야 합니다. 작은 버튼만 바꾸거나 배경선만 추가한 변경은 이 스타일 적용으로 보지 않습니다.
 

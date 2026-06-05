@@ -101,14 +101,14 @@ button {
 }
 
 button:focus-visible {
-  outline: 3px solid rgba(100, 220, 160, 0.42);
+  outline: 3px solid rgba(91, 220, 255, 0.42);
   outline-offset: 2px;
 }
 
 button.danger:focus-visible,
 button.delete:focus-visible,
 .logoutAction:focus-visible {
-  outline-color: rgba(185, 74, 58, 0.42);
+  outline-color: rgba(255, 107, 95, 0.42);
 }
 
 input,
@@ -299,7 +299,7 @@ button:active:not(:disabled) {
 
 .eyebrow {
   margin: 0 0 6px;
-  color: #b9f3d3;
+  color: #5bdcff;
   font-size: 0.78rem;
   font-weight: 850;
 }
@@ -321,14 +321,14 @@ h1 {
   max-width: 100%;
   margin: 0;
   font-family: "Avenir Next", "Segoe UI Variable Display", "Segoe UI", Inter, system-ui, sans-serif;
-  font-size: clamp(2.05rem, 5vw, 2.7rem);
+  font-size: 2.35rem;
   line-height: 0.88;
   letter-spacing: 0;
   text-transform: lowercase;
 }
 
 .brandWordmarkPine {
-  color: #b8f4d1;
+  color: #b7f2ff;
   font-weight: 860;
 }
 
@@ -704,14 +704,14 @@ h1 {
 }
 
 .recordSetup .modeControl.compact button.selected {
-  border-color: rgba(185, 243, 211, 0.92);
-  color: #0f2b22;
+  border-color: rgba(158, 238, 255, 0.96);
+  color: #061019;
   background:
-    linear-gradient(145deg, #d2ffe2 0%, #a8f2c8 62%, #f2cf5f 160%),
-    #b9f3d3;
+    linear-gradient(135deg, #9eeeff 0%, #5bdcff 58%, #ffd28a 150%),
+    #5bdcff;
   box-shadow:
-    inset 0 0 0 1px rgba(23, 49, 38, 0.12),
-    0 12px 24px rgba(62, 218, 148, 0.24);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 24px rgba(91, 220, 255, 0.2);
 }
 
 .recordSetup .modeControl.compact button span {
@@ -790,7 +790,7 @@ h1 {
 }
 
 .recordSetup .activePlan.compact span {
-  color: #cce8d6;
+  color: #9fb0c5;
 }
 
 .recordSetup .activePlan.compact strong {
@@ -813,7 +813,7 @@ h1 {
 }
 
 .accessForm p {
-  color: #b9f3d3;
+  color: #5bdcff;
   font-size: 0.8rem;
   font-weight: 800;
 }
@@ -1599,7 +1599,7 @@ h1 {
   width: 18px;
   height: 4px;
   border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, #44b883, #f6c247);
+  background: linear-gradient(90deg, #5bdcff, #ffb44d);
   content: "";
 }
 
@@ -1953,21 +1953,21 @@ h1 {
 
 .timeFlowKicker span.live {
   color: #173126;
-  background: #d9f0df;
+  background: #d7f8ff;
 }
 
 .heroFlow .timeFlowKicker span {
-  color: #c7f6d8;
-  border: 1px solid rgba(184, 243, 211, 0.18);
-  background: rgba(184, 243, 211, 0.1);
+  color: #dff8ff;
+  border: 1px solid rgba(91, 220, 255, 0.22);
+  background: rgba(91, 220, 255, 0.1);
 }
 
 .heroFlow .timeFlowKicker span.live {
   color: #10231d;
   border-color: rgba(255, 255, 255, 0.38);
   background:
-    linear-gradient(135deg, #c7f6d8 0%, #8ee9b6 68%, #f6c247 160%),
-    #b9f3d3;
+    linear-gradient(135deg, #9eeeff 0%, #5bdcff 68%, #ffd28a 160%),
+    #5bdcff;
 }
 
 .timeFlowKicker span.live::before {
@@ -2021,7 +2021,7 @@ h1 {
 }
 
 .heroFlow .flowMessage strong {
-  color: #c7f6d8;
+  color: #dff8ff;
 }
 
 .timeFlowHeader span,
@@ -2174,7 +2174,7 @@ h1 {
 
 .heroFlow .timeFlowMarker {
   fill: #123025;
-  stroke: #8ee9b6;
+  stroke: #5bdcff;
   filter: drop-shadow(0 6px 14px rgba(3, 14, 10, 0.36));
 }
 
@@ -2221,7 +2221,7 @@ h1 {
 }
 
 .heroFlow .timeFlowFooter strong {
-  color: #c7f6d8;
+  color: #dff8ff;
 }
 
 .flowInsights {
@@ -2545,9 +2545,9 @@ h1 {
   margin-top: 7px;
   padding: 4px 8px;
   border-radius: var(--radius-pill);
-  color: #c7f6d8;
-  border: 1px solid rgba(184, 243, 211, 0.18);
-  background: rgba(184, 243, 211, 0.1);
+  color: #dff8ff;
+  border: 1px solid rgba(91, 220, 255, 0.22);
+  background: rgba(91, 220, 255, 0.1);
   font-size: 0.72rem;
   font-weight: 850;
 }
@@ -2738,7 +2738,7 @@ h1 {
   color: #2f4038;
   font-size: 0.72rem;
   font-weight: 950;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 .editorGroupLabel.timeLabel {
@@ -3059,7 +3059,7 @@ h1 {
 }
 
 .timelineEditFooter .save:hover:not(:disabled) {
-  background: #1f624e;
+  background: #ffb44d;
 }
 
 .timelineEditFooter button:disabled {
@@ -3083,7 +3083,7 @@ h1 {
 }
 
 .dot.in {
-  background: #44b883;
+  background: #5bdcff;
 }
 
 .dot.out {
@@ -3159,7 +3159,7 @@ h1 {
   }
 
   .brandWordmark {
-    font-size: clamp(1.72rem, 10vw, 2.16rem);
+    font-size: 1.92rem;
   }
 }
 
@@ -3215,7 +3215,7 @@ h1 {
   }
 
   .clockBlock strong {
-    font-size: clamp(3rem, 6vw, 4.4rem);
+    font-size: 4.1rem;
   }
 
   .recordSetup {
@@ -3376,4 +3376,742 @@ h1 {
   .usageGrid {
     grid-template-columns: 1fr;
   }
+}
+
+/* 2026-06-05 Obsidian Command Glass refresh.
+   This layer intentionally changes the product's visual language, not only accent details. */
+:root {
+  --color-bg: #080a0f;
+  --color-surface: #10141d;
+  --color-surface-subtle: #171d28;
+  --color-border: rgba(137, 166, 205, 0.22);
+  --color-text: #edf6ff;
+  --color-muted: #9fb0c5;
+  --color-data: #5bdcff;
+  --color-data-deep: #167ba6;
+  --color-command: #ffb44d;
+  --color-brand-life: #42d7a2;
+  --color-pine: var(--color-data);
+  --color-pine-deep: var(--color-data-deep);
+  --color-pine-soft: rgba(91, 220, 255, 0.13);
+  --color-gold: #ffb44d;
+  --color-info: #5bdcff;
+  --color-danger: #ff6b5f;
+  --color-card-border: rgba(134, 168, 210, 0.24);
+  --surface-glass: rgba(16, 20, 29, 0.82);
+  --border-luminous: rgba(91, 220, 255, 0.34);
+  --grid-line-soft: rgba(91, 220, 255, 0.055);
+  --control-face: rgba(21, 27, 39, 0.92);
+  --control-face-alt: rgba(13, 17, 26, 0.96);
+  --control-border: rgba(126, 158, 200, 0.32);
+  --control-border-strong: rgba(91, 220, 255, 0.72);
+  --control-active: #5bdcff;
+  --control-active-deep: #167ba6;
+  --control-active-soft: rgba(91, 220, 255, 0.16);
+  --control-ink: #edf6ff;
+  --input-face: rgba(9, 13, 22, 0.9);
+  --input-border: rgba(126, 158, 200, 0.42);
+  --input-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), inset 4px 0 0 rgba(91, 220, 255, 0.6);
+  --button-shadow: 0 12px 28px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --button-shadow-active: 0 14px 34px rgba(91, 220, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  --telemetry-ink: #edf6ff;
+  --telemetry-muted: rgba(216, 229, 247, 0.72);
+  --telemetry-soft: rgba(91, 220, 255, 0.12);
+  --telemetry-line: rgba(91, 220, 255, 0.34);
+  --telemetry-panel: #0f131c;
+  --telemetry-panel-alt: #171f2d;
+  --telemetry-shadow: 0 28px 64px rgba(0, 0, 0, 0.38);
+  --focus-ring: 0 0 0 3px rgba(91, 220, 255, 0.22);
+  --focus-ring-warm: 0 0 0 3px rgba(255, 180, 77, 0.22);
+  --focus-ring-danger: 0 0 0 3px rgba(255, 107, 95, 0.22);
+}
+
+body {
+  color: var(--color-text);
+  background:
+    linear-gradient(120deg, rgba(91, 220, 255, 0.13) 0%, transparent 26%),
+    linear-gradient(238deg, rgba(255, 180, 77, 0.12) 0%, transparent 28%),
+    linear-gradient(rgba(91, 220, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 220, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, #090b11 0%, #0f131c 48%, #141923 100%);
+  background-attachment: fixed;
+  background-size: auto, auto, 44px 44px, 44px 44px, auto;
+}
+
+.appShell {
+  color: var(--color-text);
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring), var(--button-shadow);
+}
+
+.primaryAction:focus-visible,
+.timelineEditFooter .save:focus-visible,
+.goalEditorActions button:last-child:focus-visible {
+  box-shadow: var(--focus-ring-warm), 0 18px 42px rgba(255, 145, 59, 0.22);
+}
+
+button.danger:focus-visible,
+button.delete:focus-visible,
+.logoutAction:focus-visible {
+  box-shadow: var(--focus-ring-danger), 0 12px 28px rgba(255, 107, 95, 0.18);
+}
+
+.heroPanel {
+  color: var(--color-text);
+  border-color: rgba(91, 220, 255, 0.34);
+  background:
+    linear-gradient(150deg, rgba(11, 14, 22, 0.98) 0%, rgba(18, 24, 36, 0.96) 48%, rgba(28, 31, 41, 0.95) 100%),
+    #0f131c;
+  box-shadow:
+    0 32px 76px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(91, 220, 255, 0.08);
+}
+
+.heroPanel::before {
+  background:
+    linear-gradient(rgba(91, 220, 255, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 220, 255, 0.052) 1px, transparent 1px),
+    linear-gradient(118deg, transparent 0 62%, rgba(255, 180, 77, 0.14) 62.1% 62.5%, transparent 62.6% 100%);
+  background-size: 44px 44px, 44px 44px, auto;
+}
+
+.logoMark {
+  border-color: rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(224, 235, 247, 0.88));
+  box-shadow:
+    0 18px 36px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.brandWordmarkPine {
+  color: #b7f2ff;
+  text-shadow: 0 0 26px rgba(91, 220, 255, 0.2);
+}
+
+.brandWordmark {
+  font-size: 2.35rem;
+}
+
+.brandWordmarkFlow,
+.eyebrow,
+.accessForm strong,
+.recordSetupTitle strong,
+.recordSetup .activePlan.compact strong,
+.clockBlock,
+.sectionTitle h2,
+.timeFlowHeader strong,
+.timeFlowHeader div:first-child strong,
+.flowInsights strong,
+.timelineItem strong,
+.weatherBand .sectionTitle h2,
+.weatherBand .sectionTitle span,
+.usageIntro strong {
+  color: #f4f8ff;
+}
+
+.sectionTitle span,
+.goalReadout strong,
+.usageModule dd,
+.usageTrendCard span,
+.costEstimateHeader strong {
+  color: #5bdcff;
+}
+
+.clockBlock p,
+.clockBlock span,
+.accessForm span,
+.recordSetupTitle span,
+.recordSetup .noteField.compact span,
+.recordSetup .activePlan.compact span,
+.timelineItem p,
+.timelineItem small,
+.weatherMain span,
+.weatherDetails span,
+.usageIntro span,
+.usageTimestamp,
+.usageFallback,
+.flowMessage,
+.timeFlowKicker small,
+.timeFlowHeader span,
+.timeFlowFooter span,
+.flowInsights span {
+  color: var(--telemetry-muted);
+}
+
+.costSignal,
+.recordSetup,
+.heroFlow,
+.timeFlowGraph,
+.metricCard,
+.timelineItem,
+.weatherBand,
+.usagePanel,
+.goalReadout,
+.goalEditor,
+.timeEditor,
+.accountPopover,
+.costEstimatePanel {
+  border-color: rgba(91, 220, 255, 0.26);
+  background:
+    linear-gradient(145deg, rgba(17, 22, 33, 0.94), rgba(24, 32, 46, 0.86) 58%, rgba(11, 15, 24, 0.94)),
+    #10141d;
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.heroFlow::before,
+.weatherBand::before {
+  background:
+    linear-gradient(rgba(91, 220, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 220, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(118deg, transparent 0 66%, rgba(255, 180, 77, 0.12) 66.2% 66.7%, transparent 67% 100%);
+  background-size: 42px 42px, 42px 42px, auto;
+}
+
+.timeFlowCanvas,
+.heroFlow .timeFlowCanvas,
+.weatherChart {
+  border: 1px solid rgba(91, 220, 255, 0.22);
+  background:
+    linear-gradient(90deg, rgba(91, 220, 255, 0.14), rgba(124, 141, 255, 0.08), rgba(255, 180, 77, 0.12)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)),
+    #0a101a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -28px 44px rgba(0, 0, 0, 0.2);
+}
+
+.timeFlowCanvas::before,
+.heroFlow .timeFlowCanvas::before {
+  background:
+    linear-gradient(rgba(91, 220, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 220, 255, 0.06) 1px, transparent 1px);
+  background-size: 48px 44px;
+}
+
+.timeFlowGrid,
+.heroFlow .timeFlowGrid,
+.chartGrid,
+.trendGuide {
+  stroke: rgba(173, 208, 255, 0.2);
+}
+
+.timeGoalLine,
+.heroFlow .timeGoalLine {
+  stroke: rgba(255, 180, 77, 0.96);
+}
+
+.timeNowLine,
+.heroFlow .timeNowLine {
+  stroke: rgba(91, 220, 255, 0.68);
+}
+
+.timeFlowArea,
+.heroFlow .timeFlowArea {
+  fill: rgba(91, 220, 255, 0.16);
+}
+
+.timeFlowLine,
+.timeFlowGraph.active .timeFlowLine,
+.heroFlow .timeFlowLine,
+.heroFlow.active .timeFlowLine,
+.trendLine {
+  stroke: #5bdcff;
+  filter: drop-shadow(0 5px 14px rgba(91, 220, 255, 0.26));
+}
+
+.timeFlowMarker,
+.heroFlow .timeFlowMarker {
+  fill: #0b1018;
+  stroke: #5bdcff;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.38));
+}
+
+.timeFlowMarker.check-out,
+.heroFlow .timeFlowMarker.check-out {
+  stroke: #ffb44d;
+}
+
+.timeFlowMarker.now,
+.heroFlow .timeFlowMarker.now {
+  fill: #ffb44d;
+  stroke: rgba(255, 255, 255, 0.92);
+}
+
+.timeAxisLabel,
+.heroFlow .timeAxisLabel,
+.chartLabel,
+.chartLegend,
+.usageTrendCard small,
+.costEstimateHeader span,
+.costEstimateHeader p,
+.costEstimateCaption,
+.costEstimateDisclaimer,
+.costEstimateItem p,
+.usageModule span,
+.usageModule dt,
+.costEstimateItem dt {
+  color: #9fb0c5;
+  fill: #9fb0c5;
+}
+
+.flowMessage strong,
+.timeFlowFooter strong,
+.heroFlow .timeFlowFooter strong {
+  color: #ffd38d;
+}
+
+.flowInsights,
+.heroFlow .flowInsights {
+  border-top-color: rgba(137, 166, 205, 0.2);
+}
+
+.flowInsights div + div,
+.heroFlow .flowInsights div + div {
+  border-left-color: rgba(137, 166, 205, 0.2);
+}
+
+.timeFlowKicker span,
+.heroFlow .timeFlowKicker span,
+.timelineMode,
+.costSignalCopy span,
+.recordSetup .recordSetupTitle::after {
+  color: #081019;
+  border-color: rgba(91, 220, 255, 0.28);
+  background:
+    linear-gradient(135deg, #7ce8ff, #5bdcff 58%, #ffd28a 160%),
+    #5bdcff;
+}
+
+.timeFlowKicker span::before,
+.timeFlowKicker span.live::before,
+.heroFlow .timeFlowKicker span.live::before {
+  background: #0d1724;
+  box-shadow: 0 0 0 4px rgba(91, 220, 255, 0.18);
+}
+
+.costSignalLights {
+  border-color: rgba(137, 166, 205, 0.2);
+  background: rgba(5, 8, 13, 0.62);
+}
+
+.costSignalLights .safe {
+  background: #5bdcff;
+}
+
+.costSignalLights .watch {
+  background: #ffb44d;
+}
+
+.costSignalLights .billable {
+  background: #ff6b5f;
+}
+
+.accessForm input,
+.noteField input,
+.recordSetup .noteField.compact input,
+.goalEditor input,
+.timeNumberField input,
+.recordEditNote input,
+input,
+textarea {
+  border-color: var(--input-border);
+  color: #edf6ff;
+  background:
+    linear-gradient(180deg, rgba(16, 21, 31, 0.98), rgba(8, 12, 20, 0.96)),
+    #0b1018;
+  box-shadow: var(--input-shadow);
+}
+
+input::placeholder,
+textarea::placeholder,
+.recordSetup .noteField.compact input::placeholder {
+  color: rgba(215, 228, 247, 0.42);
+}
+
+.accessForm input:focus,
+.noteField input:focus,
+.recordSetup .noteField.compact input:focus,
+.goalEditor input:focus,
+.timeNumberField input:focus,
+.recordEditNote input:focus {
+  border-color: #5bdcff;
+  box-shadow: var(--focus-ring), var(--input-shadow);
+}
+
+.recordSetup .modeControl.compact button,
+.recordSetup .planChips.compact button,
+.modeControl button,
+.planChips button,
+.goalReadout button,
+.goalEditorActions button,
+.timelineActions button,
+.timeEditor button,
+.usageDetails summary,
+.editorDateNotice button,
+.recordEditModes button,
+.dateRail button,
+.periodControl button,
+.timeNudges button,
+.timelineEditFooter button,
+.accountPopover button {
+  color: #dfeeff;
+  border-color: rgba(126, 158, 200, 0.32);
+  background:
+    linear-gradient(180deg, rgba(28, 36, 50, 0.96), rgba(12, 17, 27, 0.96)),
+    #121925;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.recordSetup .modeControl.compact button:hover:not(:disabled),
+.recordSetup .planChips.compact button:hover:not(:disabled),
+.modeControl button:hover:not(:disabled),
+.planChips button:hover:not(:disabled),
+.goalReadout button:hover:not(:disabled),
+.goalEditorActions button:hover:not(:disabled),
+.timelineActions button:hover:not(:disabled),
+.timeEditor button:hover:not(:disabled),
+.usageDetails summary:hover,
+.editorDateNotice button:hover:not(:disabled),
+.recordEditModes button:hover:not(:disabled),
+.dateRail button:hover:not(:disabled),
+.periodControl button:hover:not(:disabled),
+.timeNudges button:hover:not(:disabled),
+.timelineEditFooter button:hover:not(:disabled),
+.accountPopover button:hover:not(:disabled) {
+  border-color: rgba(91, 220, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(37, 49, 67, 0.98), rgba(15, 22, 34, 0.98)),
+    #162131;
+}
+
+.recordSetup .modeControl.compact button.selected,
+.recordSetup .planChips.compact button.selected,
+.modeControl button.selected,
+.planChips button.selected,
+.recordEditModes button.selected,
+.dateRail button.selected,
+.periodControl button.selected {
+  color: #061019;
+  border-color: rgba(158, 238, 255, 0.96);
+  background:
+    linear-gradient(135deg, #9eeeff 0%, #5bdcff 58%, #ffd28a 150%),
+    #5bdcff;
+  box-shadow:
+    0 16px 36px rgba(91, 220, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+}
+
+.recordSetup .modeControl.compact button span,
+.recordSetup .planChips.compact button span,
+.modeControl button span,
+.modeControl button strong,
+.planChips button {
+  color: inherit;
+}
+
+.primaryAction,
+.timelineEditFooter .save,
+.goalEditorActions button:last-child {
+  color: #111015;
+  border-color: rgba(255, 218, 153, 0.98);
+  background:
+    linear-gradient(135deg, #ffe39b 0%, #ffb44d 46%, #ff8a3d 84%, #5bdcff 170%),
+    #ffb44d;
+  box-shadow:
+    0 18px 42px rgba(255, 145, 59, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -18px 30px rgba(96, 52, 0, 0.16);
+}
+
+.primaryAction:hover:not(:disabled),
+.timelineEditFooter .save:hover:not(:disabled),
+.goalEditorActions button:last-child:hover:not(:disabled) {
+  border-color: rgba(255, 228, 174, 1);
+  background:
+    linear-gradient(135deg, #fff0b8 0%, #ffc05e 45%, #ff9247 88%, #5bdcff 172%),
+    #ffb44d;
+  box-shadow:
+    0 20px 46px rgba(255, 145, 59, 0.28),
+    0 0 0 4px rgba(255, 180, 77, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.primaryAction small {
+  color: rgba(17, 16, 21, 0.78);
+}
+
+.timelineActions button.delete,
+.timelineActions button.danger,
+.logoutAction,
+button.danger,
+button.delete {
+  color: #fff8f6;
+  border-color: rgba(255, 107, 95, 0.5);
+  background:
+    linear-gradient(135deg, #ff7a68, #d94d45),
+    #d94d45;
+  box-shadow:
+    0 12px 28px rgba(255, 107, 95, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.timelineItem::before,
+.recentBand .sectionTitle h2::before,
+.weatherBand .sectionTitle h2::before,
+.usageBand .sectionTitle h2::before {
+  background: linear-gradient(180deg, #5bdcff, #ffb44d);
+  box-shadow: 0 0 18px rgba(91, 220, 255, 0.24);
+}
+
+.dot.in {
+  background: #5bdcff;
+  box-shadow: 0 0 0 4px rgba(91, 220, 255, 0.13);
+}
+
+.dot.out {
+  background: #ffb44d;
+  box-shadow: 0 0 0 4px rgba(255, 180, 77, 0.13);
+}
+
+.emptyState,
+.toastMessage {
+  color: #dfeeff;
+  border-color: rgba(126, 158, 200, 0.28);
+  background:
+    linear-gradient(180deg, rgba(22, 29, 42, 0.96), rgba(12, 17, 27, 0.96)),
+    #121925;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.errorBanner {
+  color: #fff8f6;
+  border-color: rgba(255, 107, 95, 0.5);
+  background:
+    linear-gradient(180deg, rgba(87, 33, 36, 0.92), rgba(33, 16, 23, 0.96)),
+    #211017;
+  box-shadow:
+    0 16px 36px rgba(255, 107, 95, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.accountMenu summary {
+  border-color: rgba(91, 220, 255, 0.34);
+  background:
+    linear-gradient(180deg, rgba(28, 36, 50, 0.96), rgba(12, 17, 27, 0.96)),
+    #121925;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.accountAvatar {
+  color: #141116;
+  background:
+    linear-gradient(135deg, #ffe39b, #ffb44d 62%, #5bdcff 180%),
+    #ffb44d;
+}
+
+.accountStatus.active {
+  color: #061019;
+  background: #5bdcff;
+}
+
+.clockBlock span,
+.recordSetup .activePlan.compact,
+.weatherFallback,
+.usageFallback,
+.usagePanel .usageFallback {
+  color: #dfeeff;
+  border-color: rgba(126, 158, 200, 0.3);
+  background:
+    linear-gradient(180deg, rgba(21, 29, 42, 0.92), rgba(10, 15, 24, 0.92)),
+    #101722;
+}
+
+.recordSetup .activePlan.compact span {
+  color: #9fb0c5;
+}
+
+.recordSetup .activePlan.compact strong,
+.clockBlock span {
+  color: #f4f8ff;
+}
+
+.recordSetup .modeControl.compact button.selected span,
+.dateRail button.selected span,
+.dateRail button.selected small,
+.recordEditModes button.selected span {
+  color: rgba(6, 16, 25, 0.78);
+}
+
+.timelineItem:hover {
+  border-color: rgba(91, 220, 255, 0.46);
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.timeEditorHeader,
+.timelineEditFooter {
+  border-color: rgba(126, 158, 200, 0.24);
+}
+
+.timeEditorHeader span,
+.editorGroupLabel,
+.timeNumberField span,
+.recordEditNote span,
+.dateRail button span,
+.dateRail button small {
+  color: #9fb0c5;
+}
+
+.timeEditorHeader strong {
+  color: #f4f8ff;
+}
+
+.editorDateNotice {
+  color: #ffd38d;
+  border-color: rgba(255, 180, 77, 0.36);
+  background:
+    linear-gradient(180deg, rgba(57, 42, 19, 0.92), rgba(20, 19, 24, 0.95)),
+    #151318;
+  box-shadow:
+    0 10px 24px rgba(255, 180, 77, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.periodControl {
+  border-color: rgba(126, 158, 200, 0.34);
+  background:
+    linear-gradient(180deg, rgba(18, 25, 37, 0.98), rgba(8, 12, 20, 0.98)),
+    #0b1018;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.periodControl button {
+  box-shadow: none;
+}
+
+.dateRail button {
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.22),
+    inset 0 -3px 0 rgba(91, 220, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dateRail button.selected span,
+.dateRail button.selected small {
+  color: rgba(6, 16, 25, 0.76);
+  opacity: 1;
+}
+
+.recordEditModes button.selected::before {
+  color: #141116;
+  background: #ffb44d;
+}
+
+.timelineItem,
+.metricCard,
+.weatherSlot,
+.usageModule,
+.costEstimateItem {
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.heroFlow::after {
+  border-color: rgba(91, 220, 255, 0.16);
+  box-shadow: inset 0 0 26px rgba(91, 220, 255, 0.055);
+}
+
+@media (max-width: 420px) {
+  .brandWordmark {
+    font-size: 1.92rem;
+  }
+}
+
+@media (min-width: 760px) {
+  .clockBlock strong {
+    font-size: 4.1rem;
+  }
+}
+
+.timelineMode {
+  width: fit-content;
+}
+
+.timelineNote {
+  color: #edf6ff;
+}
+
+.timelineNoteIcon {
+  border-color: rgba(91, 220, 255, 0.26);
+  background: rgba(91, 220, 255, 0.12);
+}
+
+.weatherMain,
+.weatherDetails,
+.weatherSlot,
+.usageTrendCard,
+.costEstimateItem,
+.usageModule {
+  color: #edf6ff;
+  border-color: rgba(126, 158, 200, 0.26);
+  background:
+    linear-gradient(180deg, rgba(24, 31, 44, 0.94), rgba(13, 18, 28, 0.92)),
+    #101722;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.weatherMain strong,
+.weatherSlot strong,
+.usageTrendCard strong,
+.costEstimateItem strong,
+.usageModule strong,
+.costEstimateItem dd {
+  color: #f4f8ff;
+}
+
+.weatherDetails span {
+  color: #dfeeff;
+  background:
+    linear-gradient(180deg, rgba(31, 41, 57, 0.94), rgba(15, 21, 32, 0.92)),
+    #151d2b;
+}
+
+.weatherGlyph {
+  background: #ffb44d;
+  box-shadow: 0 0 0 5px rgba(255, 180, 77, 0.16);
+}
+
+.chartLegend strong {
+  color: #f4f8ff;
+}
+
+.chartLegend span::before,
+.costMeter i {
+  background: linear-gradient(90deg, #5bdcff, #ffb44d);
+}
+
+.rainBar,
+.weatherSlot em::after {
+  fill: #5bdcff;
+  background: #5bdcff;
 }
