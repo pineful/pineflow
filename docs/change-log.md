@@ -98,3 +98,9 @@
 - 기록 수정 화면의 날짜 레일, 오전/오후, 시/분 입력, 빠른 보정, 저장/취소도 같은 notched command control 문법으로 정리했습니다.
 - cyberpunk/Web3식 네온, 항공 HUD 조준선, 자동 scanline/shimmer/pulse/line draw를 쓰지 않는 금지 기준을 문서화했습니다.
 - `docs/research/futuristic-ui-selection-2026-06-05.md`를 추가하고 `docs/modules/ui-controls.md`, `docs/modules/summary.md`, `docs/modules/weather.md`, `docs/llm-context.md`, `docs/workstreams.md`, `docs/status.md`를 갱신했습니다.
+
+## 2026-06-06
+
+- 최근 기록 `Session Strip`을 요약 우선형으로 바꿨습니다. 기본 상태에서는 날짜, `출근 -> 퇴근` 시간 범위, 총 시간, 업무 유형, 메모 미리보기만 보여주고, `IN/OUT` 시간 수정과 `세션 삭제`는 사용자가 세션을 펼친 뒤에만 보이도록 했습니다.
+- 모바일 최근 기록에서 항상 보이던 큰 삭제 버튼을 제거하고, 삭제는 펼친 세션 내부의 확인 단계에서만 실행되도록 정리했습니다.
+- `docs/research/recent-session-history-ux-2026-06-05.md`, `docs/modules/recording.md`, `docs/llm-context.md`, `docs/status.md`에 최근 기록의 요약/접힘 원칙을 반영했습니다.

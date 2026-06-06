@@ -1162,6 +1162,7 @@ function App() {
   const [editingNote, setEditingNote] = useState("");
   const [editingOriginal, setEditingOriginal] = useState<RecordEditSnapshot | null>(null);
   const [confirmingDeleteRecordId, setConfirmingDeleteRecordId] = useState("");
+  const [expandedSessionId, setExpandedSessionId] = useState("");
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
   const [toastMessage, setToastMessage] = useState("");
@@ -1201,6 +1202,7 @@ function App() {
     setState(initialState);
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
+    setExpandedSessionId("");
     setToastMessage("");
     setErrorMessage(message);
   }
@@ -1538,6 +1540,9 @@ function App() {
       setState(serverState);
       setMode(serverState.activeSession?.mode ?? mode);
       setNote(serverState.activeSession?.note ?? note);
+      resetRecordEdit();
+      setConfirmingDeleteRecordId("");
+      setExpandedSessionId("");
       playFeedback("start");
       flashToast("출근 기록이 저장됐어요");
       startActionCooldown();
@@ -1563,6 +1568,7 @@ function App() {
       setNote("");
       resetRecordEdit();
       setConfirmingDeleteRecordId("");
+      setExpandedSessionId("");
       playFeedback("finish");
       flashToast("퇴근 기록이 저장됐어요");
       startActionCooldown();
@@ -1598,6 +1604,7 @@ function App() {
     const localTimestamp = toDateTimeLocalValue(record.timestamp);
     playFeedback("open");
     setConfirmingDeleteRecordId("");
+    setExpandedSessionId(sessionIdForRecord(record));
     setEditingRecordId(record.id);
     setEditingTimestamp(localTimestamp);
     setEditingMode(record.mode);
@@ -1672,6 +1679,7 @@ function App() {
       setState(await deleteRecord(recordId));
       resetRecordEdit();
       setConfirmingDeleteRecordId("");
+      setExpandedSessionId("");
       playFeedback("success");
       flashToast("기록이 삭제됐어요");
       startActionCooldown();
@@ -1700,6 +1708,7 @@ function App() {
     setState(initialState);
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
+    setExpandedSessionId("");
     setIsGoalEditing(false);
     setDraftGoalMinutes(initialState.dailyGoalMinutes);
     setToastMessage("");
@@ -1957,137 +1966,172 @@ function App() {
             const isEditingSession =
               editingRecordId === session.checkIn?.id || editingRecordId === session.checkOut?.id;
             const isConfirmingDelete = confirmingDeleteRecordId === session.id;
+            const isExpandedSession = expandedSessionId === session.id || isEditingSession || isConfirmingDelete;
+            const notePreview = session.note.trim();
             const durationLabel =
               session.durationMinutes === undefined
                 ? "시간 확인 필요"
                 : session.isOpen
                   ? `진행 ${formatDuration(session.durationMinutes)}`
                   : formatDuration(session.durationMinutes);
+            const rangeLabel = `${session.checkIn ? formatTime(session.checkIn.timestamp) : "--:--"} → ${
+              session.checkOut ? formatTime(session.checkOut.timestamp) : session.isOpen ? "진행 중" : "--:--"
+            }`;
 
             return (
-              <article className={isEditingSession ? "timelineItem sessionItem editing" : "timelineItem sessionItem"} key={session.id}>
+              <article
+                className={[
+                  "timelineItem sessionItem",
+                  isExpandedSession ? "expanded" : "",
+                  isEditingSession ? "editing" : ""
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                key={session.id}
+              >
                 <div className="timelineBody">
-                  <div className="timelineRecordHeader">
-                    <div className="sessionSummary">
-                      <div className="sessionTitleLine">
+                  <button
+                    className="sessionSummaryButton"
+                    type="button"
+                    aria-expanded={isExpandedSession}
+                    aria-label={`${formatDate(session.anchorAt)} 세션 ${isExpandedSession ? "접기" : "자세히 보기"}`}
+                    onClick={() => {
+                      playFeedback(isExpandedSession ? "tap" : "open");
+                      resetRecordEdit();
+                      setConfirmingDeleteRecordId("");
+                      setExpandedSessionId(isExpandedSession ? "" : session.id);
+                    }}
+                  >
+                    <span className="sessionSummary">
+                      <span className="sessionTitleLine">
                         <strong>{formatDate(session.anchorAt)}</strong>
                         <span className={session.isOpen ? "sessionStatus open" : "sessionStatus"}>
                           {session.isOpen ? "진행 중" : "완료"}
                         </span>
-                      </div>
-                      <div className="sessionMeta">
+                      </span>
+                      <span className="sessionMeta">
                         <span className="timelineMode">
                           <span aria-hidden="true">{modeIcons[session.mode]}</span>
                           {modeLabels[session.mode]}
                         </span>
                         <span className="sessionDuration">{durationLabel}</span>
-                      </div>
-                    </div>
-                    {!isEditingSession && (
-                      <div className={isConfirmingDelete ? "timelineActions confirming" : "timelineActions sessionActions"}>
-                        {isConfirmingDelete ? (
-                          <>
-                            <span>이 세션 전체를 삭제할까요?</span>
-                            <button className="danger" type="button" disabled={isSaving} onClick={() => removeRecord(session.primaryRecord.id)}>
-                              삭제
-                            </button>
-                            <button type="button" disabled={isSaving} onClick={() => setConfirmingDeleteRecordId("")}>
-                              취소
-                            </button>
-                          </>
-                        ) : (
+                      </span>
+                      <span className="sessionTimeCompact">
+                        <span>{rangeLabel}</span>
+                        {session.spansDays && <small>날짜를 넘어 이어진 세션</small>}
+                      </span>
+                      {notePreview && (
+                        <span className="sessionNotePreview">
+                          <span aria-hidden="true">{modeIcons[session.mode]}</span>
+                          {notePreview}
+                        </span>
+                      )}
+                    </span>
+                    <span className="sessionExpandCue" aria-hidden="true">
+                      {isExpandedSession ? "접기" : "보기"}
+                    </span>
+                  </button>
+                  {isExpandedSession && (
+                    <div className="sessionDetails">
+                      <div className="sessionPair" aria-label="출근과 퇴근 세트">
+                        {session.checkIn ? (
                           <button
-                            className="delete"
+                            className="sessionEndpoint in"
                             type="button"
                             disabled={isSaving}
-                            onClick={() => {
-                              playFeedback("open");
-                              resetRecordEdit();
-                              setConfirmingDeleteRecordId(session.id);
-                            }}
+                            aria-label={`${formatDate(session.checkIn.timestamp)} ${formatTime(session.checkIn.timestamp)} 출근 시간 수정`}
+                            onClick={() => startEditRecord(session.checkIn!)}
                           >
-                            세션 삭제
+                            <span>IN</span>
+                            <strong>{formatTime(session.checkIn.timestamp)}</strong>
+                            <small>{session.spansDays ? formatDate(session.checkIn.timestamp) : "출근"}</small>
                           </button>
+                        ) : (
+                          <div className="sessionEndpoint missing">
+                            <span>IN</span>
+                            <strong>--:--</strong>
+                            <small>출근 없음</small>
+                          </div>
+                        )}
+                        <div className={session.isOpen ? "sessionConnector open" : "sessionConnector"} aria-hidden="true">
+                          <span />
+                        </div>
+                        {session.checkOut ? (
+                          <button
+                            className="sessionEndpoint out"
+                            type="button"
+                            disabled={isSaving}
+                            aria-label={`${formatDate(session.checkOut.timestamp)} ${formatTime(session.checkOut.timestamp)} 퇴근 시간 수정`}
+                            onClick={() => startEditRecord(session.checkOut!)}
+                          >
+                            <span>OUT</span>
+                            <strong>{formatTime(session.checkOut.timestamp)}</strong>
+                            <small>{session.spansDays ? formatDate(session.checkOut.timestamp) : "퇴근"}</small>
+                          </button>
+                        ) : (
+                          <div className="sessionEndpoint missing">
+                            <span>OUT</span>
+                            <strong>진행 중</strong>
+                            <small>퇴근 미기록</small>
+                          </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                  <div className="sessionPair" aria-label="출근과 퇴근 세트">
-                    {session.checkIn ? (
-                      <button
-                        className="sessionEndpoint in"
-                        type="button"
-                        disabled={isSaving}
-                        aria-label={`${formatDate(session.checkIn.timestamp)} ${formatTime(session.checkIn.timestamp)} 출근 시간 수정`}
-                        onClick={() => startEditRecord(session.checkIn!)}
-                      >
-                        <span>IN</span>
-                        <strong>{formatTime(session.checkIn.timestamp)}</strong>
-                        <small>{session.spansDays ? formatDate(session.checkIn.timestamp) : "출근"}</small>
-                      </button>
-                    ) : (
-                      <div className="sessionEndpoint missing">
-                        <span>IN</span>
-                        <strong>--:--</strong>
-                        <small>출근 없음</small>
-                      </div>
-                    )}
-                    <div className={session.isOpen ? "sessionConnector open" : "sessionConnector"} aria-hidden="true">
-                      <span />
+                      {isEditingSession && (
+                        <>
+                          <RecordTimeEditor
+                            value={editingTimestamp}
+                            recordType={editingRecordId === session.checkOut?.id ? "check-out" : "check-in"}
+                            mode={editingMode}
+                            note={editingNote}
+                            disabled={isSaving}
+                            onChange={setEditingTimestamp}
+                            onModeChange={setEditingMode}
+                            onNoteChange={setEditingNote}
+                          />
+                          <div className="timelineEditFooter">
+                            <button
+                              type="button"
+                              disabled={isSaving}
+                              onClick={resetRecordEdit}
+                            >
+                              취소
+                            </button>
+                            <button className="save" type="button" disabled={isSaving} onClick={() => saveRecordEdit(editingRecordId)}>
+                              저장
+                            </button>
+                          </div>
+                        </>
+                      )}
+                      {!isEditingSession && (
+                        <div className={isConfirmingDelete ? "timelineActions confirming sessionDangerDeck" : "sessionDetailsActions"}>
+                          {isConfirmingDelete ? (
+                            <>
+                              <span>이 세션 전체를 삭제할까요?</span>
+                              <button className="danger" type="button" disabled={isSaving} onClick={() => removeRecord(session.primaryRecord.id)}>
+                                삭제
+                              </button>
+                              <button type="button" disabled={isSaving} onClick={() => setConfirmingDeleteRecordId("")}>
+                                취소
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              className="sessionDangerButton"
+                              type="button"
+                              disabled={isSaving}
+                              onClick={() => {
+                                playFeedback("open");
+                                resetRecordEdit();
+                                setExpandedSessionId(session.id);
+                                setConfirmingDeleteRecordId(session.id);
+                              }}
+                            >
+                              세션 삭제
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {session.checkOut ? (
-                      <button
-                        className="sessionEndpoint out"
-                        type="button"
-                        disabled={isSaving}
-                        aria-label={`${formatDate(session.checkOut.timestamp)} ${formatTime(session.checkOut.timestamp)} 퇴근 시간 수정`}
-                        onClick={() => startEditRecord(session.checkOut!)}
-                      >
-                        <span>OUT</span>
-                        <strong>{formatTime(session.checkOut.timestamp)}</strong>
-                        <small>{session.spansDays ? formatDate(session.checkOut.timestamp) : "퇴근"}</small>
-                      </button>
-                    ) : (
-                      <div className="sessionEndpoint missing">
-                        <span>OUT</span>
-                        <strong>진행 중</strong>
-                        <small>퇴근 미기록</small>
-                      </div>
-                    )}
-                  </div>
-                  {session.note.trim() && (
-                    <p className="timelineNote sessionNote">
-                      <span className="timelineNoteIcon" aria-hidden="true">
-                        {modeIcons[session.mode]}
-                      </span>
-                      <span>{session.note}</span>
-                    </p>
-                  )}
-                  {isEditingSession && (
-                    <>
-                      <RecordTimeEditor
-                        value={editingTimestamp}
-                        recordType={editingRecordId === session.checkOut?.id ? "check-out" : "check-in"}
-                        mode={editingMode}
-                        note={editingNote}
-                        disabled={isSaving}
-                        onChange={setEditingTimestamp}
-                        onModeChange={setEditingMode}
-                        onNoteChange={setEditingNote}
-                      />
-                      <div className="timelineEditFooter">
-                        <button
-                          type="button"
-                          disabled={isSaving}
-                          onClick={resetRecordEdit}
-                        >
-                          취소
-                        </button>
-                        <button className="save" type="button" disabled={isSaving} onClick={() => saveRecordEdit(editingRecordId)}>
-                          저장
-                        </button>
-                      </div>
-                    </>
                   )}
                 </div>
               </article>

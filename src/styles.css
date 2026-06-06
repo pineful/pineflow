@@ -4814,3 +4814,226 @@ button.sessionEndpoint:hover:not(:disabled) {
     transform: rotate(135deg);
   }
 }
+
+/* 2026-06-06 Smart Session Ledger.
+   Recent history defaults to compact session summaries; editing and deletion live behind disclosure. */
+.sessionItem {
+  padding: 7px 8px;
+  border-color: rgba(108, 140, 177, 0.34);
+  background:
+    linear-gradient(135deg, rgba(21, 29, 43, 0.96), rgba(13, 19, 31, 0.98)),
+    #101722;
+  box-shadow: none;
+}
+
+.sessionItem::before {
+  width: 2px;
+  background: linear-gradient(180deg, rgba(91, 220, 255, 0.8), rgba(255, 180, 77, 0.48));
+}
+
+.sessionItem.expanded {
+  border-color: rgba(91, 220, 255, 0.5);
+}
+
+.sessionSummaryButton {
+  display: grid;
+  width: 100%;
+  min-height: 66px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 9px 8px 12px;
+  color: inherit;
+  border: 1px solid rgba(126, 158, 200, 0.2);
+  background:
+    linear-gradient(180deg, rgba(18, 26, 39, 0.84), rgba(12, 18, 29, 0.74)),
+    rgba(11, 17, 27, 0.84);
+  text-align: left;
+  clip-path: var(--clip-command);
+  cursor: pointer;
+}
+
+.sessionSummaryButton:hover:not(:disabled),
+.sessionSummaryButton:focus-visible {
+  border-color: rgba(91, 220, 255, 0.58);
+  background:
+    linear-gradient(180deg, rgba(24, 35, 52, 0.9), rgba(14, 22, 35, 0.82)),
+    rgba(15, 23, 36, 0.9);
+  outline: none;
+}
+
+.sessionSummary {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.sessionTitleLine,
+.sessionMeta,
+.sessionTimeCompact,
+.sessionNotePreview {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.sessionTitleLine {
+  gap: 7px;
+}
+
+.sessionTitleLine strong {
+  color: #f5f9ff;
+  font-size: 0.94rem;
+}
+
+.sessionStatus {
+  padding: 3px 6px;
+  color: #ffe5b4;
+  border-color: rgba(255, 180, 77, 0.36);
+  background: rgba(255, 180, 77, 0.13);
+  font-size: 0.58rem;
+}
+
+.sessionStatus.open {
+  color: #a8f3ff;
+  border-color: rgba(91, 220, 255, 0.42);
+  background: rgba(91, 220, 255, 0.13);
+}
+
+.sessionMeta {
+  gap: 6px;
+  margin: 0;
+}
+
+.sessionItem .timelineMode,
+.sessionDuration {
+  min-height: 22px;
+  padding: 3px 7px;
+  color: #d9e7f7;
+  border: 1px solid rgba(126, 158, 200, 0.22);
+  background: rgba(126, 158, 200, 0.1);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.sessionDuration {
+  color: #ffdc9c;
+  border-color: rgba(255, 180, 77, 0.26);
+  background: rgba(255, 180, 77, 0.09);
+}
+
+.sessionTimeCompact {
+  gap: 8px;
+  color: #f4f8ff;
+  font-size: 1.02rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.sessionTimeCompact small {
+  color: #9eeeff;
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.sessionNotePreview {
+  gap: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  color: #b8c7d9;
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionExpandCue {
+  display: inline-flex;
+  min-width: 42px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  color: #9eeeff;
+  border: 1px solid rgba(91, 220, 255, 0.28);
+  background: rgba(91, 220, 255, 0.08);
+  font-size: 0.68rem;
+  font-weight: 900;
+  clip-path: var(--clip-compact-command);
+}
+
+.sessionDetails {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid rgba(126, 158, 200, 0.18);
+  background: rgba(6, 10, 18, 0.34);
+  clip-path: var(--clip-command);
+}
+
+.sessionDetails .sessionPair {
+  margin-top: 0;
+  padding: 5px;
+  border-color: rgba(126, 158, 200, 0.18);
+  background: rgba(8, 13, 23, 0.6);
+}
+
+.sessionDetails .sessionEndpoint {
+  min-height: 42px;
+  padding: 6px 7px;
+  box-shadow: none;
+}
+
+.sessionDetailsActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sessionDangerButton {
+  min-height: 32px;
+  padding: 6px 10px;
+  color: #ffc8c0;
+  border: 1px solid rgba(255, 105, 96, 0.34);
+  background: rgba(255, 105, 96, 0.08);
+  font-size: 0.68rem;
+  font-weight: 900;
+  clip-path: var(--clip-compact-command);
+}
+
+.sessionDangerButton:hover:not(:disabled),
+.sessionDangerButton:focus-visible {
+  color: #fff3f1;
+  border-color: rgba(255, 105, 96, 0.7);
+  background: rgba(255, 105, 96, 0.18);
+  outline: none;
+}
+
+.sessionDangerDeck {
+  margin-top: 0;
+}
+
+@media (max-width: 520px) {
+  .sessionSummaryButton {
+    min-height: 62px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 7px 8px 7px 10px;
+  }
+
+  .sessionTimeCompact {
+    font-size: 0.96rem;
+  }
+
+  .sessionNotePreview {
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .sessionSummaryButton {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sessionExpandCue {
+    justify-self: start;
+  }
+}
