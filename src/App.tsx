@@ -2146,63 +2146,93 @@ function App() {
                 key={session.id}
               >
                 <div className="timelineBody">
-                  <button
-                    className="sessionSummaryButton"
-                    type="button"
-                    aria-expanded={isExpandedSession}
-                    aria-label={`${formatDate(session.anchorAt)} 세션 ${isExpandedSession ? "접기" : "자세히 보기"}`}
-                    style={{ "--session-progress": `${sessionProgress}%` } as CSSProperties}
-                    onClick={() => {
-                      playFeedback(isExpandedSession ? "tap" : "open");
-                      resetRecordEdit();
-                      setConfirmingDeleteRecordId("");
-                      setExpandedSessionId(isExpandedSession ? "" : session.id);
-                    }}
-                  >
-                    <span className="sessionSummary">
-                      <span className="sessionTitleLine">
-                        <strong>{formatDate(session.anchorAt)}</strong>
-                        <span className={session.isOpen ? "sessionStatus open" : "sessionStatus"}>
-                          {session.isOpen ? "진행 중" : "완료"}
-                        </span>
-                      </span>
-                      <span className="sessionMeta">
-                        <span className="timelineMode">
-                          <span aria-hidden="true">{modeIcons[session.mode]}</span>
-                          {modeLabels[session.mode]}
-                        </span>
-                        <span className="sessionDuration">{durationLabel}</span>
-                      </span>
-                      <span className="sessionTimeCompact">
-                        <span className="sessionFlowLine summaryOnly" aria-label={`${durationLabel} 세션 흐름`}>
-                          <span className="sessionFlowMark in">
-                            <small>IN</small>
-                          </span>
-                          <span className="sessionRail" aria-hidden="true">
-                            <i />
-                          </span>
-                          <span className={session.isOpen ? "sessionFlowMark out open" : "sessionFlowMark out"}>
-                            <small>{session.isOpen ? "NOW" : "OUT"}</small>
+                  {!isExpandedSession && (
+                    <button
+                      className="sessionSummaryButton"
+                      type="button"
+                      aria-expanded={false}
+                      aria-label={`${formatDate(session.anchorAt)} 세션 자세히 보기`}
+                      style={{ "--session-progress": `${sessionProgress}%` } as CSSProperties}
+                      onClick={() => {
+                        playFeedback("open");
+                        resetRecordEdit();
+                        setConfirmingDeleteRecordId("");
+                        setExpandedSessionId(session.id);
+                      }}
+                    >
+                      <span className="sessionSummary">
+                        <span className="sessionTitleLine">
+                          <strong>{formatDate(session.anchorAt)}</strong>
+                          <span className={session.isOpen ? "sessionStatus open" : "sessionStatus"}>
+                            {session.isOpen ? "진행 중" : "완료"}
                           </span>
                         </span>
-                        {session.spansDays && <small>날짜를 넘어 이어진 세션</small>}
-                      </span>
-                      {notePreview && (
-                        <span className="sessionNotePreview">
-                          <span aria-hidden="true">{modeIcons[session.mode]}</span>
-                          {notePreview}
+                        <span className="sessionMeta">
+                          <span className="timelineMode">
+                            <span aria-hidden="true">{modeIcons[session.mode]}</span>
+                            {modeLabels[session.mode]}
+                          </span>
+                          <span className="sessionDuration">{durationLabel}</span>
                         </span>
-                      )}
-                    </span>
-                    <span className="sessionExpandCue" aria-hidden="true">
-                      {isExpandedSession ? "접기" : "보기"}
-                    </span>
-                  </button>
+                        <span className="sessionTimeCompact">
+                          <span className="sessionFlowLine summaryOnly" aria-label={`${durationLabel} 세션 흐름`}>
+                            <span className="sessionFlowMark in">
+                              <small>IN</small>
+                            </span>
+                            <span className="sessionRail" aria-hidden="true">
+                              <i />
+                            </span>
+                            <span className={session.isOpen ? "sessionFlowMark out open" : "sessionFlowMark out"}>
+                              <small>{session.isOpen ? "NOW" : "OUT"}</small>
+                            </span>
+                          </span>
+                          {session.spansDays && <small>날짜를 넘어 이어진 세션</small>}
+                        </span>
+                        {notePreview && (
+                          <span className="sessionNotePreview">
+                            <span aria-hidden="true">{modeIcons[session.mode]}</span>
+                            {notePreview}
+                          </span>
+                        )}
+                      </span>
+                      <span className="sessionExpandCue" aria-hidden="true">
+                        보기
+                      </span>
+                    </button>
+                  )}
                   {isExpandedSession && (
                     <div className="sessionDetails">
                       <div className="sessionDetailHeader">
-                        <span>시간 보정</span>
-                        <small>{session.spansDays ? "날짜를 넘어 이어진 세션" : "정확한 출근/퇴근 시각"}</small>
+                        <div className="sessionDetailTitle">
+                          <strong>{formatDate(session.anchorAt)}</strong>
+                          <span className={session.isOpen ? "sessionStatus open" : "sessionStatus"}>
+                            {session.isOpen ? "진행 중" : "완료"}
+                          </span>
+                        </div>
+                        <div className="sessionDetailMeta">
+                          <span className="timelineMode">
+                            <span aria-hidden="true">{modeIcons[session.mode]}</span>
+                            {modeLabels[session.mode]}
+                          </span>
+                          <span className="sessionDuration">{durationLabel}</span>
+                        </div>
+                        <button
+                          className="sessionCollapseButton"
+                          type="button"
+                          disabled={isSaving}
+                          onClick={() => {
+                            playFeedback("tap");
+                            resetRecordEdit();
+                            setConfirmingDeleteRecordId("");
+                            setExpandedSessionId("");
+                          }}
+                        >
+                          접기
+                        </button>
+                      </div>
+                      <div className="sessionDetailGuide">
+                        <span>정확한 시간</span>
+                        <small>{session.spansDays ? "날짜를 넘어 이어진 세션" : "endpoint를 눌러 보정"}</small>
                       </div>
                       <div className="sessionPair" aria-label="출근과 퇴근 세트">
                         {session.checkIn ? (

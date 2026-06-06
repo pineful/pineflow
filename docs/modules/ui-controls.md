@@ -56,6 +56,7 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 
 - `Workday Lens` 날짜 tile은 입력 필드가 아니라 읽기/탐색용 요약 tile입니다. 짧은 휴일 라벨, 진행률 bar, mode glyph만 허용하고 큰 버튼처럼 보이면 안 됩니다.
 - 최근 기록의 기본 행에 있는 `IN`/`OUT` 표시는 정확한 시각이 아니라 흐름 요약 marker입니다. 정확한 시간 data slot과 클릭 가능한 endpoint는 펼친 세부 영역에서만 보입니다.
+- 최근 기록은 펼칠 때 summary button을 유지한 채 detail graph를 아래에 반복하지 않습니다. 펼친 상태는 별도 detail panel이며, 닫기/접기 명령은 그 detail panel 안에 있어야 합니다.
 - 세션 목록의 기본 행에 삭제 버튼을 노출하지 않습니다. 위험 동작은 사용자가 세션을 펼친 뒤 confirmation deck에서만 나타납니다.
 - 날씨 지표 tile은 클릭 가능한 버튼이 아니므로 hover 시 CTA처럼 강하게 반응하지 않습니다.
 - graphite 표면 위의 cyan은 데이터 흐름, amber는 완료/목표/명령, coral은 위험 동작에만 사용합니다.

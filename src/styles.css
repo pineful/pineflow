@@ -4976,33 +4976,84 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .sessionDetails {
   display: grid;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 8px;
-  border: 1px solid rgba(126, 158, 200, 0.18);
-  background: rgba(6, 10, 18, 0.34);
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(91, 220, 255, 0.28);
+  background:
+    linear-gradient(135deg, rgba(18, 27, 42, 0.94), rgba(7, 12, 22, 0.9)),
+    rgba(6, 10, 18, 0.72);
   clip-path: var(--clip-command);
 }
 
 .sessionDetailHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 2px 2px 4px;
+  border-bottom: 1px solid rgba(126, 158, 200, 0.16);
+}
+
+.sessionDetailTitle,
+.sessionDetailMeta {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.sessionDetailTitle strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #f4f8ff;
+  font-size: 0.92rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionDetailMeta {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sessionCollapseButton {
+  min-height: 30px;
+  padding: 6px 10px;
+  color: #9eeeff;
+  border: 1px solid rgba(91, 220, 255, 0.28);
+  background: rgba(91, 220, 255, 0.08);
+  font-size: 0.68rem;
+  font-weight: 900;
+  clip-path: var(--clip-compact-command);
+  cursor: pointer;
+}
+
+.sessionCollapseButton:hover:not(:disabled),
+.sessionCollapseButton:focus-visible {
+  border-color: rgba(91, 220, 255, 0.62);
+  background: rgba(91, 220, 255, 0.16);
+  outline: none;
+}
+
+.sessionDetailGuide {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  padding: 2px 2px 0;
+  padding: 0 2px;
 }
 
-.sessionDetailHeader span {
+.sessionDetailGuide span {
   color: #f4f8ff;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 950;
 }
 
-.sessionDetailHeader small {
+.sessionDetailGuide small {
   color: #9fb4cc;
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 850;
-  text-align: right;
 }
 
 .sessionDetails .sessionPair {
@@ -5010,6 +5061,17 @@ button.sessionEndpoint:hover:not(:disabled) {
   padding: 5px;
   border-color: rgba(126, 158, 200, 0.18);
   background: rgba(8, 13, 23, 0.6);
+}
+
+@media (max-width: 620px) {
+  .sessionDetailHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sessionDetailMeta {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
 }
 
 .sessionDetails .sessionEndpoint {
