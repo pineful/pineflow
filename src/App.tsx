@@ -89,6 +89,21 @@ type RecentSession = {
   spansDays: boolean;
 };
 
+type WorkdayLensDay = {
+  key: string;
+  date: Date;
+  weekday: string;
+  dayNumber: string;
+  isToday: boolean;
+  isWeekend: boolean;
+  holidayLabel?: string;
+  totalMinutes: number;
+  sessionCount: number;
+  isOpen: boolean;
+  topMode?: WorkMode;
+  progress: number;
+};
+
 type ReverseGeocodeResult = {
   localityName?: string;
   locality?: string;
@@ -111,6 +126,33 @@ const seoulCoordinates = {
 const weatherForecastDays = 5;
 const weatherForecastSlotWidth = 106;
 const usageLoadDelayMs = 4000;
+
+const shortWeekdayFormatter = new Intl.DateTimeFormat("ko-KR", { weekday: "short" });
+const dayNumberFormatter = new Intl.DateTimeFormat("ko-KR", { day: "numeric" });
+
+const koreanHolidayLabels: Record<string, string> = {
+  "2026-01-01": "신정",
+  "2026-02-16": "설 연휴",
+  "2026-02-17": "설날",
+  "2026-02-18": "설 연휴",
+  "2026-03-01": "삼일절",
+  "2026-03-02": "대체휴일",
+  "2026-05-01": "근로자의 날",
+  "2026-05-05": "어린이날",
+  "2026-05-24": "부처님오신날",
+  "2026-05-25": "대체휴일",
+  "2026-06-03": "지방선거",
+  "2026-06-06": "현충일",
+  "2026-08-15": "광복절",
+  "2026-08-17": "대체휴일",
+  "2026-09-24": "추석 연휴",
+  "2026-09-25": "추석",
+  "2026-09-26": "추석 연휴",
+  "2026-10-03": "개천절",
+  "2026-10-05": "대체휴일",
+  "2026-10-09": "한글날",
+  "2026-12-25": "성탄절"
+};
 
 function weatherCondition(code: number) {
   if (code === 0) return "맑음";
@@ -449,7 +491,8 @@ function formatLocalDateTimeValue(date: Date) {
   )}:${padNumber(date.getMinutes())}`;
 }
 
-function localDateKey(date: Date) {
+function localDateKey(value: Date | string) {
+  const date = new Date(value);
   return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(date.getDate())}`;
 }
 
@@ -513,6 +556,67 @@ function shiftEditorMinutes(value: string, minutes: number) {
 function sessionIdForRecord(record: CommuteRecord) {
   const separatorIndex = record.id.lastIndexOf(":");
   return separatorIndex === -1 ? record.id : record.id.slice(0, separatorIndex);
+}
+
+function startOfMondayWeek(value: Date) {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  const mondayOffset = (date.getDay() + 6) % 7;
+  date.setDate(date.getDate() - mondayOffset);
+  return date;
+}
+
+function buildWorkdayLens(records: CommuteRecord[], now: Date, goalMinutes: number): WorkdayLensDay[] {
+  const weekStart = startOfMondayWeek(now);
+  const days: WorkdayLensDay[] = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + index);
+    const key = localDateKey(date);
+    return {
+      key,
+      date,
+      weekday: shortWeekdayFormatter.format(date),
+      dayNumber: dayNumberFormatter.format(date),
+      isToday: isSameDay(date, now),
+      isWeekend: date.getDay() === 0 || date.getDay() === 6,
+      holidayLabel: koreanHolidayLabels[key],
+      totalMinutes: 0,
+      sessionCount: 0,
+      isOpen: false,
+      progress: 0
+    };
+  });
+
+  const byKey = new Map(days.map((day) => [day.key, day]));
+  const modeTotals = new Map<string, Map<WorkMode, number>>();
+
+  buildRecentSessions(records, now).forEach((session) => {
+    const key = localDateKey(session.anchorAt);
+    const day = byKey.get(key);
+    if (!day) return;
+
+    const duration = session.durationMinutes ?? 0;
+    day.totalMinutes += duration;
+    day.sessionCount += 1;
+    day.isOpen = day.isOpen || session.isOpen;
+
+    const totals = modeTotals.get(key) ?? new Map<WorkMode, number>();
+    totals.set(session.mode, (totals.get(session.mode) ?? 0) + Math.max(duration, 1));
+    modeTotals.set(key, totals);
+  });
+
+  return days.map((day) => {
+    const totals = modeTotals.get(day.key);
+    const topMode = totals
+      ? Array.from(totals.entries()).sort((left, right) => right[1] - left[1])[0]?.[0]
+      : undefined;
+
+    return {
+      ...day,
+      topMode,
+      progress: goalMinutes > 0 ? Math.min(100, Math.round((day.totalMinutes / goalMinutes) * 100)) : 0
+    };
+  });
 }
 
 function buildRecentSessions(records: CommuteRecord[], now: Date): RecentSession[] {
@@ -1445,6 +1549,12 @@ function App() {
     [now, state.activeSession?.checkInAt, state.records]
   );
   const recentSessions = useMemo(() => buildRecentSessions(state.records, now).slice(0, 6), [now, state.records]);
+  const workdayLens = useMemo(
+    () => buildWorkdayLens(state.records, now, state.dailyGoalMinutes),
+    [now, state.dailyGoalMinutes, state.records]
+  );
+  const workdayTotalMinutes = workdayLens.reduce((sum, day) => sum + day.totalMinutes, 0);
+  const workdaySessionCount = workdayLens.reduce((sum, day) => sum + day.sessionCount, 0);
 
   const progress = Math.min(100, Math.round((today.totalMinutes / state.dailyGoalMinutes) * 100));
   const isActive = Boolean(state.activeSession);
@@ -1963,6 +2073,49 @@ function App() {
           <h2>최근 기록</h2>
           <span>실수하면 시간 수정</span>
         </div>
+        <div className="workdayLens" aria-label="이번 주 근무일 흐름">
+          <div className="workdayLensHeader">
+            <div>
+              <span>이번 주 워크데이</span>
+              <strong>{formatDuration(workdayTotalMinutes)}</strong>
+            </div>
+            <em>{workdaySessionCount > 0 ? `${workdaySessionCount}개 세션` : "기록 대기"}</em>
+          </div>
+          <div className="workdayLensRail">
+            {workdayLens.map((day) => (
+              <div
+                className={[
+                  "workdayTile",
+                  day.isToday ? "today" : "",
+                  day.isOpen ? "open" : "",
+                  day.holidayLabel ? "holiday" : "",
+                  day.isWeekend ? "weekend" : ""
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                key={day.key}
+                style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
+              >
+                <span>{day.weekday}</span>
+                <strong>{day.dayNumber}</strong>
+                <i aria-hidden="true" />
+                <small>
+                  {day.isOpen
+                    ? "진행"
+                    : day.totalMinutes > 0
+                      ? formatDuration(day.totalMinutes)
+                      : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
+                </small>
+                {day.topMode && (
+                  <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
+                    {modeIcons[day.topMode]}
+                  </em>
+                )}
+                {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="timeline">
           {recentSessions.map((session) => {
             const isEditingSession =
@@ -1976,9 +2129,12 @@ function App() {
                 : session.isOpen
                   ? `진행 ${formatDuration(session.durationMinutes)}`
                   : formatDuration(session.durationMinutes);
-            const rangeLabel = `${session.checkIn ? formatTime(session.checkIn.timestamp) : "--:--"} → ${
-              session.checkOut ? formatTime(session.checkOut.timestamp) : session.isOpen ? "진행 중" : "--:--"
-            }`;
+            const inLabel = session.checkIn ? formatTime(session.checkIn.timestamp) : "--:--";
+            const outLabel = session.checkOut ? formatTime(session.checkOut.timestamp) : session.isOpen ? "진행 중" : "--:--";
+            const sessionProgress =
+              session.durationMinutes === undefined || state.dailyGoalMinutes <= 0
+                ? 0
+                : Math.min(100, Math.round((session.durationMinutes / state.dailyGoalMinutes) * 100));
 
             return (
               <article
@@ -1997,6 +2153,7 @@ function App() {
                     type="button"
                     aria-expanded={isExpandedSession}
                     aria-label={`${formatDate(session.anchorAt)} 세션 ${isExpandedSession ? "접기" : "자세히 보기"}`}
+                    style={{ "--session-progress": `${sessionProgress}%` } as CSSProperties}
                     onClick={() => {
                       playFeedback(isExpandedSession ? "tap" : "open");
                       resetRecordEdit();
@@ -2019,7 +2176,19 @@ function App() {
                         <span className="sessionDuration">{durationLabel}</span>
                       </span>
                       <span className="sessionTimeCompact">
-                        <span>{rangeLabel}</span>
+                        <span className="sessionFlowLine" aria-label={`출근 ${inLabel}, 퇴근 ${outLabel}`}>
+                          <span className="sessionTimePill in">
+                            <small>IN</small>
+                            <strong>{inLabel}</strong>
+                          </span>
+                          <span className="sessionRail" aria-hidden="true">
+                            <i />
+                          </span>
+                          <span className={session.isOpen ? "sessionTimePill out open" : "sessionTimePill out"}>
+                            <small>OUT</small>
+                            <strong>{outLabel}</strong>
+                          </span>
+                        </span>
                         {session.spansDays && <small>날짜를 넘어 이어진 세션</small>}
                       </span>
                       {notePreview && (
@@ -2152,15 +2321,30 @@ function App() {
         </div>
         {weather.status === "ready" ? (
           <div className="weatherGrid">
-            <div className="weatherMain">
-              <strong>{weather.temperature}°</strong>
-              <span>{weather.condition}</span>
+            <div className={`weatherMain ${weather.condition ? weatherTone(weather.condition) : ""}`}>
+              <div className={`weatherGlyphLarge ${weather.condition ? weatherTone(weather.condition) : "sun"}`} aria-hidden="true" />
+              <div>
+                <strong>{weather.temperature}°</strong>
+                <span>{weather.condition}</span>
+              </div>
             </div>
             <div className="weatherDetails">
-              <span>체감 {weather.apparentTemperature}°</span>
-              <span>습도 {weather.humidity}%</span>
-              <span>최대 강수 {weather.precipitationProbability ?? 0}%</span>
-              <span>바람 {weather.windSpeed}km/h</span>
+              <span>
+                <small>체감</small>
+                <strong>{weather.apparentTemperature}°</strong>
+              </span>
+              <span>
+                <small>습도</small>
+                <strong>{weather.humidity}%</strong>
+              </span>
+              <span>
+                <small>강수</small>
+                <strong>{weather.precipitationProbability ?? 0}%</strong>
+              </span>
+              <span>
+                <small>바람</small>
+                <strong>{weather.windSpeed}km/h</strong>
+              </span>
             </div>
             {weather.hourly && weather.hourly.length > 0 && (
               <div

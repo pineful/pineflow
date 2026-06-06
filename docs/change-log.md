@@ -105,3 +105,7 @@
 - 모바일 최근 기록에서 항상 보이던 큰 삭제 버튼을 제거하고, 삭제는 펼친 세션 내부의 확인 단계에서만 실행되도록 정리했습니다.
 - `docs/research/recent-session-history-ux-2026-06-05.md`, `docs/modules/recording.md`, `docs/llm-context.md`, `docs/status.md`에 최근 기록의 요약/접힘 원칙을 반영했습니다.
 - 상단 대시보드의 오른쪽 시계, 세션 커맨드, 출근/퇴근 CTA를 `dashboardCommandStack`으로 묶어 왼쪽 그래프 높이 때문에 오른쪽 영역에 큰 빈 공간이 생기던 desktop/tablet 배치 문제를 수정했습니다.
+- 최근 기록 위에 `Workday Lens`를 추가해 월요일 시작 7일 기준으로 기록 있음, 진행 중, 주말, 공휴일/명절, 빈 날을 한눈에 볼 수 있게 했습니다.
+- 최근 기록 요약 행을 `IN -> OUT` 미니 레일과 endpoint data pill 중심으로 다시 압축해 출근/퇴근 세트와 총 시간을 데이터 표처럼 나열하지 않도록 정리했습니다.
+- 날씨 영역을 graphite `Forecast Ribbon` 표면으로 다시 맞추고, 현재 날씨 glyph, 체감/습도/강수/바람 data tile, 시간대별 그래프/슬롯이 같은 계기판 안에서 읽히도록 정리했습니다.
+- Google Calendar 연동은 OAuth/개인 일정 데이터 취급이 필요한 변경으로 분리하고, 이번에는 UI 기반과 연구 문서만 추가했습니다.

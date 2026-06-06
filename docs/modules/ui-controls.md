@@ -52,10 +52,19 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 
 컨트롤 외곽을 바꿀 때는 단일 selector만 고치지 말고, 같은 의미를 가진 컨트롤군 전체가 같은 문법을 쓰는지 확인합니다. 예를 들어 기록 수정 화면의 `기록 종류`, `날짜`, `오전/오후`, `시/분 입력`, `빠른 보정`, `저장/취소`는 서로 다른 역할이므로 같은 모양으로 통일하면 안 됩니다.
 
+2026-06-06 이후 최근 기록과 날씨 보조 영역도 같은 기준을 따릅니다.
+
+- `Workday Lens` 날짜 tile은 입력 필드가 아니라 읽기/탐색용 요약 tile입니다. 짧은 휴일 라벨, 진행률 bar, mode glyph만 허용하고 큰 버튼처럼 보이면 안 됩니다.
+- 최근 기록의 `IN`/`OUT` 시간 pill은 data slot입니다. 클릭 가능한 endpoint는 펼친 세부 영역에서만 버튼처럼 보입니다.
+- 세션 목록의 기본 행에 삭제 버튼을 노출하지 않습니다. 위험 동작은 사용자가 세션을 펼친 뒤 confirmation deck에서만 나타납니다.
+- 날씨 지표 tile은 클릭 가능한 버튼이 아니므로 hover 시 CTA처럼 강하게 반응하지 않습니다.
+- graphite 표면 위의 cyan은 데이터 흐름, amber는 완료/목표/명령, coral은 위험 동작에만 사용합니다.
+
 ## 참고 문서
 
 - `docs/research/groupware-control-shape-2026-06-04.md`
 - `docs/research/futuristic-ui-selection-2026-06-05.md`
+- `docs/research/workday-calendar-weather-ux-2026-06-06.md`
 - `docs/modules/recording.md`
 - `docs/modules/microinteractions.md`
 - `docs/modules/branding.md`

@@ -92,6 +92,10 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 최근 기록이 공간을 과하게 차지하고 출근/퇴근 세트가 잘 보이지 않는 문제를 반영해 세션 단위 `Session Strip`으로 재설계. 같은 session id의 출근/퇴근을 한 카드 안의 `IN -> OUT` rail로 묶고 총 시간, 상태, 업무 유형, 메모를 요약.
 - 최근 기록 `Session Strip`을 요약 우선 구조로 보강. 기본 목록에서는 날짜, 시간 범위, 총 시간, 업무 유형, 메모 미리보기만 보이고, `IN/OUT` 수정과 세션 삭제는 사용자가 세션을 펼쳤을 때만 노출.
 - 상단 대시보드 오른쪽의 현재 시각, 세션 커맨드, 출근/퇴근 CTA를 하나의 `dashboardCommandStack`으로 묶어 desktop/tablet에서 불필요한 빈 공간이 생기지 않도록 수정.
+- 최근 기록 위에 `Workday Lens`를 추가해 월요일 시작 7일 기준의 working day 흐름, 진행 중인 날, 공휴일/명절, 주말, 빈 날을 작은 tile로 요약.
+- 최근 기록 요약을 `IN -> OUT` endpoint data pill과 작은 진행 레일 중심으로 압축해 출근/퇴근 세트와 누적 시간을 더 직관적으로 표시.
+- 날씨 영역의 밝은 하위 카드를 graphite `Forecast Ribbon` data tile로 정리하고 현재 날씨 glyph, 기초 지표, 예보 그래프/슬롯이 같은 시간축 안에서 읽히도록 보강.
+- Google Calendar 일정 연동은 OAuth와 개인 일정 데이터 취급이 필요하므로 구현하지 않고, 향후 ADR 대상과 UI 기반만 문서화.
 
 ## 검증됨
 

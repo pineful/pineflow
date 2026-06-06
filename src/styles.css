@@ -5050,3 +5050,490 @@ button.sessionEndpoint:hover:not(:disabled) {
     justify-self: start;
   }
 }
+
+/* 2026-06-06 Workday Lens and compact session telemetry.
+   Recent history reads as a weekly operating board plus concise IN/OUT rails. */
+.workdayLens {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 12px;
+  color: #eef7ff;
+  border: 1px solid rgba(91, 220, 255, 0.28);
+  background:
+    linear-gradient(135deg, rgba(16, 25, 39, 0.96), rgba(9, 15, 25, 0.94)),
+    #101722;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 28px rgba(4, 10, 18, 0.18);
+  clip-path: var(--clip-command);
+}
+
+.workdayLensHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.workdayLensHeader div {
+  display: grid;
+  gap: 2px;
+}
+
+.workdayLensHeader span,
+.workdayLensHeader em {
+  color: #9fb4cc;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.workdayLensHeader strong {
+  color: #f5f9ff;
+  font-size: 1rem;
+}
+
+.workdayLensHeader em {
+  padding: 4px 8px;
+  color: #151b21;
+  background: linear-gradient(90deg, #5bdcff, #b7f3cc);
+  clip-path: var(--clip-compact-command);
+}
+
+.workdayLensRail {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.workdayTile {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 88px;
+  align-content: start;
+  gap: 3px;
+  overflow: hidden;
+  padding: 9px 8px 18px;
+  color: #dfeeff;
+  border: 1px solid rgba(126, 158, 200, 0.22);
+  background:
+    linear-gradient(180deg, rgba(22, 32, 48, 0.9), rgba(12, 19, 31, 0.86)),
+    rgba(12, 18, 29, 0.9);
+  clip-path: var(--clip-compact-command);
+}
+
+.workdayTile.today {
+  border-color: rgba(91, 220, 255, 0.64);
+  box-shadow: 0 0 0 1px rgba(91, 220, 255, 0.16);
+}
+
+.workdayTile.holiday,
+.workdayTile.weekend {
+  background:
+    linear-gradient(180deg, rgba(37, 30, 28, 0.84), rgba(17, 18, 28, 0.9)),
+    rgba(15, 20, 31, 0.9);
+}
+
+.workdayTile.open {
+  border-color: rgba(255, 180, 77, 0.52);
+}
+
+.workdayTile span {
+  color: #9fb4cc;
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.workdayTile strong {
+  color: #f8fbff;
+  font-size: 1.18rem;
+  line-height: 1;
+}
+
+.workdayTile small {
+  min-width: 0;
+  overflow: hidden;
+  color: #c6d8eb;
+  font-size: 0.64rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workdayTile em {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  font-style: normal;
+  font-size: 0.76rem;
+}
+
+.workdayTile b {
+  min-width: 0;
+  overflow: hidden;
+  color: #ffdca0;
+  font-size: 0.58rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workdayTile i {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: rgba(126, 158, 200, 0.18);
+}
+
+.workdayTile i::before {
+  display: block;
+  width: var(--day-progress);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5bdcff, #ffb44d);
+  content: "";
+}
+
+.sessionItem {
+  padding: 5px 6px;
+}
+
+.sessionSummaryButton {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 9px 10px 9px 11px;
+}
+
+.sessionSummary {
+  gap: 7px;
+}
+
+.sessionTitleLine {
+  justify-content: space-between;
+}
+
+.sessionMeta {
+  flex-wrap: wrap;
+}
+
+.sessionTimeCompact {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  font-size: 0.94rem;
+}
+
+.sessionFlowLine {
+  display: grid;
+  grid-template-columns: minmax(72px, auto) minmax(68px, 1fr) minmax(72px, auto);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sessionTimePill {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid rgba(126, 158, 200, 0.24);
+  background: rgba(10, 17, 28, 0.72);
+  clip-path: var(--clip-compact-command);
+}
+
+.sessionTimePill.in {
+  border-left: 3px solid #5bdcff;
+}
+
+.sessionTimePill.out {
+  border-left: 3px solid #ffb44d;
+}
+
+.sessionTimePill.out.open {
+  border-left-color: #b7f3cc;
+}
+
+.sessionTimePill small {
+  color: #8ea8c5;
+  font-size: 0.54rem;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+}
+
+.sessionTimePill strong {
+  overflow: hidden;
+  color: #f7fbff;
+  font-size: 0.82rem;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionRail {
+  position: relative;
+  display: block;
+  height: 18px;
+  min-width: 42px;
+}
+
+.sessionRail::before,
+.sessionRail i {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  transform: translateY(-50%);
+  content: "";
+}
+
+.sessionRail::before {
+  right: 0;
+  background: rgba(126, 158, 200, 0.22);
+}
+
+.sessionRail i {
+  width: max(14px, var(--session-progress));
+  background: linear-gradient(90deg, #5bdcff, #ffb44d);
+}
+
+.sessionRail::after {
+  position: absolute;
+  top: 50%;
+  right: -1px;
+  width: 7px;
+  height: 7px;
+  border-top: 2px solid #ffce7f;
+  border-right: 2px solid #ffce7f;
+  transform: translateY(-50%) rotate(45deg);
+  content: "";
+}
+
+.weatherGrid {
+  grid-template-columns: minmax(170px, 0.78fr) minmax(220px, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+.weatherMain,
+.weatherDetails,
+.weatherChart,
+.weatherSlot {
+  color: #eff7ff;
+  border-color: rgba(91, 220, 255, 0.26);
+  background:
+    linear-gradient(145deg, rgba(20, 31, 47, 0.94), rgba(9, 15, 25, 0.92)),
+    rgba(10, 16, 26, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 22px rgba(3, 8, 15, 0.16);
+}
+
+.weatherMain {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  align-content: center;
+  min-height: 104px;
+  padding: 14px;
+}
+
+.weatherGlyphLarge {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 42% 42%, #ffda71 0 31%, transparent 32%),
+    linear-gradient(135deg, rgba(255, 180, 77, 0.28), rgba(91, 220, 255, 0.18));
+  box-shadow: inset 0 0 0 1px rgba(255, 220, 160, 0.24);
+}
+
+.weatherGlyphLarge.cloud::before,
+.weatherGlyphLarge.rain::before,
+.weatherGlyphLarge.snow::before {
+  position: absolute;
+  right: 7px;
+  bottom: 14px;
+  width: 36px;
+  height: 18px;
+  border-radius: 20px;
+  background: #b7c8c2;
+  box-shadow: -12px -2px 0 -2px #d6e4df;
+  content: "";
+}
+
+.weatherGlyphLarge.rain::after {
+  position: absolute;
+  right: 19px;
+  bottom: 7px;
+  width: 4px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: #5bdcff;
+  box-shadow: 11px -2px 0 #5bdcff;
+  transform: skewX(-12deg);
+  content: "";
+}
+
+.weatherGlyphLarge.snow::after {
+  position: absolute;
+  right: 18px;
+  bottom: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #dbf7ff;
+  box-shadow: 12px -3px 0 #dbf7ff;
+  content: "";
+}
+
+.weatherMain strong {
+  color: #f7fbff;
+  font-size: 2.7rem;
+}
+
+.weatherMain span {
+  color: #c4d5e7;
+  font-weight: 850;
+}
+
+.weatherDetails {
+  min-height: 104px;
+  gap: 8px;
+  padding: 10px;
+}
+
+.weatherDetails span {
+  place-items: center start;
+  min-height: 40px;
+  padding: 9px 10px;
+  color: #f4f8ff;
+  border: 1px solid rgba(126, 158, 200, 0.18);
+  background: rgba(8, 14, 24, 0.56);
+  box-shadow: inset 3px 0 0 rgba(91, 220, 255, 0.22);
+  text-align: left;
+  clip-path: var(--clip-compact-command);
+}
+
+.weatherDetails small {
+  color: #90a9c3;
+  font-size: 0.58rem;
+  font-weight: 900;
+}
+
+.weatherDetails strong {
+  color: #f6fbff;
+  font-size: 0.92rem;
+}
+
+.weatherForecastScroller {
+  min-width: 0;
+  padding: 2px 2px 8px;
+  scrollbar-color: rgba(91, 220, 255, 0.72) rgba(8, 14, 24, 0.68);
+}
+
+.weatherChart {
+  padding: 12px 0 8px;
+}
+
+.chartGrid {
+  stroke: rgba(144, 169, 195, 0.28);
+}
+
+.chartLabel,
+.chartLegend {
+  fill: #9fb4cc;
+  color: #9fb4cc;
+}
+
+.chartLegend strong {
+  color: #f6fbff;
+}
+
+.chartPoint {
+  stroke: #101722;
+}
+
+.weatherSlot {
+  flex-basis: 100px;
+  min-height: 118px;
+  padding: 10px;
+}
+
+.weatherSlot span,
+.weatherSlot small,
+.weatherSlot em {
+  color: #aebfd2;
+}
+
+.weatherSlot strong {
+  color: #f6fbff;
+}
+
+.weatherSlot em::before {
+  background: linear-gradient(90deg, #5bdcff var(--rain), rgba(126, 158, 200, 0.22) var(--rain));
+}
+
+@media (max-width: 720px) {
+  .workdayLensRail {
+    gap: 4px;
+  }
+
+  .workdayTile {
+    min-height: 76px;
+    padding: 8px 6px 16px;
+  }
+
+  .workdayTile b {
+    display: none;
+  }
+
+  .weatherGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .workdayLens {
+    padding: 10px;
+  }
+
+  .workdayLensHeader {
+    align-items: start;
+  }
+
+  .workdayTile span {
+    font-size: 0.58rem;
+  }
+
+  .workdayTile strong {
+    font-size: 0.98rem;
+  }
+
+  .workdayTile small {
+    font-size: 0.54rem;
+  }
+
+  .sessionFlowLine {
+    grid-template-columns: minmax(66px, 1fr) minmax(34px, 0.55fr) minmax(66px, 1fr);
+    gap: 5px;
+  }
+
+  .sessionTimePill {
+    padding: 6px;
+  }
+
+  .sessionTimePill strong {
+    font-size: 0.72rem;
+  }
+
+  .sessionExpandCue {
+    min-width: 36px;
+  }
+}
