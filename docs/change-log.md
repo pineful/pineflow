@@ -104,3 +104,4 @@
 - 최근 기록 `Session Strip`을 요약 우선형으로 바꿨습니다. 기본 상태에서는 날짜, `출근 -> 퇴근` 시간 범위, 총 시간, 업무 유형, 메모 미리보기만 보여주고, `IN/OUT` 시간 수정과 `세션 삭제`는 사용자가 세션을 펼친 뒤에만 보이도록 했습니다.
 - 모바일 최근 기록에서 항상 보이던 큰 삭제 버튼을 제거하고, 삭제는 펼친 세션 내부의 확인 단계에서만 실행되도록 정리했습니다.
 - `docs/research/recent-session-history-ux-2026-06-05.md`, `docs/modules/recording.md`, `docs/llm-context.md`, `docs/status.md`에 최근 기록의 요약/접힘 원칙을 반영했습니다.
+- 상단 대시보드의 오른쪽 시계, 세션 커맨드, 출근/퇴근 CTA를 `dashboardCommandStack`으로 묶어 왼쪽 그래프 높이 때문에 오른쪽 영역에 큰 빈 공간이 생기던 desktop/tablet 배치 문제를 수정했습니다.

@@ -615,6 +615,13 @@ h1 {
   background: #f5dfd9;
 }
 
+.dashboardCommandStack {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+  align-content: start;
+}
+
 .clockBlock {
   display: grid;
   gap: 8px;
@@ -4402,9 +4409,8 @@ button.delete {
     grid-template-areas:
       "top top"
       "signal signal"
-      "flow clock"
-      "flow command"
-      "flow action";
+      "flow side";
+    align-items: start;
   }
 
   .topBar {
@@ -4421,16 +4427,16 @@ button.delete {
     grid-row: auto;
   }
 
-  .clockBlock {
-    grid-area: clock;
+  .dashboardCommandStack {
+    grid-area: side;
+    align-self: start;
   }
 
-  .recordSetup {
-    grid-area: command;
-  }
-
-  .actionPanel {
-    grid-area: action;
+  .dashboardCommandStack > .clockBlock,
+  .dashboardCommandStack > .recordSetup,
+  .dashboardCommandStack > .actionPanel {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 

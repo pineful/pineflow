@@ -1856,96 +1856,98 @@ function App() {
           greeting={dashboardGreeting(now)}
         />
 
-        <div className="clockBlock">
-          <p>{formatDate(now)}</p>
-          <strong>{formatTime(now)}</strong>
-          <span>{tagline}</span>
-        </div>
-
-        <div className="recordSetup">
-          <div className="recordSetupTitle">
-            <strong>{isActive ? "세션 모니터" : "세션 커맨드"}</strong>
-            <span>{isActive ? "현재 기록값" : "모드 · 메모 · 실행"}</span>
+        <div className="dashboardCommandStack">
+          <div className="clockBlock">
+            <p>{formatDate(now)}</p>
+            <strong>{formatTime(now)}</strong>
+            <span>{tagline}</span>
           </div>
-          {isActive ? (
-            <div className="activePlan compact">
-              <div>
-                <span>종류</span>
-                <strong>{modeLabels[mode]}</strong>
-              </div>
-              <div>
-                <span>메모</span>
-                <strong>{activeIntent || "메모 없음"}</strong>
-              </div>
-              <div>
-                <span>시작</span>
-                <strong>{activeCheckInAt ? formatTime(activeCheckInAt) : "--:--"}</strong>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="modeControl compact" role="tablist" aria-label="기록 유형">
-                {workModes.map((workMode) => (
-                  <button
-                    key={workMode}
-                    className={mode === workMode ? "selected" : ""}
-                    type="button"
-                    onClick={() => {
-                      playFeedback("tap");
-                      setMode(workMode);
-                      setNote("");
-                    }}
-                  >
-                    <strong>{modeLabels[workMode]}</strong>
-                    <span>{modeDescriptions[workMode]}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="planChips compact" aria-label="자주 쓰는 메모">
-                {selectedModePlan.map((plan) => (
-                  <button
-                    key={plan}
-                    className={note === plan ? "selected" : ""}
-                    type="button"
-                    onClick={() => {
-                      playFeedback("tap");
-                      setNote(plan);
-                    }}
-                  >
-                    {plan}
-                  </button>
-                ))}
-              </div>
-              <label className="noteField compact">
-                <span>기록에 남길 메모</span>
-                <input
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                  placeholder="예: Pineflow 화면 정리"
-                />
-              </label>
-            </>
-          )}
-        </div>
 
-        <div className="actionPanel">
-          <button
-            className="primaryAction"
-            type="button"
-            disabled={isRecordActionDisabled}
-            onClick={isActive ? checkOut : checkIn}
-          >
-            <span>{isActive ? "퇴근 기록" : "출근 기록"}</span>
-            <small>
-              {isLoading
-                ? "내 기록을 불러오는 중입니다"
-                : isActive
-                  ? "오늘의 세션을 마칩니다"
-                  : note
-                    ? `${note} 기록으로 시작합니다`
-                    : `${modeLabels[mode]} 기록으로 시작합니다`}
-            </small>
-          </button>
+          <div className="recordSetup">
+            <div className="recordSetupTitle">
+              <strong>{isActive ? "세션 모니터" : "세션 커맨드"}</strong>
+              <span>{isActive ? "현재 기록값" : "모드 · 메모 · 실행"}</span>
+            </div>
+            {isActive ? (
+              <div className="activePlan compact">
+                <div>
+                  <span>종류</span>
+                  <strong>{modeLabels[mode]}</strong>
+                </div>
+                <div>
+                  <span>메모</span>
+                  <strong>{activeIntent || "메모 없음"}</strong>
+                </div>
+                <div>
+                  <span>시작</span>
+                  <strong>{activeCheckInAt ? formatTime(activeCheckInAt) : "--:--"}</strong>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="modeControl compact" role="tablist" aria-label="기록 유형">
+                  {workModes.map((workMode) => (
+                    <button
+                      key={workMode}
+                      className={mode === workMode ? "selected" : ""}
+                      type="button"
+                      onClick={() => {
+                        playFeedback("tap");
+                        setMode(workMode);
+                        setNote("");
+                      }}
+                    >
+                      <strong>{modeLabels[workMode]}</strong>
+                      <span>{modeDescriptions[workMode]}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="planChips compact" aria-label="자주 쓰는 메모">
+                  {selectedModePlan.map((plan) => (
+                    <button
+                      key={plan}
+                      className={note === plan ? "selected" : ""}
+                      type="button"
+                      onClick={() => {
+                        playFeedback("tap");
+                        setNote(plan);
+                      }}
+                    >
+                      {plan}
+                    </button>
+                  ))}
+                </div>
+                <label className="noteField compact">
+                  <span>기록에 남길 메모</span>
+                  <input
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    placeholder="예: Pineflow 화면 정리"
+                  />
+                </label>
+              </>
+            )}
+          </div>
+
+          <div className="actionPanel">
+            <button
+              className="primaryAction"
+              type="button"
+              disabled={isRecordActionDisabled}
+              onClick={isActive ? checkOut : checkIn}
+            >
+              <span>{isActive ? "퇴근 기록" : "출근 기록"}</span>
+              <small>
+                {isLoading
+                  ? "내 기록을 불러오는 중입니다"
+                  : isActive
+                    ? "오늘의 세션을 마칩니다"
+                    : note
+                      ? `${note} 기록으로 시작합니다`
+                      : `${modeLabels[mode]} 기록으로 시작합니다`}
+              </small>
+            </button>
+          </div>
         </div>
       </section>
 
