@@ -4984,6 +4984,27 @@ button.sessionEndpoint:hover:not(:disabled) {
   clip-path: var(--clip-command);
 }
 
+.sessionDetailHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 2px 0;
+}
+
+.sessionDetailHeader span {
+  color: #f4f8ff;
+  font-size: 0.74rem;
+  font-weight: 950;
+}
+
+.sessionDetailHeader small {
+  color: #9fb4cc;
+  font-size: 0.64rem;
+  font-weight: 850;
+  text-align: right;
+}
+
 .sessionDetails .sessionPair {
   margin-top: 0;
   padding: 5px;
@@ -4995,6 +5016,47 @@ button.sessionEndpoint:hover:not(:disabled) {
   min-height: 42px;
   padding: 6px 7px;
   box-shadow: none;
+}
+
+.sessionDetailNote {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  color: #f3f8ff;
+  border: 1px solid rgba(126, 158, 200, 0.16);
+  background: rgba(8, 14, 24, 0.5);
+  clip-path: var(--clip-compact-command);
+}
+
+.sessionDetailNote > span {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(91, 220, 255, 0.2);
+  background: rgba(91, 220, 255, 0.08);
+}
+
+.sessionDetailNote div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.sessionDetailNote small {
+  color: #9fb4cc;
+  font-size: 0.58rem;
+  font-weight: 900;
+}
+
+.sessionDetailNote strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #f4f8ff;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .sessionDetailsActions {
@@ -5235,6 +5297,40 @@ button.sessionEndpoint:hover:not(:disabled) {
   align-items: center;
   gap: 8px;
   width: 100%;
+}
+
+.sessionFlowLine.summaryOnly {
+  grid-template-columns: 34px minmax(80px, 1fr) 44px;
+  max-width: 560px;
+}
+
+.sessionFlowMark {
+  display: inline-grid;
+  min-width: 0;
+  min-height: 28px;
+  place-items: center;
+  border: 1px solid rgba(126, 158, 200, 0.18);
+  background: rgba(10, 17, 28, 0.56);
+  clip-path: var(--clip-compact-command);
+}
+
+.sessionFlowMark.in {
+  border-left: 3px solid #5bdcff;
+}
+
+.sessionFlowMark.out {
+  border-left: 3px solid #ffb44d;
+}
+
+.sessionFlowMark.open {
+  border-left-color: #b7f3cc;
+}
+
+.sessionFlowMark small {
+  color: #b9d3f0;
+  font-size: 0.56rem;
+  font-weight: 950;
+  letter-spacing: 0.02em;
 }
 
 .sessionTimePill {
@@ -5523,6 +5619,10 @@ button.sessionEndpoint:hover:not(:disabled) {
   .sessionFlowLine {
     grid-template-columns: minmax(66px, 1fr) minmax(34px, 0.55fr) minmax(66px, 1fr);
     gap: 5px;
+  }
+
+  .sessionFlowLine.summaryOnly {
+    grid-template-columns: 32px minmax(44px, 1fr) 40px;
   }
 
   .sessionTimePill {

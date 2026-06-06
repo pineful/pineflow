@@ -2129,8 +2129,6 @@ function App() {
                 : session.isOpen
                   ? `진행 ${formatDuration(session.durationMinutes)}`
                   : formatDuration(session.durationMinutes);
-            const inLabel = session.checkIn ? formatTime(session.checkIn.timestamp) : "--:--";
-            const outLabel = session.checkOut ? formatTime(session.checkOut.timestamp) : session.isOpen ? "진행 중" : "--:--";
             const sessionProgress =
               session.durationMinutes === undefined || state.dailyGoalMinutes <= 0
                 ? 0
@@ -2176,17 +2174,15 @@ function App() {
                         <span className="sessionDuration">{durationLabel}</span>
                       </span>
                       <span className="sessionTimeCompact">
-                        <span className="sessionFlowLine" aria-label={`출근 ${inLabel}, 퇴근 ${outLabel}`}>
-                          <span className="sessionTimePill in">
+                        <span className="sessionFlowLine summaryOnly" aria-label={`${durationLabel} 세션 흐름`}>
+                          <span className="sessionFlowMark in">
                             <small>IN</small>
-                            <strong>{inLabel}</strong>
                           </span>
                           <span className="sessionRail" aria-hidden="true">
                             <i />
                           </span>
-                          <span className={session.isOpen ? "sessionTimePill out open" : "sessionTimePill out"}>
-                            <small>OUT</small>
-                            <strong>{outLabel}</strong>
+                          <span className={session.isOpen ? "sessionFlowMark out open" : "sessionFlowMark out"}>
+                            <small>{session.isOpen ? "NOW" : "OUT"}</small>
                           </span>
                         </span>
                         {session.spansDays && <small>날짜를 넘어 이어진 세션</small>}
@@ -2204,6 +2200,10 @@ function App() {
                   </button>
                   {isExpandedSession && (
                     <div className="sessionDetails">
+                      <div className="sessionDetailHeader">
+                        <span>시간 보정</span>
+                        <small>{session.spansDays ? "날짜를 넘어 이어진 세션" : "정확한 출근/퇴근 시각"}</small>
+                      </div>
                       <div className="sessionPair" aria-label="출근과 퇴근 세트">
                         {session.checkIn ? (
                           <button
@@ -2247,6 +2247,15 @@ function App() {
                           </div>
                         )}
                       </div>
+                      {notePreview && (
+                        <div className="sessionDetailNote">
+                          <span aria-hidden="true">{modeIcons[session.mode]}</span>
+                          <div>
+                            <small>기록 메모</small>
+                            <strong>{notePreview}</strong>
+                          </div>
+                        </div>
+                      )}
                       {isEditingSession && (
                         <>
                           <RecordTimeEditor
