@@ -28,6 +28,7 @@ Pineflow는 개인 출퇴근 기록 서비스지만 실제 사용 장면은 그�
 - 선택 컨트롤은 입력 필드처럼 보이면 안 됩니다. 선택 상태는 cyan fill, 밝은 border, amber secondary accent, 체크 표시 등으로 구분합니다.
 - 빠른 보정, 취소, 목표 수정 같은 보조 실행은 낮은 배경, 얇은 border, 작은 inset highlight를 사용합니다.
 - 출근/퇴근, 저장처럼 상태를 바꾸는 실행 버튼은 하나의 강한 CTA로 읽혀야 합니다. amber/orange command gradient, 선명한 border, shadow로 다른 버튼보다 즉시 눈에 들어와야 합니다.
+- 밝은 amber/orange command CTA 위의 텍스트는 반드시 어두운 전경색을 사용합니다. graphite 표면용 밝은 텍스트를 CTA 내부 제목이나 설명에 재사용하면 대비가 무너져 로그인/저장 같은 핵심 명령을 읽을 수 없습니다.
 - 삭제, 로그아웃처럼 되돌리기 어렵거나 세션을 끝내는 동작은 일반 보조 버튼과 같은 외곽을 쓰지 않습니다. danger 색, border, focus ring으로 분리합니다.
 - elevation은 팝오버, toast, 임시 편집 패널처럼 화면 위에 뜨는 레이어에 우선 사용합니다. 반복되는 기록 카드와 날씨 카드에 강한 shadow를 남발하지 않습니다.
 - disabled 상태는 저장/삭제 중 같은 진행 상태와 아직 사용할 수 없는 기능을 구분해야 합니다. 진행 상태는 wait cursor를 쓸 수 있지만, 미구현/비활성 기능은 default cursor와 낮은 대비를 씁니다.

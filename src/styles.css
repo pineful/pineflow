@@ -3833,6 +3833,13 @@ textarea::placeholder,
     inset 0 -18px 30px rgba(96, 52, 0, 0.16);
 }
 
+.primaryAction span,
+.timelineEditFooter .save,
+.goalEditorActions button:last-child {
+  color: #111015;
+  text-shadow: none;
+}
+
 .primaryAction:hover:not(:disabled),
 .timelineEditFooter .save:hover:not(:disabled),
 .goalEditorActions button:last-child:hover:not(:disabled) {
