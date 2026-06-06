@@ -5474,8 +5474,12 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .weatherGrid {
-  grid-template-columns: minmax(170px, 0.78fr) minmax(220px, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
+  min-width: 0;
+}
+
+.weatherGrid > * {
   min-width: 0;
 }
 
@@ -5497,6 +5501,7 @@ button.sessionEndpoint:hover:not(:disabled) {
   grid-template-columns: auto 1fr;
   align-items: center;
   align-content: center;
+  width: 100%;
   min-height: 104px;
   padding: 14px;
 }
@@ -5562,6 +5567,7 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .weatherDetails {
+  width: 100%;
   min-height: 104px;
   gap: 8px;
   padding: 10px;
@@ -5591,9 +5597,16 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .weatherForecastScroller {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   padding: 2px 2px 8px;
   scrollbar-color: rgba(91, 220, 255, 0.72) rgba(8, 14, 24, 0.68);
+}
+
+.weatherForecastTrack {
+  width: max(100%, var(--forecast-width));
 }
 
 .weatherChart {
