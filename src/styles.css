@@ -5714,6 +5714,10 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .intelligenceBand {
+  grid-column: 1 / -1;
+  padding: 18px;
+  border: 1px solid rgba(91, 220, 255, 0.28);
+  border-radius: var(--radius-card);
   color: #eef8ff;
   border-color: rgba(91, 220, 255, 0.26);
   background:
@@ -5737,6 +5741,13 @@ button.sessionEndpoint:hover:not(:disabled) {
 .intelligencePanel {
   display: grid;
   gap: 14px;
+}
+
+.intelligenceSnapshot {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(260px, 0.72fr);
+  gap: 12px;
+  align-items: stretch;
 }
 
 .intelligenceHeader {
@@ -5846,6 +5857,72 @@ button.sessionEndpoint:hover:not(:disabled) {
   gap: 10px;
 }
 
+.briefQueue {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(91, 220, 255, 0.2);
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(145deg, rgba(11, 24, 40, 0.94), rgba(17, 31, 50, 0.8)),
+    rgba(10, 22, 36, 0.7);
+}
+
+.briefQueue > span {
+  color: rgba(222, 240, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.briefQueue a,
+.briefQueue p {
+  min-width: 0;
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(91, 220, 255, 0.16);
+  border-radius: 5px;
+  color: inherit;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.briefQueue a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.briefQueue b {
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: #06131c;
+  background: #5bdcff;
+  font-size: 0.62rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.briefQueue strong {
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 920;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.briefQueue small {
+  grid-column: 2;
+  overflow: hidden;
+  color: rgba(222, 240, 255, 0.64);
+  font-size: 0.66rem;
+  font-weight: 780;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .trendItem {
   display: grid;
   gap: 8px;
@@ -5936,6 +6013,167 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendLensDetails {
   display: grid;
   gap: 12px;
+}
+
+.trendTabsPanel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(91, 220, 255, 0.24);
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(145deg, rgba(13, 26, 44, 0.96), rgba(8, 17, 30, 0.94)),
+    #0c1624;
+}
+
+.trendTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.trendTabs button {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 9px;
+  border: 1px solid rgba(91, 220, 255, 0.22);
+  border-radius: 5px;
+  color: rgba(238, 248, 255, 0.82);
+  background: rgba(255, 255, 255, 0.045);
+  font-weight: 920;
+  text-align: left;
+  box-shadow: inset 3px 0 0 rgba(91, 220, 255, 0.28);
+}
+
+.trendTabs button.active {
+  color: #06131c;
+  border-color: rgba(91, 220, 255, 0.8);
+  background:
+    linear-gradient(135deg, #76e8ff, #5bdcff 62%, #ffd38d 150%),
+    #5bdcff;
+  box-shadow:
+    0 12px 28px rgba(91, 220, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.trendTabs span {
+  overflow: hidden;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trendTabs small {
+  color: currentColor;
+  font-size: 0.62rem;
+  opacity: 0.72;
+}
+
+.trendCategoryPanel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.trendCategoryPanel > div {
+  display: grid;
+  gap: 4px;
+}
+
+.trendCategoryPanel span {
+  color: rgba(222, 240, 255, 0.68);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.trendCategoryPanel strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.trendCategoryPanel p {
+  margin: 0;
+  color: rgba(222, 240, 255, 0.72);
+  font-size: 0.76rem;
+  font-weight: 760;
+  line-height: 1.5;
+}
+
+.trendFocusList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trendFocusList li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(91, 220, 255, 0.16);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.trendFocusList li b {
+  align-self: start;
+  padding: 4px 7px;
+  border-radius: 4px;
+  color: #06131c;
+  background: #5bdcff;
+  font-size: 0.64rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.trendFocusList li.priorityUrgent b {
+  color: #fff;
+  background: #ff6b5f;
+}
+
+.trendFocusList li.priorityHigh b {
+  background: #f6c247;
+}
+
+.trendFocusList li.priorityWatch b {
+  background: #7ee0b1;
+}
+
+.trendFocusList a {
+  overflow: hidden;
+  color: #f8fcff;
+  font-size: 0.82rem;
+  font-weight: 920;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trendFocusList p,
+.trendFocusList small {
+  grid-column: 2;
+}
+
+.trendFocusList p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.trendFocusList small {
+  overflow: hidden;
+  color: rgba(222, 240, 255, 0.62);
+  font-size: 0.68rem;
+  font-weight: 780;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .trendLensDetails summary {
@@ -6079,6 +6317,10 @@ button.sessionEndpoint:hover:not(:disabled) {
     grid-template-columns: 1fr;
   }
 
+  .intelligenceSnapshot {
+    grid-template-columns: 1fr;
+  }
+
   .intelligenceActions {
     justify-content: stretch;
   }
@@ -6088,6 +6330,7 @@ button.sessionEndpoint:hover:not(:disabled) {
   }
 
   .briefGrid,
+  .trendTabs,
   .trendSectionGrid,
   .trendSourceList {
     grid-template-columns: 1fr;

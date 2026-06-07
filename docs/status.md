@@ -128,5 +128,6 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - KISA 보안공지 RSS, KISA 취약점 정보 RSS, CISA KEV JSON, Wikimedia Pageviews API를 v1 allowlist source로 사용한다.
 - Google Trends는 공식 API alpha와 비용/키 관리 검토가 필요하므로 v1에서는 `준비` 상태로 문서화했다.
 - DynamoDB TTL `expiresAt`을 활성화해 Trend Lens snapshot과 manual cooldown guard item을 정리한다.
-- 첫 화면 최근 기록 아래에 `Trend Lens` / `오늘 브리프` 영역을 추가했다. 상세 분야와 source 상태는 접힘 영역으로 제공한다.
+- 첫 화면 최근 기록 아래에 `Trend Lens` / `오늘 브리프` 영역을 추가했다. 상세 분야는 탭으로 제공하고, source 상태는 접힘 영역으로 제공한다.
+- 전체 새로고침은 source 병렬 수집으로 보완했고, 강제 refresh는 짧은 연타 방지 cooldown만 적용한다.
 - Trend Lens 설계 문서, 리서치 문서, ADR 0008, API 계약, 보안/비용/저장소/배포 체크리스트를 갱신했다.

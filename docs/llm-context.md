@@ -162,6 +162,8 @@ Trend Lens v1 원칙:
 - `GET /api/trend-lens`는 DynamoDB 캐시만 읽고 외부 source를 호출하지 않는다.
 - 모든 API route는 JWT authorizer가 필요하다. EventBridge 내부 이벤트는 public route가 아니다.
 - 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
+- 전체 refresh는 source를 병렬로 수집하고, source별 실패는 전체 API 실패가 아니라 `sourceStatuses`로 낮춰 기록한다.
+- Trend Lens UI는 분야 전체를 한 번에 늘어놓지 않는다. 오늘 브리프 lead/queue와 `보안`, `만돌린`, `IT 콘텐츠`, `교육` 탭으로 한 분야씩 보여준다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - 캐시는 `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#LATEST`, `sk=TREND_LENS#SNAPSHOT#YYYY-MM-DD`에 저장한다.
 - DynamoDB TTL `expiresAt`으로 cache/guard item을 정리한다.

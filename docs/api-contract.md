@@ -352,8 +352,9 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
 제약:
 
 - URL, host, 임의 keyword 입력은 허용하지 않는다.
-- `all` 수동 갱신은 6시간 cooldown을 둔다.
-- `security` 수동 갱신은 30분 cooldown을 둔다.
+- `all` 수동 갱신은 기본 30분 cooldown을 둔다.
+- `security` 수동 갱신은 기본 5분 cooldown을 둔다.
+- `force=true`이면 사용자가 명시적으로 강제한 요청으로 보고 `all` 5분, `security` 1분의 짧은 연타 방지 cooldown만 적용한다.
 - cooldown 중이면 `429`.
 - 자동 수집은 public endpoint가 아니라 EventBridge가 Lambda 내부 이벤트를 호출한다.
 

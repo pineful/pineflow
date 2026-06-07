@@ -665,8 +665,12 @@ const trendLensResponseLimitBytes = 512 * 1024;
 const trendLensSourceTimeoutMs = 2200;
 const trendLensSnapshotTtlDays = 30;
 const trendLensManualCooldownMs = {
-  all: 6 * 60 * 60 * 1000,
-  security: 30 * 60 * 1000
+  all: 30 * 60 * 1000,
+  security: 5 * 60 * 1000
+};
+const trendLensForcedCooldownMs = {
+  all: 5 * 60 * 1000,
+  security: 60 * 1000
 };
 
 const trendLensSections = [
@@ -736,20 +740,20 @@ const trendLensSources = {
 
 const pageviewTopics = {
   mandolin: [
-    { project: "en.wikipedia", title: "Mandolin", label: "Mandolin", region: "global" },
-    { project: "en.wikipedia", title: "Avi_Avital", label: "Avi Avital", region: "global" },
-    { project: "en.wikipedia", title: "Chris_Thile", label: "Chris Thile", region: "global" },
-    { project: "en.wikipedia", title: "Classical_mandolin", label: "Classical mandolin", region: "global" }
+    { project: "en.wikipedia.org", title: "Mandolin", label: "Mandolin", region: "global" },
+    { project: "en.wikipedia.org", title: "Avi_Avital", label: "Avi Avital", region: "global" },
+    { project: "en.wikipedia.org", title: "Chris_Thile", label: "Chris Thile", region: "global" },
+    { project: "en.wikipedia.org", title: "Classical_mandolin", label: "Classical mandolin", region: "global" }
   ],
   "it-content": [
-    { project: "en.wikipedia", title: "Cybersecurity", label: "Cybersecurity", region: "global" },
-    { project: "en.wikipedia", title: "Artificial_intelligence", label: "Artificial intelligence", region: "global" },
-    { project: "en.wikipedia", title: "GitHub_Actions", label: "GitHub Actions", region: "global" }
+    { project: "en.wikipedia.org", title: "Cybersecurity", label: "Cybersecurity", region: "global" },
+    { project: "en.wikipedia.org", title: "Artificial_intelligence", label: "Artificial intelligence", region: "global" },
+    { project: "en.wikipedia.org", title: "GitHub_Actions", label: "GitHub Actions", region: "global" }
   ],
   education: [
-    { project: "en.wikipedia", title: "Educational_technology", label: "Educational technology", region: "global" },
-    { project: "en.wikipedia", title: "Artificial_intelligence_in_education", label: "AI in education", region: "global" },
-    { project: "en.wikipedia", title: "Online_learning", label: "Online learning", region: "global" }
+    { project: "en.wikipedia.org", title: "Educational_technology", label: "Educational technology", region: "global" },
+    { project: "en.wikipedia.org", title: "Artificial_intelligence_in_education", label: "AI in education", region: "global" },
+    { project: "en.wikipedia.org", title: "Online_learning", label: "Online learning", region: "global" }
   ]
 };
 
@@ -1054,7 +1058,7 @@ async function collectPageviewTopic(category, topic, now) {
     title: topic.label,
     summary: `${trendDeltaLabel(deltaPercent)}입니다. 최근 7일 조회 ${Math.round(recent).toLocaleString("ko-KR")}회를 콘텐츠/학습 주제 관심도의 보조 지표로 봅니다.`,
     sourceName: "Wikimedia Pageviews",
-    sourceUrl: `https://${topic.project}.org/wiki/${encodeURIComponent(topic.title)}`,
+    sourceUrl: `https://${topic.project}/wiki/${encodeURIComponent(topic.title)}`,
     publishedAt: now.toISOString(),
     region: topic.region,
     language: topic.project.startsWith("ko.") ? "ko" : "en",
@@ -1121,24 +1125,22 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   ];
   const updates = [];
 
-  const securityItems = [];
-  for (const source of [trendLensSources.kisaSecurityNotice, trendLensSources.kisaVulnerability]) {
-    try {
-      const kisa = await collectKisaRss(source, now);
-      statuses.push(kisa.status);
-      securityItems.push(...kisa.items);
-    } catch (error) {
-      statuses.push(sourceStatus(source, "unavailable", now.toISOString(), `${source.label}를 불러오지 못했습니다. 마지막 캐시가 있으면 그대로 사용합니다.`));
+  const securityResults = await Promise.allSettled([
+    collectKisaRss(trendLensSources.kisaSecurityNotice, now),
+    collectKisaRss(trendLensSources.kisaVulnerability, now),
+    collectCisaKev(now)
+  ]);
+  const securitySources = [trendLensSources.kisaSecurityNotice, trendLensSources.kisaVulnerability, trendLensSources.cisaKev];
+  const securityItems = securityResults.flatMap((result, index) => {
+    if (result.status === "fulfilled") {
+      statuses.push(result.value.status);
+      return result.value.items;
     }
-  }
 
-  try {
-    const security = await collectCisaKev(now);
-    statuses.push(security.status);
-    securityItems.push(...security.items);
-  } catch (error) {
-    statuses.push(sourceStatus(trendLensSources.cisaKev, "unavailable", now.toISOString(), "CISA KEV를 불러오지 못했습니다. 마지막 캐시가 있으면 그대로 사용합니다."));
-  }
+    const source = securitySources[index];
+    statuses.push(sourceStatus(source, "unavailable", now.toISOString(), `${source.label}를 불러오지 못했습니다. 마지막 캐시가 있으면 그대로 사용합니다.`));
+    return [];
+  });
   updates.push({
     ...trendSectionBase("security"),
     items: dedupeItems(securityItems)
@@ -1147,15 +1149,17 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   });
 
   if (scope === "all") {
-    for (const category of ["mandolin", "it-content", "education"]) {
-      try {
-        const section = await collectPageviewSection(category, now);
-        statuses.push(section.status);
-        updates.push({ ...trendSectionBase(category), items: section.items });
-      } catch (error) {
+    const categories = ["mandolin", "it-content", "education"];
+    const sectionResults = await Promise.allSettled(categories.map((category) => collectPageviewSection(category, now)));
+    sectionResults.forEach((result, index) => {
+      const category = categories[index];
+      if (result.status === "fulfilled") {
+        statuses.push(result.value.status);
+        updates.push({ ...trendSectionBase(category), items: result.value.items });
+      } else {
         statuses.push(sourceStatus(trendLensSources.wikimedia, "unavailable", now.toISOString(), `${category} 관심도 지표를 불러오지 못했습니다.`));
       }
-    }
+    });
   }
 
   const sections = mergeTrendSections(scope === "security" ? previousSnapshot?.sections : emptyTrendSections(), updates);
@@ -1276,14 +1280,15 @@ async function saveTrendManualGuard(scope, now) {
   );
 }
 
-async function refreshTrendLensSnapshot(scope = "all", source = "manual") {
+async function refreshTrendLensSnapshot(scope = "all", source = "manual", options = {}) {
   const normalizedScope = scope === "security" ? "security" : "all";
   const now = new Date();
 
   if (source === "manual") {
     const guard = await loadTrendManualGuard(normalizedScope);
     const lastManualAt = guard?.lastManualRefreshAt ? new Date(guard.lastManualRefreshAt).getTime() : 0;
-    const nextAllowedAt = lastManualAt + trendLensManualCooldownMs[normalizedScope];
+    const cooldown = options.force ? trendLensForcedCooldownMs[normalizedScope] : trendLensManualCooldownMs[normalizedScope];
+    const nextAllowedAt = lastManualAt + cooldown;
     if (lastManualAt && nextAllowedAt > now.getTime()) {
       return json(429, {
         error: "Trend Lens refresh is cooling down.",
@@ -1807,7 +1812,7 @@ export async function handler(event) {
     if (method === "POST" && path === "/api/check-out") return checkOut(pk);
     if (method === "POST" && path === "/api/trend-lens/refresh") {
       const scope = body.value.scope === "security" ? "security" : "all";
-      return refreshTrendLensSnapshot(scope, "manual");
+      return refreshTrendLensSnapshot(scope, "manual", { force: Boolean(body.value.force) });
     }
     if (method === "PATCH" && path.startsWith("/api/records/")) {
       const recordId = recordIdFromPath(path);
@@ -1823,7 +1828,7 @@ export async function handler(event) {
 
     return json(404, { error: "Not found." });
   } catch (error) {
-    console.error("Unhandled Pineflow API error", { name: error?.name });
+    console.error("Unhandled Pineflow API error", { name: error?.name, message: error?.message });
     return json(500, { error: "Unexpected server error." });
   }
 }

@@ -105,12 +105,14 @@ Trend Lens는 기존 Serverless 본선 안에서 구현한다. EC2/PostgreSQL Po
 - `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#MANUAL#security`
 
 Trend Lens 수집은 Lambda 내부 이벤트와 인증된 refresh route에서만 수행한다. 브라우저는 KISA, CISA, Wikimedia, Google Trends 같은 외부 source를 직접 호출하지 않으므로 CloudFront CSP를 넓히지 않는다.
+외부 source 호출은 병렬로 수행하고 source별 실패는 전체 API 실패가 아니라 `sourceStatuses`의 `unavailable` 상태로 낮춰 처리한다.
 
 비용 가드레일:
 
 - Lambda reserved concurrency `1` 유지.
 - Lambda memory `128 MB` 유지.
 - Lambda timeout은 외부 source timeout을 감안해 8초로 제한.
+- source별 timeout은 2.2초이며, 전체 refresh는 병렬 수집으로 8초 안에 끝나는 것을 목표로 한다.
 - DynamoDB capacity `1 RCU / 1 WCU` 유지.
 - API Gateway throttling `1 req/sec`, burst `5` 유지.
 - `infra/scripts/verify-template.mjs`가 Trend Lens route, EventBridge Rule, TTL, timeout을 검증한다.

@@ -11,7 +11,7 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 - 하루 1회 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 호출한다.
 - 공식 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 보안 섹션만 갱신한다.
 - 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 전체 또는 보안 신호를 다시 갱신할 수 있다.
-- 첫 화면 표시: 최대 5개 `오늘 브리프`, 긴급 보안 신호 1개, 분야별 상세는 접힘 영역.
+- 첫 화면 표시: 최대 5개 `오늘 브리프`, 긴급 보안 신호 1개, 분야별 상세는 탭 영역.
 - 저장 데이터: 제목, 링크, 출처, 발행 시각, 짧은 요약, 우선순위 근거 태그만 저장한다.
 
 ## v1에서 일부러 하지 않는 것
@@ -54,6 +54,8 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - Lambda reserved concurrency는 계속 `1`이다.
 - Lambda timeout은 외부 fetch를 고려해 8초로 제한한다.
 - source별 fetch timeout은 2.2초, 응답 크기는 512KB 이하로 제한한다.
+- 보안 source와 분야별 관심도 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다.
+- 수동 refresh는 기본 cooldown을 두되, 사용자가 강제 refresh를 요청하면 짧은 연타 방지 cooldown만 적용한다.
 - redirect는 최대 1회만 허용하고 redirect 후에도 allowlist를 다시 검증한다.
 - DynamoDB TTL `expiresAt`을 켜서 캐시/가드 item이 자연스럽게 정리되게 한다.
 
@@ -62,5 +64,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - Pineflow 첫 화면은 계속 `오늘의 리듬`이 중심이다.
 - Trend Lens는 첫 화면의 보조 지식 공간이다.
 - `오늘 브리프`는 최대 5개만 보여준다.
-- 세부 정보는 `분야별 렌즈와 소스 상태 보기` 안에 둔다.
+- 첫 브리프는 lead card로 강조하고, 나머지는 짧은 queue로 압축한다.
+- 분야별 정보는 `보안`, `만돌린`, `IT 콘텐츠`, `교육` 탭으로 나누고 한 번에 한 분야만 보여준다.
+- 소스 상태와 저장 정책은 별도 접힘 영역에 둔다.
 - 비용 신호등과 보안 신호는 혼동하지 않는다. 비용은 운영 상태, 보안은 외부 인텔리전스다.

@@ -18,7 +18,7 @@ Pineflow는 개인용 서비스지만 인터넷에 노출될 수 있으므로 pr
 - S3 frontend bucket은 public access block을 유지하고 CloudFront OAC로만 읽는다.
 - CloudFront는 CSP, HSTS, frame deny, no-referrer 등 보안 응답 헤더를 적용한다.
 - API Gateway throttling은 `1 req/sec`, burst `5`에서 시작한다.
-- Lambda reserved concurrency는 `1`, memory는 `128 MB`, timeout은 5초로 유지한다.
+- Lambda reserved concurrency는 `1`, memory는 `128 MB`, timeout은 8초로 유지한다.
 - DynamoDB는 provisioned `1 RCU / 1 WCU`, deletion protection, `RETAIN` 정책을 유지한다.
 - CloudWatch log retention은 7일이다.
 - AWS Budgets `$1`, `$3`, `$5` 알림을 유지한다.
@@ -110,6 +110,7 @@ Trend Lens는 외부 정보를 수집하지만, 브라우저가 외부 source를
 - redirect는 최대 1회만 허용하며 redirect 후에도 allowlist를 다시 검증한다.
 - RSS는 DTD/entity 선언을 거부하고 `item/title/link/pubDate/description`만 제한적으로 읽는다.
 - source별 응답 크기는 512KB 이하, timeout은 2.2초 이하.
+- 전체 refresh는 allowlist source를 병렬로 호출하되, source별 실패는 전체 API 실패가 아니라 source status로 낮춰 처리한다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - Lambda 로그에는 source body나 기사 내용을 기록하지 않는다.
 - API key가 필요하면 SSM Parameter Store Standard `SecureString`을 우선하고, GitHub Secrets/Variables, Lambda 평문 env, DynamoDB에는 저장하지 않는다.

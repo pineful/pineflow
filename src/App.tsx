@@ -26,6 +26,7 @@ import type {
   CommuteRecord,
   CommuteState,
   OperationalUsageSnapshot,
+  TrendLensCategoryId,
   TrendLensItem,
   TrendLensPriority,
   TrendLensSnapshot,
@@ -457,9 +458,15 @@ function TrendLensPanel({
   onRefreshAll: () => void;
   onRefreshSecurity: () => void;
 }) {
+  const [activeCategory, setActiveCategory] = useState<TrendLensCategoryId>("security");
   const isBusy = status === "loading" || status === "refreshing";
   const briefItems = snapshot?.briefItems ?? [];
+  const leadItem = briefItems[0];
+  const secondaryItems = briefItems.slice(1, 4);
+  const sections = snapshot?.sections ?? [];
   const securitySection = snapshot?.sections.find((section) => section.id === "security");
+  const activeSection = sections.find((section) => section.id === activeCategory) ?? sections[0];
+  const activeItems = activeSection?.items ?? [];
 
   return (
     <section className="sectionBand intelligenceBand">
@@ -496,11 +503,23 @@ function TrendLensPanel({
           </div>
         )}
 
-        {briefItems.length > 0 ? (
-          <div className="briefGrid">
-            {briefItems.map((item) => (
-              <TrendLensItemCard item={item} key={item.id} />
-            ))}
+        {leadItem ? (
+          <div className="intelligenceSnapshot">
+            <TrendLensItemCard item={leadItem} />
+            <div className="briefQueue" aria-label="오늘 브리프 요약">
+              <span>다음에 볼 신호</span>
+              {secondaryItems.length > 0 ? (
+                secondaryItems.map((item) => (
+                  <a href={item.sourceUrl} key={item.id} rel="noreferrer" target="_blank">
+                    <b>{trendPriorityLabel(item.priority)}</b>
+                    <strong>{item.title}</strong>
+                    <small>{trendRegionLabel(item)} · {item.reasonTags.slice(0, 2).join(" · ")}</small>
+                  </a>
+                ))
+              ) : (
+                <p>오늘은 우선 신호를 한 개만 표시합니다.</p>
+              )}
+            </div>
           </div>
         ) : (
           <p className="trendLensFallback">
@@ -508,25 +527,42 @@ function TrendLensPanel({
           </p>
         )}
 
-        <details className="trendLensDetails">
-          <summary>분야별 렌즈와 소스 상태 보기</summary>
-          <div className="trendSectionGrid">
-            {snapshot?.sections.map((section) => (
-              <article className="trendSection" key={section.id}>
+        {sections.length > 0 && (
+          <div className="trendTabsPanel">
+            <div className="trendTabs" role="tablist" aria-label="Trend Lens 분야">
+              {sections.map((section) => (
+                <button
+                  className={section.id === activeSection?.id ? "active" : ""}
+                  key={section.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={section.id === activeSection?.id}
+                  onClick={() => {
+                    setActiveCategory(section.id);
+                  }}
+                >
+                  <span>{section.title}</span>
+                  <small>{section.items.length}개</small>
+                </button>
+              ))}
+            </div>
+            {activeSection && (
+              <article className="trendCategoryPanel" role="tabpanel">
                 <div>
-                  <span>{section.subtitle}</span>
-                  <strong>{section.title}</strong>
-                  <p>{section.focus}</p>
+                  <span>{activeSection.subtitle}</span>
+                  <strong>{activeSection.title}</strong>
+                  <p>{activeSection.focus}</p>
                 </div>
-                {section.items.length > 0 ? (
-                  <ul>
-                    {section.items.map((item) => (
-                      <li key={item.id}>
+                {activeItems.length > 0 ? (
+                  <ul className="trendFocusList">
+                    {activeItems.map((item) => (
+                      <li className={trendPriorityClass(item.priority)} key={item.id}>
                         <b>{trendPriorityLabel(item.priority)}</b>
                         <a href={item.sourceUrl} target="_blank" rel="noreferrer">
                           {item.title}
                         </a>
-                        <small>{item.reasonTags.slice(0, 2).join(" · ")}</small>
+                        <p>{item.summary}</p>
+                        <small>{trendRegionLabel(item)} · {item.reasonTags.slice(0, 3).join(" · ")}</small>
                       </li>
                     ))}
                   </ul>
@@ -534,8 +570,12 @@ function TrendLensPanel({
                   <p className="trendEmpty">다음 수집에서 이 분야 신호를 채웁니다.</p>
                 )}
               </article>
-            ))}
+            )}
           </div>
+        )}
+
+        <details className="trendLensDetails">
+          <summary>수집 상태와 저장 정책 보기</summary>
           <div className="trendSourceList">
             {snapshot?.sourceStatuses.map((source, index) => (
               <span className={`sourceStatus ${source.status}`} key={`${source.id}-${index}`}>

@@ -122,3 +122,5 @@
 - 첫 화면 최근 기록 아래에 `Trend Lens` 섹션을 추가하고, 오늘 브리프와 분야별 상세/소스 상태를 분리해 표시했다.
 - `docs/modules/trend-lens.md`, `docs/research/daily-intelligence-dashboard-2026-06-07.md`, `docs/adr/0008-trend-lens-scheduled-intelligence-cache.md`를 추가했다.
 - API, Serverless 구현, 비용, 보안, 저장소, 배포 체크리스트, LLM 컨텍스트 문서를 Trend Lens 기준으로 갱신했다.
+- Trend Lens 전체 새로고침이 source를 순차 호출하다가 실패하기 쉬운 흐름을 병렬 수집으로 바꾸고, 강제 refresh 요청의 짧은 연타 방지 cooldown을 적용했다.
+- Trend Lens UI를 전체 폭 `오늘 브리프`와 분야별 탭 구조로 바꿔 오른쪽 좁은 칼럼에서 공간이 깨지지 않도록 정리했다.

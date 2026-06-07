@@ -21,6 +21,8 @@ Trend Lens는 다음 구조로 구현한다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - DynamoDB는 기존 single-table을 유지하고, Trend Lens cache는 `SYSTEM#TREND_LENS` partition에 둔다.
 - 캐시 정리를 위해 DynamoDB TTL `expiresAt`을 활성화한다.
+- 전체 refresh는 allowlist source를 병렬로 수집한다. 한 source 실패가 전체 브리프 실패로 번지지 않게 `sourceStatuses`에 실패를 기록하고 가능한 section만 갱신한다.
+- 사용자가 `force=true`로 수동 갱신하면 일반 cooldown보다 짧은 연타 방지 cooldown만 적용한다.
 
 ## 비용 판단
 
@@ -34,6 +36,7 @@ API key가 필요한 소스는 기본 비활성화한다. 꼭 필요할 경우 S
 - redirect는 1회 이하, redirect 후에도 allowlist 재검증.
 - RSS는 DTD/entity 선언을 거부하고 필요한 item field만 제한적으로 읽는다.
 - 응답 크기 512KB, source timeout 2.2초.
+- source별 실패는 전체 handler 예외로 올리지 않고, 가능한 경우 부분 성공으로 저장한다.
 - CloudFront CSP는 새 외부 소스를 추가하지 않는다. 브라우저는 Pineflow API만 호출한다.
 - Lambda 로그는 source body나 article content를 기록하지 않는다.
 

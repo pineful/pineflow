@@ -9,7 +9,7 @@ Pineflow는 개인 사용을 전제로 AWS Free Tier 안에서 가능한 한 비
 ## 현재 고정값
 
 - API Gateway: `1 req/sec`, burst `5`.
-- Lambda: reserved concurrency `1`, memory `128 MB`, timeout 5초.
+- Lambda: reserved concurrency `1`, memory `128 MB`, timeout 8초.
 - DynamoDB: provisioned `1 RCU / 1 WCU`.
 - CloudWatch Logs: retention 7일.
 - Budgets: `$1`, `$3`, `$5`.
@@ -91,8 +91,9 @@ Trend Lens는 하루 1회 전체 브리프와 30분 간격 보안 신호 확인�
 
 - 전체 수집은 하루 1회.
 - 보안 공식 신호 확인은 30분보다 자주 하지 않는다.
-- 수동 전체 refresh는 6시간 cooldown.
-- 수동 security refresh는 30분 cooldown.
+- 수동 전체 refresh는 기본 30분 cooldown. 사용자가 강제 refresh를 누르면 5분 연타 방지 cooldown만 적용한다.
+- 수동 security refresh는 기본 5분 cooldown. 사용자가 강제 refresh를 누르면 1분 연타 방지 cooldown만 적용한다.
+- 전체 refresh는 source들을 병렬로 수집해 Lambda 실행시간과 실패 가능성을 줄인다.
 - API key가 필요한 source는 기본 비활성화.
 - SSM Parameter Store는 Standard `SecureString`만 우선 후보로 둔다.
 - Secrets Manager, Bedrock/LLM 자동 요약, 외부 paid news API, OpenSearch, SQS, Step Functions는 v1에서 사용하지 않는다.
