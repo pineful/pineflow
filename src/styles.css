@@ -921,6 +921,24 @@ h1 {
   padding: 18px 2px 4px;
 }
 
+.dailyReviewGrid {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dailySideRail {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dailyReviewGrid .sectionBand {
+  margin-top: 0;
+}
+
 .sectionTitle {
   display: flex;
   align-items: baseline;
@@ -3233,13 +3251,9 @@ h1 {
     grid-template-columns: 1fr 1fr;
   }
 
-  .recentBand {
-    grid-column: 1;
-  }
-
-  .weatherBand {
-    grid-column: 2;
-    margin-top: 16px;
+  .dailyReviewGrid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+    align-items: start;
   }
 
   .summaryBand {
@@ -3262,6 +3276,23 @@ h1 {
   .weatherDetails,
   .weatherForecastScroller {
     grid-column: 1;
+  }
+
+  .dailySideRail .intelligenceHeader,
+  .dailySideRail .intelligenceSnapshot {
+    grid-template-columns: 1fr;
+  }
+
+  .dailySideRail .intelligenceActions {
+    justify-content: stretch;
+  }
+
+  .dailySideRail .intelligenceActions button {
+    flex: 1 1 130px;
+  }
+
+  .dailySideRail .trendTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -5763,12 +5794,50 @@ button.sessionEndpoint:hover:not(:disabled) {
     rgba(10, 22, 36, 0.72);
 }
 
+.intelligenceHeader.loading {
+  border-color: rgba(91, 220, 255, 0.44);
+  background:
+    linear-gradient(100deg, rgba(91, 220, 255, 0.12), rgba(255, 255, 255, 0.04), rgba(91, 220, 255, 0.1)),
+    rgba(10, 22, 36, 0.78);
+}
+
+.intelligenceHeader.empty {
+  border-color: rgba(246, 194, 71, 0.36);
+  background:
+    linear-gradient(100deg, rgba(246, 194, 71, 0.11), rgba(255, 255, 255, 0.035)),
+    rgba(10, 22, 36, 0.76);
+}
+
+.intelligenceHeader.stale {
+  border-color: rgba(159, 184, 201, 0.34);
+}
+
+.intelligenceHeader.error {
+  border-color: rgba(255, 107, 95, 0.42);
+  background:
+    linear-gradient(100deg, rgba(255, 107, 95, 0.13), rgba(255, 255, 255, 0.035)),
+    rgba(25, 12, 18, 0.78);
+}
+
 .intelligenceHeader span,
 .trendSection span,
 .trendLensNote {
   color: rgba(222, 240, 255, 0.72);
   font-size: 0.76rem;
   font-weight: 850;
+}
+
+.intelligenceHeader.loading span::before {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: #5bdcff;
+  box-shadow: 0 0 18px rgba(91, 220, 255, 0.7);
+  animation: statusPulse 920ms ease-in-out infinite alternate;
+  content: "";
+  vertical-align: 1px;
 }
 
 .intelligenceHeader strong {
@@ -6002,12 +6071,48 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .trendLensFallback {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
   margin: 0;
   padding: 14px;
   border: 1px dashed rgba(91, 220, 255, 0.26);
   border-radius: var(--radius-card);
   color: rgba(222, 240, 255, 0.76);
   background: rgba(10, 22, 36, 0.58);
+}
+
+.trendLensFallback > span {
+  width: 11px;
+  height: 11px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #f6c247;
+  box-shadow: 0 0 18px rgba(246, 194, 71, 0.28);
+}
+
+.trendLensFallback.loading > span {
+  background: #5bdcff;
+  animation: statusPulse 920ms ease-in-out infinite alternate;
+}
+
+.trendLensFallback.error > span {
+  background: #ff6b5f;
+}
+
+.trendLensFallback strong {
+  display: block;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.trendLensFallback p {
+  margin: 4px 0 0;
+  color: rgba(222, 240, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.5;
 }
 
 .trendLensDetails {
@@ -6310,6 +6415,18 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .trendLensNote {
   margin: 10px 0 0;
+}
+
+@keyframes statusPulse {
+  from {
+    opacity: 0.48;
+    transform: scale(0.86);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
 
 @media (max-width: 560px) {

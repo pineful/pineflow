@@ -347,8 +347,73 @@ function trendRegionLabel(item: TrendLensItem) {
 }
 
 function trendLensTimeLabel(snapshot: TrendLensSnapshot | null) {
-  if (!snapshot) return "캐시 대기";
+  if (!snapshot) return "아직 확인 전";
   return `${formatDate(snapshot.generatedAt)} · ${formatTime(snapshot.generatedAt)}`;
+}
+
+function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLensStatus) {
+  const hasBrief = Boolean(snapshot?.briefItems.length);
+
+  if (status === "loading") {
+    return {
+      tone: "loading",
+      label: "캐시 확인 중",
+      title: "저장된 오늘 브리프를 확인하고 있습니다.",
+      detail: "잠시만 기다리면 오늘 캐시나 수집 전 상태가 표시됩니다."
+    };
+  }
+
+  if (status === "refreshing") {
+    return {
+      tone: "loading",
+      label: "수집 중",
+      title: "새 지식 브리프를 수집하고 있습니다.",
+      detail: "공식 보안 신호와 분야별 관심도 지표를 확인하는 중입니다. 보통 몇 초 안에 끝납니다."
+    };
+  }
+
+  if (status === "unavailable") {
+    return {
+      tone: "error",
+      label: "확인 실패",
+      title: "지식 브리프 상태를 불러오지 못했습니다.",
+      detail: "잠시 후 다시 시도하거나, 세션이 만료됐다면 다시 로그인해주세요."
+    };
+  }
+
+  if (!snapshot || (!hasBrief && snapshot.cacheStatus === "unavailable")) {
+    return {
+      tone: "empty",
+      label: "수집 전",
+      title: "아직 오늘 브리프가 없습니다.",
+      detail: "자동 수집 전이라면 전체 새로고침으로 오늘의 렌즈를 바로 만들 수 있습니다."
+    };
+  }
+
+  if (!hasBrief) {
+    return {
+      tone: "empty",
+      label: "표시 항목 없음",
+      title: "오늘 표시할 브리프가 아직 없습니다.",
+      detail: "소스 상태를 열어 어떤 분야가 비어 있는지 확인하거나 전체 새로고침을 다시 시도해보세요."
+    };
+  }
+
+  if (snapshot.cacheStatus === "stale") {
+    return {
+      tone: "stale",
+      label: "이전 캐시",
+      title: snapshot.summary,
+      detail: `마지막 정리 ${trendLensTimeLabel(snapshot)} · 오늘 자동 수집 전이면 새로고침할 수 있습니다.`
+    };
+  }
+
+  return {
+    tone: "ready",
+    label: snapshot.cacheStatus === "partial" ? "부분 수집" : "오늘 브리프",
+    title: snapshot.summary,
+    detail: `마지막 정리 ${trendLensTimeLabel(snapshot)}`
+  };
 }
 
 function trendSourceStatusLabel(status: string) {
@@ -467,6 +532,7 @@ function TrendLensPanel({
   const securitySection = snapshot?.sections.find((section) => section.id === "security");
   const activeSection = sections.find((section) => section.id === activeCategory) ?? sections[0];
   const activeItems = activeSection?.items ?? [];
+  const statusCopy = trendLensStatusCopy(snapshot, status);
 
   return (
     <section className="sectionBand intelligenceBand">
@@ -475,15 +541,11 @@ function TrendLensPanel({
         <span>한국 우선 · 하루 1회 자동 브리프</span>
       </div>
       <div className="intelligencePanel">
-        <div className="intelligenceHeader">
+        <div className={`intelligenceHeader ${statusCopy.tone}`}>
           <div>
-            <span>오늘 브리프</span>
-            <strong>{snapshot?.summary ?? "지식 브리프를 준비하고 있습니다."}</strong>
-            <p>
-              {status === "loading"
-                ? "오늘의 인텔리전스를 불러오는 중입니다."
-                : `마지막 정리 ${trendLensTimeLabel(snapshot)}`}
-            </p>
+            <span>{statusCopy.label}</span>
+            <strong>{statusCopy.title}</strong>
+            <p>{statusCopy.detail}</p>
           </div>
           <div className="intelligenceActions">
             <button type="button" disabled={isBusy} onClick={onRefreshSecurity}>
@@ -522,9 +584,13 @@ function TrendLensPanel({
             </div>
           </div>
         ) : (
-          <p className="trendLensFallback">
-            아직 표시할 브리프가 없습니다. 자동 수집 전이라면 전체 새로고침으로 오늘의 렌즈를 만들 수 있습니다.
-          </p>
+          <div className={`trendLensFallback ${statusCopy.tone}`}>
+            <span aria-hidden="true" />
+            <div>
+              <strong>{statusCopy.title}</strong>
+              <p>{statusCopy.detail}</p>
+            </div>
+          </div>
         )}
 
         {sections.length > 0 && (
@@ -2318,56 +2384,57 @@ function App() {
         </div>
       )}
 
-      <section className="sectionBand recentBand">
-        <div className="sectionTitle">
-          <h2>최근 기록</h2>
-          <span>실수하면 시간 수정</span>
-        </div>
-        <div className="workdayLens" aria-label="이번 주 근무일 흐름">
-          <div className="workdayLensHeader">
-            <div>
-              <span>이번 주 워크데이</span>
-              <strong>{formatDuration(workdayTotalMinutes)}</strong>
-            </div>
-            <em>{workdaySessionCount > 0 ? `${workdaySessionCount}개 세션` : "기록 대기"}</em>
+      <div className="dailyReviewGrid">
+        <section className="sectionBand recentBand">
+          <div className="sectionTitle">
+            <h2>최근 기록</h2>
+            <span>실수하면 시간 수정</span>
           </div>
-          <div className="workdayLensRail">
-            {workdayLens.map((day) => (
-              <div
-                className={[
-                  "workdayTile",
-                  day.isToday ? "today" : "",
-                  day.isOpen ? "open" : "",
-                  day.holidayLabel ? "holiday" : "",
-                  day.isWeekend ? "weekend" : ""
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                key={day.key}
-                style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
-              >
-                <span>{day.weekday}</span>
-                <strong>{day.dayNumber}</strong>
-                <i aria-hidden="true" />
-                <small>
-                  {day.isOpen
-                    ? "진행"
-                    : day.totalMinutes > 0
-                      ? formatDuration(day.totalMinutes)
-                      : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
-                </small>
-                {day.topMode && (
-                  <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
-                    {modeIcons[day.topMode]}
-                  </em>
-                )}
-                {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
+          <div className="workdayLens" aria-label="이번 주 근무일 흐름">
+            <div className="workdayLensHeader">
+              <div>
+                <span>이번 주 워크데이</span>
+                <strong>{formatDuration(workdayTotalMinutes)}</strong>
               </div>
-            ))}
+              <em>{workdaySessionCount > 0 ? `${workdaySessionCount}개 세션` : "기록 대기"}</em>
+            </div>
+            <div className="workdayLensRail">
+              {workdayLens.map((day) => (
+                <div
+                  className={[
+                    "workdayTile",
+                    day.isToday ? "today" : "",
+                    day.isOpen ? "open" : "",
+                    day.holidayLabel ? "holiday" : "",
+                    day.isWeekend ? "weekend" : ""
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  key={day.key}
+                  style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
+                >
+                  <span>{day.weekday}</span>
+                  <strong>{day.dayNumber}</strong>
+                  <i aria-hidden="true" />
+                  <small>
+                    {day.isOpen
+                      ? "진행"
+                      : day.totalMinutes > 0
+                        ? formatDuration(day.totalMinutes)
+                        : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
+                  </small>
+                  {day.topMode && (
+                    <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
+                      {modeIcons[day.topMode]}
+                    </em>
+                  )}
+                  {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="timeline">
-          {recentSessions.map((session) => {
+          <div className="timeline">
+            {recentSessions.map((session) => {
             const isEditingSession =
               editingRecordId === session.checkIn?.id || editingRecordId === session.checkOut?.id;
             const isConfirmingDelete = confirmingDeleteRecordId === session.id;
@@ -2597,82 +2664,85 @@ function App() {
               </article>
             );
           })}
-          {state.records.length === 0 && (
-            <p className="emptyState">아직 기록이 없습니다. 오늘 첫 기록을 남겨보세요.</p>
-          )}
-        </div>
-      </section>
-
-      <TrendLensPanel
-        snapshot={trendLens}
-        status={trendLensStatus}
-        onRefreshAll={() => updateTrendLens("all")}
-        onRefreshSecurity={() => updateTrendLens("security")}
-      />
-
-      <section className="sectionBand weatherBand">
-        <div className="sectionTitle">
-          <h2>오늘 날씨</h2>
-          <span>{weather.locationLabel}</span>
-        </div>
-        {weather.status === "ready" ? (
-          <div className="weatherGrid">
-            <div className={`weatherMain ${weather.condition ? weatherTone(weather.condition) : ""}`}>
-              <div className={`weatherGlyphLarge ${weather.condition ? weatherTone(weather.condition) : "sun"}`} aria-hidden="true" />
-              <div>
-                <strong>{weather.temperature}°</strong>
-                <span>{weather.condition}</span>
-              </div>
-            </div>
-            <div className="weatherDetails">
-              <span>
-                <small>체감</small>
-                <strong>{weather.apparentTemperature}°</strong>
-              </span>
-              <span>
-                <small>습도</small>
-                <strong>{weather.humidity}%</strong>
-              </span>
-              <span>
-                <small>강수</small>
-                <strong>{weather.precipitationProbability ?? 0}%</strong>
-              </span>
-              <span>
-                <small>바람</small>
-                <strong>{weather.windSpeed}km/h</strong>
-              </span>
-            </div>
-            {weather.hourly && weather.hourly.length > 0 && (
-              <div
-                className="weatherForecastScroller"
-                aria-label={`${weatherForecastDays}일 시간대별 날씨`}
-                style={{ "--forecast-width": `${weather.hourly.length * weatherForecastSlotWidth}px` } as CSSProperties}
-              >
-                <div className="weatherForecastTrack">
-                  <WeatherChart hourly={weather.hourly} />
-                  <div className="weatherTimeline">
-                    {weather.hourly.map((slot) => (
-                      <article className="weatherSlot" key={slot.time}>
-                        <span>{slot.label}</span>
-                        <div className={`weatherGlyph ${weatherTone(slot.condition)}`} aria-hidden="true" />
-                        <strong>{slot.temperature}°</strong>
-                        <small>{slot.condition}</small>
-                        <em style={{ "--rain": `${slot.precipitationProbability}%` } as CSSProperties}>
-                          강수 {slot.precipitationProbability}%
-                        </em>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {state.records.length === 0 && (
+              <p className="emptyState">아직 기록이 없습니다. 오늘 첫 기록을 남겨보세요.</p>
             )}
           </div>
-        ) : (
-          <p className="weatherFallback">
-            {weather.status === "loading" ? "날씨를 불러오는 중입니다." : weather.message}
-          </p>
-        )}
-      </section>
+        </section>
+
+        <aside className="dailySideRail" aria-label="오늘 보조 정보">
+          <TrendLensPanel
+            snapshot={trendLens}
+            status={trendLensStatus}
+            onRefreshAll={() => updateTrendLens("all")}
+            onRefreshSecurity={() => updateTrendLens("security")}
+          />
+
+          <section className="sectionBand weatherBand">
+            <div className="sectionTitle">
+              <h2>오늘 날씨</h2>
+              <span>{weather.locationLabel}</span>
+            </div>
+            {weather.status === "ready" ? (
+              <div className="weatherGrid">
+                <div className={`weatherMain ${weather.condition ? weatherTone(weather.condition) : ""}`}>
+                  <div className={`weatherGlyphLarge ${weather.condition ? weatherTone(weather.condition) : "sun"}`} aria-hidden="true" />
+                  <div>
+                    <strong>{weather.temperature}°</strong>
+                    <span>{weather.condition}</span>
+                  </div>
+                </div>
+                <div className="weatherDetails">
+                  <span>
+                    <small>체감</small>
+                    <strong>{weather.apparentTemperature}°</strong>
+                  </span>
+                  <span>
+                    <small>습도</small>
+                    <strong>{weather.humidity}%</strong>
+                  </span>
+                  <span>
+                    <small>강수</small>
+                    <strong>{weather.precipitationProbability ?? 0}%</strong>
+                  </span>
+                  <span>
+                    <small>바람</small>
+                    <strong>{weather.windSpeed}km/h</strong>
+                  </span>
+                </div>
+                {weather.hourly && weather.hourly.length > 0 && (
+                  <div
+                    className="weatherForecastScroller"
+                    aria-label={`${weatherForecastDays}일 시간대별 날씨`}
+                    style={{ "--forecast-width": `${weather.hourly.length * weatherForecastSlotWidth}px` } as CSSProperties}
+                  >
+                    <div className="weatherForecastTrack">
+                      <WeatherChart hourly={weather.hourly} />
+                      <div className="weatherTimeline">
+                        {weather.hourly.map((slot) => (
+                          <article className="weatherSlot" key={slot.time}>
+                            <span>{slot.label}</span>
+                            <div className={`weatherGlyph ${weatherTone(slot.condition)}`} aria-hidden="true" />
+                            <strong>{slot.temperature}°</strong>
+                            <small>{slot.condition}</small>
+                            <em style={{ "--rain": `${slot.precipitationProbability}%` } as CSSProperties}>
+                              강수 {slot.precipitationProbability}%
+                            </em>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="weatherFallback">
+                {weather.status === "loading" ? "날씨를 불러오는 중입니다." : weather.message}
+              </p>
+            )}
+          </section>
+        </aside>
+      </div>
 
       <section className="sectionBand summaryBand">
         <div className="sectionTitle">
