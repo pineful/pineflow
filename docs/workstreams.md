@@ -63,3 +63,11 @@
 - 로고는 `v23 Leafy Crown + Saturn Flow Ring` 기준을 따른다.
 - UI 컨트롤 외곽은 `Structured Soft Rectangle` 기준을 따른다. 모든 버튼을 pill로 만들거나 모든 카드를 같은 8px 박스로만 처리하지 말고, 입력/선택/보조 실행/주요 실행/위험 실행을 형태로 구분한다.
 - Dribbble 기반 미래형 스타일은 `docs/research/futuristic-ui-selection-2026-06-05.md`와 `Obsidian Command Glass` 기준을 따른다. 배경선만 추가하거나 녹색 shell을 유지한 변경은 완료로 보지 않으며, 전체 IA나 보안/비용 구조를 바꾸는 근거로 쓰지 않는다.
+## 2026-06-07 추가 작업 분야: Trend Lens
+
+| 분야 | 주 책임 | 주요 코드 | 반드시 같이 볼 문서 |
+| --- | --- | --- | --- |
+| Trend Lens 제품/IA | 출퇴근 중심 `오늘` 화면을 유지하면서 지식 인텔리전스 영역을 확장 | `src/App.tsx`, `src/styles.css` | `docs/modules/trend-lens.md`, `docs/research/daily-intelligence-dashboard-2026-06-07.md`, `docs/product-plan.md`, `docs/llm-context.md` |
+| Trend Lens API/cache | 일일 브리프 캐시, 수동 갱신, source status 응답 | `src/api.ts`, `src/types.ts`, `infra/lambda/pineflow-api/index.mjs` | `docs/api-contract.md`, `docs/modules/trend-lens.md`, `docs/modules/serverless-storage.md` |
+| Trend Lens schedule/cost | EventBridge 일일/보안 갱신, DynamoDB TTL, Lambda timeout | `infra/lib/pineflow-serverless-stack.ts`, `infra/scripts/verify-template.mjs` | `docs/adr/0008-trend-lens-scheduled-intelligence-cache.md`, `docs/aws-serverless-deployment-checklist.md`, `docs/cost-guardrails.md` |
+| Trend Lens source policy | KISA/CISA/Wikimedia allowlist, API key/SSM 정책, 저작권/SSRF 방어 | `infra/lambda/pineflow-api/index.mjs` | `docs/security.md`, `docs/modules/trend-lens.md`, `docs/adr/0008-trend-lens-scheduled-intelligence-cache.md` |

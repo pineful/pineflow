@@ -68,3 +68,16 @@
 - `infra` TypeScript build
 - `infra` CDK synth
 - `infra` CDK 템플릿 guardrail 자동 검증
+## Trend Lens 배포 확인
+
+Trend Lens가 포함된 배포에서는 기존 비용/보안 확인 외에 다음을 확인한다.
+
+- `GET /api/trend-lens`와 `POST /api/trend-lens/refresh` route가 JWT authorizer를 사용한다.
+- EventBridge daily rule `pineflow-trend-lens-daily-refresh`가 07:00 KST 기준으로 설정되어 있다.
+- EventBridge security rule `pineflow-trend-lens-security-refresh`가 30분 간격보다 자주 돌지 않는다.
+- Lambda reserved concurrency는 계속 `1`이다.
+- Lambda timeout은 8초 이하이다.
+- DynamoDB TTL `expiresAt`이 활성화되어 있다.
+- Trend Lens 추가로 DynamoDB GSI, Scan 권한, Cost Explorer 권한, NAT Gateway, VPC Lambda, Secrets Manager가 새로 생기지 않았다.
+- CloudFront CSP에 KISA/CISA/Wikimedia 같은 외부 source가 추가되지 않았다. 브라우저는 Pineflow API만 호출해야 한다.
+- 수집 실패가 출퇴근 기록 기능의 오류로 표시되지 않고 Trend Lens 섹션 안에서만 표시된다.

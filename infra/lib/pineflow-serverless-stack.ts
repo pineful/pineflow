@@ -8,6 +8,8 @@ import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as events from "aws-cdk-lib/aws-events";
+import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as logs from "aws-cdk-lib/aws-logs";
@@ -63,6 +65,7 @@ export class PineflowServerlessStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PROVISIONED,
       readCapacity: 1,
       writeCapacity: 1,
+      timeToLiveAttribute: "expiresAt",
       deletionProtection: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN
     });
@@ -173,7 +176,7 @@ export class PineflowServerlessStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_24_X,
       architecture: lambda.Architecture.ARM_64,
       memorySize: 128,
-      timeout: cdk.Duration.seconds(5),
+      timeout: cdk.Duration.seconds(8),
       reservedConcurrentExecutions: 1,
       logGroup: apiLogGroup,
       environment: {
@@ -243,6 +246,8 @@ export class PineflowServerlessStack extends cdk.Stack {
       { path: "/api/health", method: apigwv2.HttpMethod.GET },
       { path: "/api/state", method: apigwv2.HttpMethod.GET },
       { path: "/api/usage", method: apigwv2.HttpMethod.GET },
+      { path: "/api/trend-lens", method: apigwv2.HttpMethod.GET },
+      { path: "/api/trend-lens/refresh", method: apigwv2.HttpMethod.POST },
       { path: "/api/check-in", method: apigwv2.HttpMethod.POST },
       { path: "/api/check-out", method: apigwv2.HttpMethod.POST },
       { path: "/api/records/{recordId}", method: apigwv2.HttpMethod.PATCH },
@@ -256,6 +261,28 @@ export class PineflowServerlessStack extends cdk.Stack {
         authorizer: jwtAuthorizer
       });
     }
+
+    new events.Rule(this, "TrendLensDailyRefreshRule", {
+      ruleName: "pineflow-trend-lens-daily-refresh",
+      description: "Refreshes the Pineflow Trend Lens daily brief once per day at 07:00 KST.",
+      schedule: events.Schedule.cron({ minute: "0", hour: "22" }),
+      targets: [
+        new targets.LambdaFunction(apiFunction, {
+          event: events.RuleTargetInput.fromObject({ pineflowTask: "trend-lens-daily-refresh" })
+        })
+      ]
+    });
+
+    new events.Rule(this, "TrendLensSecurityRefreshRule", {
+      ruleName: "pineflow-trend-lens-security-refresh",
+      description: "Checks official cybersecurity risk signals more frequently for Trend Lens.",
+      schedule: events.Schedule.rate(cdk.Duration.minutes(30)),
+      targets: [
+        new targets.LambdaFunction(apiFunction, {
+          event: events.RuleTargetInput.fromObject({ pineflowTask: "trend-lens-security-refresh" })
+        })
+      ]
+    });
 
     new cloudwatch.Alarm(this, "ApiLambdaErrorAlarm", {
       alarmName: "pineflow-api-lambda-errors",

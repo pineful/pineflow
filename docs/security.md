@@ -95,3 +95,21 @@ GitHub public repository는 secret scanning과 push protection의 도움을 받�
 - CloudWatch log retention이 7일인지 확인한다.
 - `/api/usage`가 Cost Explorer를 호출하지 않는지 확인한다.
 - 배포 전후로 GitHub Actions log와 Lambda log에 secret이 출력되지 않는지 확인한다.
+## Trend Lens 보안 기준
+
+추가일: 2026-06-07
+
+Trend Lens는 외부 정보를 수집하지만, 브라우저가 외부 source를 직접 호출하지 않는다. 모든 조회와 수동 갱신은 Cognito JWT가 필요한 Pineflow API 뒤에 둔다.
+
+주요 기준:
+
+- `GET /api/trend-lens`는 DynamoDB 캐시만 읽는다.
+- `POST /api/trend-lens/refresh`는 `scope=all|security` enum만 받는다.
+- 사용자가 입력한 URL, host, query, keyword로 Lambda가 fetch하지 않는다.
+- Lambda source allowlist는 exact host와 path prefix로 제한한다.
+- redirect는 최대 1회만 허용하며 redirect 후에도 allowlist를 다시 검증한다.
+- RSS는 DTD/entity 선언을 거부하고 `item/title/link/pubDate/description`만 제한적으로 읽는다.
+- source별 응답 크기는 512KB 이하, timeout은 2.2초 이하.
+- 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
+- Lambda 로그에는 source body나 기사 내용을 기록하지 않는다.
+- API key가 필요하면 SSM Parameter Store Standard `SecureString`을 우선하고, GitHub Secrets/Variables, Lambda 평문 env, DynamoDB에는 저장하지 않는다.

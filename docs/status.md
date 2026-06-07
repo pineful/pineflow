@@ -119,3 +119,14 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 ## 현재 CI/CD 방향
 
 Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니다. GitHub OIDC로 AWS IAM Role을 assume하고, CDK 배포 후 stack output을 사용해 프론트엔드를 빌드한 뒤 S3와 CloudFront에 반영합니다.
+## 2026-06-07 진행 상황
+
+- Pineflow의 제품 범위를 `하루 리듬 + 지식 인텔리전스`로 확장하는 Trend Lens v1을 추가했다.
+- `GET /api/trend-lens`와 `POST /api/trend-lens/refresh`를 추가했다. 두 route 모두 API Gateway JWT authorizer를 통과해야 한다.
+- EventBridge daily rule을 추가해 매일 07:00 KST에 전체 Trend Lens 브리프를 자동 수집한다.
+- EventBridge security rule을 추가해 30분마다 KISA/CISA 기반 공식 보안 위험 신호를 갱신한다.
+- KISA 보안공지 RSS, KISA 취약점 정보 RSS, CISA KEV JSON, Wikimedia Pageviews API를 v1 allowlist source로 사용한다.
+- Google Trends는 공식 API alpha와 비용/키 관리 검토가 필요하므로 v1에서는 `준비` 상태로 문서화했다.
+- DynamoDB TTL `expiresAt`을 활성화해 Trend Lens snapshot과 manual cooldown guard item을 정리한다.
+- 첫 화면 최근 기록 아래에 `Trend Lens` / `오늘 브리프` 영역을 추가했다. 상세 분야와 source 상태는 접힘 영역으로 제공한다.
+- Trend Lens 설계 문서, 리서치 문서, ADR 0008, API 계약, 보안/비용/저장소/배포 체크리스트를 갱신했다.

@@ -82,3 +82,35 @@ DynamoDB single-table 구조를 사용한다.
 - API 계약: `docs/api-contract.md`
 - 비용 가드레일: `docs/cost-guardrails.md`
 - 설계 결정 기록: `docs/adr/`
+## 2026-06-07 Trend Lens 서버리스 확장
+
+Trend Lens는 기존 Serverless 본선 안에서 구현한다. EC2/PostgreSQL PoC로 확장하지 않는다.
+
+추가 리소스:
+
+- EventBridge Rule `pineflow-trend-lens-daily-refresh`: 매일 22:00 UTC, 즉 07:00 KST에 전체 브리프 갱신.
+- EventBridge Rule `pineflow-trend-lens-security-refresh`: 30분마다 공식 보안 위험 신호 갱신.
+- DynamoDB TTL `expiresAt`: Trend Lens snapshot과 manual cooldown guard item 정리.
+
+추가 API:
+
+- `GET /api/trend-lens`: 최신 Trend Lens 캐시 조회. 외부 호출 없음.
+- `POST /api/trend-lens/refresh`: 로그인 사용자의 수동 갱신. `scope`는 `all` 또는 `security`만 허용.
+
+추가 저장 item:
+
+- `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#LATEST`
+- `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#SNAPSHOT#YYYY-MM-DD`
+- `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#MANUAL#all`
+- `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#MANUAL#security`
+
+Trend Lens 수집은 Lambda 내부 이벤트와 인증된 refresh route에서만 수행한다. 브라우저는 KISA, CISA, Wikimedia, Google Trends 같은 외부 source를 직접 호출하지 않으므로 CloudFront CSP를 넓히지 않는다.
+
+비용 가드레일:
+
+- Lambda reserved concurrency `1` 유지.
+- Lambda memory `128 MB` 유지.
+- Lambda timeout은 외부 source timeout을 감안해 8초로 제한.
+- DynamoDB capacity `1 RCU / 1 WCU` 유지.
+- API Gateway throttling `1 req/sec`, burst `5` 유지.
+- `infra/scripts/verify-template.mjs`가 Trend Lens route, EventBridge Rule, TTL, timeout을 검증한다.

@@ -278,3 +278,83 @@
 ## 변경 규칙
 
 API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신한다. 프론트엔드 타입(`src/types.ts`)과 Lambda 응답 구조가 이 계약을 따라야 한다.
+
+## GET /api/trend-lens
+
+목적: Trend Lens 오늘 브리프와 분야별 인텔리전스 캐시를 조회한다.
+
+요청 body: 없음.
+
+보안:
+
+- Cognito JWT 필수.
+- 이 route는 외부 소스를 호출하지 않는다. DynamoDB에 저장된 최신 캐시만 반환한다.
+
+응답:
+
+```json
+{
+  "generatedAt": "2026-06-07T22:00:00.000Z",
+  "cacheDate": "2026-06-08",
+  "cacheStatus": "cached",
+  "scope": "all",
+  "title": "Trend Lens",
+  "summary": "한국 우선으로 하루에 한 번 정리하고, 공식 보안 위험 신호는 더 빠르게 확인하는 지식 브리프입니다.",
+  "nextScheduledRefreshAt": "2026-06-08T22:00:00.000Z",
+  "nextManualRefreshAllowedAt": "2026-06-08T04:00:00.000Z",
+  "briefItems": [
+    {
+      "id": "kisa-security-notice-1",
+      "category": "security",
+      "priority": "urgent",
+      "title": "보안공지 제목",
+      "summary": "짧은 자체 요약",
+      "sourceName": "KISA 보안공지",
+      "sourceUrl": "https://www.boho.or.kr/...",
+      "publishedAt": "2026-06-07T01:00:00.000Z",
+      "region": "korea",
+      "language": "ko",
+      "reasonTags": ["한국 우선", "공식", "보안 신호"]
+    }
+  ],
+  "sections": [],
+  "sourceStatuses": [],
+  "note": "원문 전문을 저장하지 않고 제목, 링크, 짧은 요약, 우선순위 근거만 보관합니다."
+}
+```
+
+`cacheStatus` 값:
+
+- `fresh`: 방금 수집된 캐시.
+- `cached`: 오늘 캐시.
+- `stale`: 오늘 이전의 마지막 성공 캐시.
+- `partial`: 일부 소스만 성공.
+- `unavailable`: 아직 유효한 캐시가 없음.
+
+## POST /api/trend-lens/refresh
+
+목적: 로그인 사용자가 Trend Lens를 수동으로 다시 갱신한다.
+
+요청:
+
+```json
+{
+  "scope": "all",
+  "force": true
+}
+```
+
+허용 `scope`:
+
+- `all`: 전체 브리프 갱신.
+- `security`: 공식 보안 신호만 빠르게 갱신.
+
+제약:
+
+- URL, host, 임의 keyword 입력은 허용하지 않는다.
+- `all` 수동 갱신은 6시간 cooldown을 둔다.
+- `security` 수동 갱신은 30분 cooldown을 둔다.
+- cooldown 중이면 `429`.
+- 자동 수집은 public endpoint가 아니라 EventBridge가 Lambda 내부 이벤트를 호출한다.
+
+응답: `GET /api/trend-lens`와 같은 `TrendLensSnapshot`.

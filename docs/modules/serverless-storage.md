@@ -39,3 +39,20 @@
 - 조회 패턴이 늘어나기 전에는 GSI를 추가하지 않는다.
 - 기록 item의 `sk` 형식은 시간순 정렬을 전제로 하므로 임의 변경하면 migration 계획이 필요하다.
 - table 삭제나 교체가 필요한 변경은 반드시 export 백업을 먼저 만든다.
+## Trend Lens 저장 구조
+
+추가일: 2026-06-07
+
+Trend Lens는 기존 DynamoDB single-table 안에서 global cache로 시작한다. 사용자별 관심 주제 설정이 생기기 전까지 GSI나 Scan은 추가하지 않는다.
+
+사용 item:
+
+- `pk = SYSTEM#TREND_LENS`
+- `sk = TREND_LENS#LATEST`
+- `sk = TREND_LENS#SNAPSHOT#YYYY-MM-DD`
+- `sk = TREND_LENS#MANUAL#all`
+- `sk = TREND_LENS#MANUAL#security`
+
+`TREND_LENS#LATEST`는 현재 화면에서 읽는 최신 snapshot이다. `SNAPSHOT#YYYY-MM-DD`는 일자별 보존용이며, TTL `expiresAt`으로 정리한다. `MANUAL#...` item은 수동 refresh cooldown을 기록한다.
+
+저장 payload는 원문이 아니라 `title`, `summary`, `sourceName`, `sourceUrl`, `publishedAt`, `region`, `language`, `reasonTags`, `sourceStatuses` 중심이다. snapshot은 400KB DynamoDB item limit보다 훨씬 작게 유지해야 하며, 권장 크기는 50KB 미만이다.

@@ -35,8 +35,10 @@ assert(
 
 const routes = resourcesOf("AWS::ApiGatewayV2::Route");
 const routeKeys = routes.map((route) => route.Properties.RouteKey);
-assert(routes.length >= 8, "Expected all Pineflow API routes to be synthesized.");
+assert(routes.length >= 10, "Expected all Pineflow API routes to be synthesized.");
 assert(routeKeys.includes("GET /api/usage"), "Operational usage route must be synthesized.");
+assert(routeKeys.includes("GET /api/trend-lens"), "Trend Lens cache route must be synthesized.");
+assert(routeKeys.includes("POST /api/trend-lens/refresh"), "Trend Lens manual refresh route must be synthesized.");
 assert(routeKeys.includes("PATCH /api/records/{recordId}"), "Record time correction route must be synthesized.");
 assert(routeKeys.includes("DELETE /api/records/{recordId}"), "Record deletion route must be synthesized.");
 assert(
@@ -54,11 +56,35 @@ const lambda = resourcesOf("AWS::Lambda::Function").find(
 assert(lambda?.Properties?.Runtime === "nodejs24.x", "Lambda runtime must stay on supported Node.js 24.x.");
 assert(lambda?.Properties?.ReservedConcurrentExecutions === 1, "Lambda reserved concurrency must be 1.");
 assert(lambda?.Properties?.MemorySize === 128, "Lambda memory must remain at the minimum 128 MB baseline.");
+assert(lambda?.Properties?.Timeout <= 8, "Lambda timeout must stay short for cost and concurrency control.");
 
 const table = resourcesOf("AWS::DynamoDB::Table")[0];
 assert(table?.Properties?.ProvisionedThroughput?.ReadCapacityUnits === 1, "DynamoDB must start at 1 RCU.");
 assert(table?.Properties?.ProvisionedThroughput?.WriteCapacityUnits === 1, "DynamoDB must start at 1 WCU.");
 assert(table?.Properties?.DeletionProtectionEnabled === true, "DynamoDB deletion protection must be enabled.");
+assert(
+  table?.Properties?.TimeToLiveSpecification?.AttributeName === "expiresAt" &&
+    table?.Properties?.TimeToLiveSpecification?.Enabled === true,
+  "DynamoDB TTL must stay enabled for cached intelligence snapshots."
+);
+
+const eventRules = resourcesOf("AWS::Events::Rule");
+assert(
+  eventRules.some((rule) => rule.Properties.Name === "pineflow-trend-lens-daily-refresh"),
+  "Trend Lens daily refresh rule must be synthesized."
+);
+assert(
+  eventRules.some((rule) => rule.Properties.Name === "pineflow-trend-lens-security-refresh"),
+  "Trend Lens security refresh rule must be synthesized."
+);
+assert(
+  eventRules.some((rule) => rule.Properties.ScheduleExpression === "cron(0 22 * * ? *)"),
+  "Trend Lens daily refresh must run once per day at 07:00 KST."
+);
+assert(
+  eventRules.some((rule) => rule.Properties.ScheduleExpression === "rate(30 minutes)"),
+  "Trend Lens security refresh must stay at the 30 minute cadence."
+);
 
 const logGroup = resourcesOf("AWS::Logs::LogGroup").find(
   (resource) => resource.Properties.LogGroupName === "/aws/lambda/pineflow-api"

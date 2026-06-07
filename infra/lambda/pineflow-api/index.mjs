@@ -658,6 +658,665 @@ async function loadUsageSnapshot(pk) {
   return snapshot;
 }
 
+const trendLensPk = "SYSTEM#TREND_LENS";
+const trendLensLatestSk = "TREND_LENS#LATEST";
+const trendLensManualPrefix = "TREND_LENS#MANUAL#";
+const trendLensResponseLimitBytes = 512 * 1024;
+const trendLensSourceTimeoutMs = 2200;
+const trendLensSnapshotTtlDays = 30;
+const trendLensManualCooldownMs = {
+  all: 6 * 60 * 60 * 1000,
+  security: 30 * 60 * 1000
+};
+
+const trendLensSections = [
+  {
+    id: "security",
+    title: "긴급 보안 신호",
+    subtitle: "한국 우선, 실제 악용과 공식 경보를 먼저 봅니다.",
+    focus: "KISA, CISA KEV 같은 공식 위험 신호를 우선합니다."
+  },
+  {
+    id: "mandolin",
+    title: "만돌린 노트",
+    subtitle: "클래식 만돌린, 연주자, 레슨에 도움이 되는 흐름입니다.",
+    focus: "유명 아티스트와 역사/기술 학습 소재를 중심으로 봅니다."
+  },
+  {
+    id: "it-content",
+    title: "IT 콘텐츠 레이더",
+    subtitle: "콘텐츠 제작으로 이어질 수 있는 기술 관심 흐름입니다.",
+    focus: "한국에 영향을 줄 만한 글로벌 기술 신호를 보조로 봅니다."
+  },
+  {
+    id: "education",
+    title: "교육 트렌드",
+    subtitle: "교육 방법, 에듀테크, 학습 콘텐츠 흐름입니다.",
+    focus: "콘텐츠 제작과 학습 설계에 연결될 신호를 봅니다."
+  }
+];
+
+const trendLensSources = {
+  cisaKev: {
+    id: "cisa-kev",
+    label: "CISA KEV",
+    url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+    host: "www.cisa.gov",
+    pathPrefix: "/sites/default/files/feeds/",
+    accept: "application/json"
+  },
+  kisaSecurityNotice: {
+    id: "kisa-security-notice",
+    label: "KISA 보안공지",
+    url: "https://www.boho.or.kr/kr/rss.do?bbsId=B0000133",
+    host: "www.boho.or.kr",
+    pathPrefix: "/kr/rss.do",
+    accept: "application/rss+xml, application/xml, text/xml"
+  },
+  kisaVulnerability: {
+    id: "kisa-vulnerability",
+    label: "KISA 취약점 정보",
+    url: "https://www.boho.or.kr/kr/rss.do?bbsId=B0000302",
+    host: "www.boho.or.kr",
+    pathPrefix: "/kr/rss.do",
+    accept: "application/rss+xml, application/xml, text/xml"
+  },
+  wikimedia: {
+    id: "wikimedia-pageviews",
+    label: "Wikimedia Pageviews",
+    host: "wikimedia.org",
+    pathPrefix: "/api/rest_v1/metrics/pageviews/per-article/",
+    accept: "application/json"
+  },
+  googleTrendsPlanned: {
+    id: "google-trends",
+    label: "Google Trends"
+  }
+};
+
+const pageviewTopics = {
+  mandolin: [
+    { project: "en.wikipedia", title: "Mandolin", label: "Mandolin", region: "global" },
+    { project: "en.wikipedia", title: "Avi_Avital", label: "Avi Avital", region: "global" },
+    { project: "en.wikipedia", title: "Chris_Thile", label: "Chris Thile", region: "global" },
+    { project: "en.wikipedia", title: "Classical_mandolin", label: "Classical mandolin", region: "global" }
+  ],
+  "it-content": [
+    { project: "en.wikipedia", title: "Cybersecurity", label: "Cybersecurity", region: "global" },
+    { project: "en.wikipedia", title: "Artificial_intelligence", label: "Artificial intelligence", region: "global" },
+    { project: "en.wikipedia", title: "GitHub_Actions", label: "GitHub Actions", region: "global" }
+  ],
+  education: [
+    { project: "en.wikipedia", title: "Educational_technology", label: "Educational technology", region: "global" },
+    { project: "en.wikipedia", title: "Artificial_intelligence_in_education", label: "AI in education", region: "global" },
+    { project: "en.wikipedia", title: "Online_learning", label: "Online learning", region: "global" }
+  ]
+};
+
+function trendLensSnapshotKey(date) {
+  return `TREND_LENS#SNAPSHOT#${date}`;
+}
+
+function trendManualKey(scope) {
+  return `${trendLensManualPrefix}${scope}`;
+}
+
+function plusDays(date, days) {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
+function ttlEpochSeconds(date, days) {
+  return Math.floor(plusDays(date, days).getTime() / 1000);
+}
+
+function nextTrendLensRefreshAt(now) {
+  const koreaTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  let refreshUtc = Date.UTC(
+    koreaTime.getUTCFullYear(),
+    koreaTime.getUTCMonth(),
+    koreaTime.getUTCDate(),
+    7,
+    0,
+    0
+  ) - 9 * 60 * 60 * 1000;
+  if (refreshUtc <= now.getTime()) {
+    refreshUtc += 24 * 60 * 60 * 1000;
+  }
+
+  return new Date(refreshUtc).toISOString();
+}
+
+function plannedSourceStatus(source, checkedAt, message) {
+  return {
+    id: source.id,
+    label: source.label,
+    status: "planned",
+    checkedAt,
+    message
+  };
+}
+
+function sourceStatus(source, status, checkedAt, message) {
+  return {
+    id: source.id,
+    label: source.label,
+    status,
+    checkedAt,
+    message
+  };
+}
+
+function safeParseJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function isAllowedSourceUrl(value, source) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === source.host && url.pathname.startsWith(source.pathPrefix);
+  } catch {
+    return false;
+  }
+}
+
+function isSafeSameHostLink(value, source) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === source.host;
+  } catch {
+    return false;
+  }
+}
+
+async function readLimitedText(response) {
+  if (!response.body?.getReader) {
+    const text = await response.text();
+    if (Buffer.byteLength(text, "utf8") > trendLensResponseLimitBytes) {
+      throw new Error("Trend Lens source response is too large.");
+    }
+    return text;
+  }
+
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > trendLensResponseLimitBytes) {
+      throw new Error("Trend Lens source response is too large.");
+    }
+    chunks.push(Buffer.from(value));
+  }
+
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+async function fetchTrendLensSource(source, url = source.url) {
+  if (!url || !isAllowedSourceUrl(url, source)) {
+    throw new Error("Trend Lens source URL is not allowlisted.");
+  }
+
+  let currentUrl = url;
+  for (let redirectCount = 0; redirectCount < 2; redirectCount += 1) {
+    const response = await fetch(currentUrl, {
+      redirect: "manual",
+      signal: AbortSignal.timeout(trendLensSourceTimeoutMs),
+      headers: {
+        accept: source.accept,
+        "user-agent": "PineflowTrendLens/0.1"
+      }
+    });
+
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get("location");
+      if (!location) throw new Error("Trend Lens source redirected without location.");
+      const redirected = new URL(location, currentUrl).toString();
+      if (!isAllowedSourceUrl(redirected, source)) {
+        throw new Error("Trend Lens source redirected outside allowlist.");
+      }
+      currentUrl = redirected;
+      continue;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Trend Lens source returned ${response.status}.`);
+    }
+
+    return readLimitedText(response);
+  }
+
+  throw new Error("Trend Lens source redirected too many times.");
+}
+
+function priorityWeight(priority) {
+  return { urgent: 4, high: 3, watch: 2, note: 1 }[priority] ?? 0;
+}
+
+function dedupeItems(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key = `${item.category}:${item.title}:${item.sourceUrl}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function buildBriefItems(sections) {
+  return dedupeItems(
+    sections
+      .flatMap((section) => section.items)
+      .sort((left, right) => {
+        const priorityDiff = priorityWeight(right.priority) - priorityWeight(left.priority);
+        if (priorityDiff !== 0) return priorityDiff;
+        return new Date(right.publishedAt ?? 0).getTime() - new Date(left.publishedAt ?? 0).getTime();
+      })
+  ).slice(0, 5);
+}
+
+function decodeXmlText(value = "") {
+  return value
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+function rssTagValue(item, tag) {
+  const match = item.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  return decodeXmlText(match?.[1] ?? "");
+}
+
+function parseRssItems(xml, limit = 8) {
+  if (xml.includes("<!ENTITY") || xml.includes("<!DOCTYPE")) {
+    throw new Error("RSS entity declarations are not allowed.");
+  }
+
+  return [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].slice(0, limit).map((match, index) => {
+    const item = match[0];
+    return {
+      id: rssTagValue(item, "guid") || rssTagValue(item, "link") || `rss-${index}`,
+      title: rssTagValue(item, "title"),
+      link: rssTagValue(item, "link"),
+      description: rssTagValue(item, "description"),
+      publishedAt: rssTagValue(item, "pubDate")
+    };
+  });
+}
+
+function kisaPriority(title) {
+  if (/긴급|주의|위험|악용|랜섬|침해|보안 업데이트/.test(title)) return "urgent";
+  if (/취약점|패치|권고|공지/.test(title)) return "high";
+  return "watch";
+}
+
+async function collectKisaRss(source, now) {
+  const checkedAt = now.toISOString();
+  const text = await fetchTrendLensSource(source);
+  const rssItems = parseRssItems(text, 5).filter((item) => item.title && item.link);
+  return {
+    status: sourceStatus(source, rssItems.length > 0 ? "ready" : "partial", checkedAt, `${rssItems.length}개 한국 보안 신호를 반영했습니다.`),
+    items: rssItems.map((item) => {
+      const published = item.publishedAt ? new Date(item.publishedAt) : now;
+      const sourceUrl = isSafeSameHostLink(item.link, source) ? item.link : source.url;
+      return {
+        id: `${source.id}-${item.id}`.slice(0, 180),
+        category: "security",
+        priority: kisaPriority(item.title),
+        title: item.title,
+        summary: item.description || "KISA 보호나라 공식 RSS에서 확인한 한국 우선 보안 신호입니다.",
+        sourceName: source.label,
+        sourceUrl,
+        publishedAt: Number.isNaN(published.getTime()) ? now.toISOString() : published.toISOString(),
+        region: "korea",
+        language: "ko",
+        reasonTags: ["한국 우선", "공식", "보안 신호"]
+      };
+    })
+  };
+}
+
+async function collectCisaKev(now) {
+  const checkedAt = now.toISOString();
+  const text = await fetchTrendLensSource(trendLensSources.cisaKev);
+  const data = safeParseJson(text);
+  const vulnerabilities = Array.isArray(data?.vulnerabilities) ? data.vulnerabilities : [];
+  const recent = vulnerabilities
+    .filter((item) => item?.cveID && item?.dateAdded)
+    .sort((left, right) => new Date(right.dateAdded).getTime() - new Date(left.dateAdded).getTime())
+    .slice(0, 5);
+
+  return {
+    status: sourceStatus(trendLensSources.cisaKev, recent.length > 0 ? "ready" : "partial", checkedAt, `${recent.length}개 KEV 신호를 반영했습니다.`),
+    items: recent.map((item) => {
+      const dateAdded = new Date(item.dateAdded);
+      const ageHours = Math.max(0, (now.getTime() - dateAdded.getTime()) / 36e5);
+      return {
+        id: `cisa-kev-${item.cveID}`,
+        category: "security",
+        priority: ageHours <= 72 ? "urgent" : "high",
+        title: `${item.cveID} 실제 악용 확인`,
+        summary: `${item.vendorProject ?? "공급사 미상"} ${item.product ?? "제품"} 취약점이 CISA KEV에 등록되었습니다. 한국 환경 영향 여부를 먼저 확인해야 합니다.`,
+        sourceName: "CISA KEV",
+        sourceUrl: "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+        publishedAt: dateAdded.toISOString(),
+        region: "global",
+        language: "en",
+        reasonTags: ["공식", "실제 악용", item.knownRansomwareCampaignUse === "Known" ? "랜섬웨어 연관" : "패치 점검"]
+      };
+    })
+  };
+}
+
+function wikimediaDate(date) {
+  return `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, "0")}${String(date.getUTCDate()).padStart(2, "0")}00`;
+}
+
+function pageviewUrl(topic, start, end) {
+  const encodedTitle = encodeURIComponent(topic.title);
+  return `https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/${topic.project}/all-access/user/${encodedTitle}/daily/${wikimediaDate(start)}/${wikimediaDate(end)}`;
+}
+
+function trendDeltaLabel(deltaPercent) {
+  if (!Number.isFinite(deltaPercent)) return "비교 기준 없음";
+  if (deltaPercent > 0) return `이전 7일 대비 ${Math.round(deltaPercent)}% 증가`;
+  if (deltaPercent < 0) return `이전 7일 대비 ${Math.abs(Math.round(deltaPercent))}% 감소`;
+  return "이전 7일과 비슷함";
+}
+
+async function collectPageviewTopic(category, topic, now) {
+  const end = plusDays(now, -1);
+  const start = plusDays(end, -13);
+  const url = pageviewUrl(topic, start, end);
+  const text = await fetchTrendLensSource(trendLensSources.wikimedia, url);
+  const data = safeParseJson(text);
+  const views = Array.isArray(data?.items) ? data.items.map((item) => Number(item.views ?? 0)) : [];
+  const previous = views.slice(0, 7).reduce((sum, value) => sum + value, 0);
+  const recent = views.slice(7).reduce((sum, value) => sum + value, 0);
+  const deltaPercent = previous > 0 ? ((recent - previous) / previous) * 100 : Number.NaN;
+  const priority = deltaPercent >= 45 ? "high" : deltaPercent >= 15 ? "watch" : "note";
+
+  return {
+    id: `pageview-${category}-${topic.title}`,
+    category,
+    priority,
+    title: topic.label,
+    summary: `${trendDeltaLabel(deltaPercent)}입니다. 최근 7일 조회 ${Math.round(recent).toLocaleString("ko-KR")}회를 콘텐츠/학습 주제 관심도의 보조 지표로 봅니다.`,
+    sourceName: "Wikimedia Pageviews",
+    sourceUrl: `https://${topic.project}.org/wiki/${encodeURIComponent(topic.title)}`,
+    publishedAt: now.toISOString(),
+    region: topic.region,
+    language: topic.project.startsWith("ko.") ? "ko" : "en",
+    reasonTags: ["관심도 보조", "7일 추이", priority === "high" ? "상승" : "관찰"]
+  };
+}
+
+async function collectPageviewSection(category, now) {
+  const topics = pageviewTopics[category] ?? [];
+  const results = await Promise.allSettled(topics.map((topic) => collectPageviewTopic(category, topic, now)));
+  const items = results
+    .filter((result) => result.status === "fulfilled")
+    .map((result) => result.value)
+    .sort((left, right) => priorityWeight(right.priority) - priorityWeight(left.priority))
+    .slice(0, 4);
+  const failures = results.filter((result) => result.status === "rejected").length;
+  return {
+    status: sourceStatus(
+      trendLensSources.wikimedia,
+      items.length > 0 && failures === 0 ? "ready" : items.length > 0 ? "partial" : "unavailable",
+      now.toISOString(),
+      `${category} 주제 ${items.length}개를 조회했습니다.${failures ? ` 실패 ${failures}개가 있습니다.` : ""}`
+    ),
+    items
+  };
+}
+
+function emptyTrendSections() {
+  return trendLensSections.map((section) => ({ ...section, items: [] }));
+}
+
+function trendSectionBase(id) {
+  return trendLensSections.find((section) => section.id === id) ?? {
+    id,
+    title: id,
+    subtitle: "Trend Lens section",
+    focus: "수집 규칙을 확인해야 합니다."
+  };
+}
+
+function mergeTrendSections(existingSections, updates) {
+  const sectionMap = new Map((existingSections?.length ? existingSections : emptyTrendSections()).map((section) => [section.id, section]));
+  updates.forEach((section) => {
+    sectionMap.set(section.id, {
+      ...section,
+      items: dedupeItems(section.items ?? []).slice(0, 8)
+    });
+  });
+
+  return trendLensSections.map((section) => ({
+    ...section,
+    items: sectionMap.get(section.id)?.items ?? []
+  }));
+}
+
+async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
+  const now = new Date();
+  const statuses = [
+    plannedSourceStatus(
+      trendLensSources.googleTrendsPlanned,
+      now.toISOString(),
+      "Google Trends 공식 API는 alpha 성격이 있어 v1은 공개/무키 지표와 수동 리서치 근거를 우선합니다."
+    )
+  ];
+  const updates = [];
+
+  const securityItems = [];
+  for (const source of [trendLensSources.kisaSecurityNotice, trendLensSources.kisaVulnerability]) {
+    try {
+      const kisa = await collectKisaRss(source, now);
+      statuses.push(kisa.status);
+      securityItems.push(...kisa.items);
+    } catch (error) {
+      statuses.push(sourceStatus(source, "unavailable", now.toISOString(), `${source.label}를 불러오지 못했습니다. 마지막 캐시가 있으면 그대로 사용합니다.`));
+    }
+  }
+
+  try {
+    const security = await collectCisaKev(now);
+    statuses.push(security.status);
+    securityItems.push(...security.items);
+  } catch (error) {
+    statuses.push(sourceStatus(trendLensSources.cisaKev, "unavailable", now.toISOString(), "CISA KEV를 불러오지 못했습니다. 마지막 캐시가 있으면 그대로 사용합니다."));
+  }
+  updates.push({
+    ...trendSectionBase("security"),
+    items: dedupeItems(securityItems)
+      .sort((left, right) => priorityWeight(right.priority) - priorityWeight(left.priority))
+      .slice(0, 8)
+  });
+
+  if (scope === "all") {
+    for (const category of ["mandolin", "it-content", "education"]) {
+      try {
+        const section = await collectPageviewSection(category, now);
+        statuses.push(section.status);
+        updates.push({ ...trendSectionBase(category), items: section.items });
+      } catch (error) {
+        statuses.push(sourceStatus(trendLensSources.wikimedia, "unavailable", now.toISOString(), `${category} 관심도 지표를 불러오지 못했습니다.`));
+      }
+    }
+  }
+
+  const sections = mergeTrendSections(scope === "security" ? previousSnapshot?.sections : emptyTrendSections(), updates);
+  const briefItems = buildBriefItems(sections);
+  const hasReady = statuses.some((status) => status.status === "ready");
+  const hasUnavailable = statuses.some((status) => status.status === "unavailable");
+
+  return {
+    generatedAt: now.toISOString(),
+    cacheDate: cacheDateFor(now),
+    cacheStatus: hasReady && hasUnavailable ? "partial" : hasReady ? "fresh" : "unavailable",
+    scope,
+    title: "Trend Lens",
+    summary: "한국 우선으로 하루에 한 번 정리하고, 공식 보안 위험 신호는 더 빠르게 확인하는 지식 브리프입니다.",
+    nextScheduledRefreshAt: nextTrendLensRefreshAt(now),
+    nextManualRefreshAllowedAt: new Date(now.getTime() + trendLensManualCooldownMs[scope]).toISOString(),
+    sections,
+    briefItems,
+    sourceStatuses: statuses,
+    note: "원문 전문을 저장하지 않고 제목, 링크, 짧은 요약, 우선순위 근거만 보관합니다."
+  };
+}
+
+async function loadTrendLensSnapshot() {
+  const result = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk: trendLensPk, sk: trendLensLatestSk })
+    })
+  );
+  const cached = itemToObject(result.Item);
+  if (!cached?.payload) return null;
+
+  try {
+    const snapshot = JSON.parse(cached.payload);
+    return {
+      ...snapshot,
+      cacheStatus: snapshot.cacheDate === cacheDateFor(new Date()) ? "cached" : "stale"
+    };
+  } catch {
+    return null;
+  }
+}
+
+function trendLensPlaceholderSnapshot() {
+  const now = new Date();
+  return {
+    generatedAt: now.toISOString(),
+    cacheDate: cacheDateFor(now),
+    cacheStatus: "unavailable",
+    scope: "all",
+    title: "Trend Lens",
+    summary: "아직 오늘 브리프가 준비되지 않았습니다. 수동 갱신을 실행하거나 다음 자동 수집을 기다려주세요.",
+    nextScheduledRefreshAt: nextTrendLensRefreshAt(now),
+    nextManualRefreshAllowedAt: now.toISOString(),
+    sections: emptyTrendSections(),
+    briefItems: [],
+    sourceStatuses: [
+      sourceStatus(trendLensSources.kisaSecurityNotice, "unavailable", now.toISOString(), "첫 보안 RSS 수집 전입니다."),
+      sourceStatus(trendLensSources.kisaVulnerability, "unavailable", now.toISOString(), "첫 취약점 RSS 수집 전입니다."),
+      plannedSourceStatus(trendLensSources.googleTrendsPlanned, now.toISOString(), "공식 Google Trends API 사용 가능성을 검토 중입니다.")
+    ],
+    note: "첫 수집 전에는 외부 호출 없이 준비 상태만 보여줍니다."
+  };
+}
+
+async function saveTrendLensSnapshot(snapshot) {
+  const payload = JSON.stringify(snapshot);
+  const expiresAt = ttlEpochSeconds(new Date(snapshot.generatedAt), trendLensSnapshotTtlDays);
+  const baseItem = {
+    pk: trendLensPk,
+    entityType: "TREND_LENS_SNAPSHOT",
+    cacheDate: snapshot.cacheDate,
+    generatedAt: snapshot.generatedAt,
+    expiresAt,
+    payload
+  };
+
+  await Promise.all([
+    dynamodb.send(
+      new PutItemCommand({
+        TableName: tableName,
+        Item: objectToItem({ ...baseItem, sk: trendLensLatestSk })
+      })
+    ),
+    dynamodb.send(
+      new PutItemCommand({
+        TableName: tableName,
+        Item: objectToItem({ ...baseItem, sk: trendLensSnapshotKey(snapshot.cacheDate) })
+      })
+    )
+  ]);
+}
+
+async function loadTrendManualGuard(scope) {
+  const result = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk: trendLensPk, sk: trendManualKey(scope) })
+    })
+  );
+  return itemToObject(result.Item);
+}
+
+async function saveTrendManualGuard(scope, now) {
+  await dynamodb.send(
+    new PutItemCommand({
+      TableName: tableName,
+      Item: objectToItem({
+        pk: trendLensPk,
+        sk: trendManualKey(scope),
+        entityType: "TREND_LENS_MANUAL_GUARD",
+        scope,
+        lastManualRefreshAt: now.toISOString(),
+        expiresAt: ttlEpochSeconds(now, 2)
+      })
+    })
+  );
+}
+
+async function refreshTrendLensSnapshot(scope = "all", source = "manual") {
+  const normalizedScope = scope === "security" ? "security" : "all";
+  const now = new Date();
+
+  if (source === "manual") {
+    const guard = await loadTrendManualGuard(normalizedScope);
+    const lastManualAt = guard?.lastManualRefreshAt ? new Date(guard.lastManualRefreshAt).getTime() : 0;
+    const nextAllowedAt = lastManualAt + trendLensManualCooldownMs[normalizedScope];
+    if (lastManualAt && nextAllowedAt > now.getTime()) {
+      return json(429, {
+        error: "Trend Lens refresh is cooling down.",
+        nextManualRefreshAllowedAt: new Date(nextAllowedAt).toISOString()
+      });
+    }
+  }
+
+  const previousSnapshot = await loadTrendLensSnapshot();
+  const snapshot = await buildTrendLensSnapshot(normalizedScope, previousSnapshot);
+  await saveTrendLensSnapshot(snapshot);
+
+  if (source === "manual") {
+    await saveTrendManualGuard(normalizedScope, now);
+  }
+
+  return json(200, snapshot);
+}
+
+async function handleTrendLensSchedule(event) {
+  const task = event?.pineflowTask;
+  if (task === "trend-lens-daily-refresh") {
+    await refreshTrendLensSnapshot("all", "scheduled");
+    return { ok: true, task };
+  }
+  if (task === "trend-lens-security-refresh") {
+    await refreshTrendLensSnapshot("security", "scheduled");
+    return { ok: true, task };
+  }
+
+  return { ok: false, task: task ?? "unknown" };
+}
+
 function parseRecordId(recordId) {
   if (typeof recordId !== "string") return null;
 
@@ -1116,6 +1775,10 @@ async function updateSettings(pk, body) {
 
 export async function handler(event) {
   try {
+    if (event?.pineflowTask) {
+      return handleTrendLensSchedule(event);
+    }
+
     const method = event.requestContext?.http?.method ?? "GET";
     const path = event.rawPath ?? "";
 
@@ -1130,6 +1793,9 @@ export async function handler(event) {
     if (method === "GET" && path === "/api/usage") {
       return json(200, await loadUsageSnapshot(pk));
     }
+    if (method === "GET" && path === "/api/trend-lens") {
+      return json(200, (await loadTrendLensSnapshot()) ?? trendLensPlaceholderSnapshot());
+    }
 
     const body = parseBody(event);
     if (!body.ok) {
@@ -1139,6 +1805,10 @@ export async function handler(event) {
     if (method === "GET" && path === "/api/state") return json(200, await loadState(pk));
     if (method === "POST" && path === "/api/check-in") return checkIn(pk, body.value);
     if (method === "POST" && path === "/api/check-out") return checkOut(pk);
+    if (method === "POST" && path === "/api/trend-lens/refresh") {
+      const scope = body.value.scope === "security" ? "security" : "all";
+      return refreshTrendLensSnapshot(scope, "manual");
+    }
     if (method === "PATCH" && path.startsWith("/api/records/")) {
       const recordId = recordIdFromPath(path);
       if (!recordId) return json(400, { error: "Invalid record id." });

@@ -81,3 +81,20 @@ Pineflow 앱 하단에는 AWS 사용량의 기초 지표와 Free Tier 기준 예
 - S3 Intelligent-Tiering은 객체 수와 크기에 따라 모니터링 비용이 생길 수 있다. 프론트엔드 assets 객체 수가 많아지면 실제 비용 대비 효과를 다시 확인한다.
 
 정책은 변할 수 있으므로 배포 직전에는 공식 pricing 문서를 다시 확인한다.
+## Trend Lens 비용 기준
+
+추가일: 2026-06-07
+
+Trend Lens는 하루 1회 전체 브리프와 30분 간격 보안 신호 확인을 수행한다. 개인 사용 기준으로 Lambda/EventBridge/DynamoDB Free Tier 안쪽으로 예상되지만 무료 보장은 아니다. 따라서 기존 Budgets `$1`, `$3`, `$5`와 운영 사용량 패널을 계속 최종 방어선으로 둔다.
+
+비용을 키우지 않기 위한 기준:
+
+- 전체 수집은 하루 1회.
+- 보안 공식 신호 확인은 30분보다 자주 하지 않는다.
+- 수동 전체 refresh는 6시간 cooldown.
+- 수동 security refresh는 30분 cooldown.
+- API key가 필요한 source는 기본 비활성화.
+- SSM Parameter Store는 Standard `SecureString`만 우선 후보로 둔다.
+- Secrets Manager, Bedrock/LLM 자동 요약, 외부 paid news API, OpenSearch, SQS, Step Functions는 v1에서 사용하지 않는다.
+- DynamoDB는 single-table, 1 RCU / 1 WCU, GSI 없음.
+- Trend Lens snapshot은 원문 전문이 아니라 짧은 metadata만 저장한다.

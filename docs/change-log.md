@@ -112,3 +112,13 @@
 - 최근 기록 펼침 영역이 기본 행의 `IN/OUT` 정보를 반복하던 문제를 수정했습니다. 기본 행에서는 정확한 시각을 숨기고 진행 레일만 보여주며, 펼친 뒤에만 정확한 시각, 전체 메모, endpoint별 시간 보정, 세션 삭제를 제공합니다.
 - 최근 기록을 펼칠 때 기존 요약 카드와 요약 그래프가 그대로 남지 않고, 자체 헤더와 접기 버튼을 가진 상세 패널로 전환되도록 수정했습니다.
 - 날씨 영역이 sidebar 폭에서 2열 grid 흔적 때문에 오른쪽 빈 공간을 만들던 문제를 수정했습니다. 현재 날씨, 세부 지표, 예보 리본이 모두 1열 Forecast Ribbon 안에서 폭을 채우도록 정리했습니다.
+## 2026-06-07
+
+- Pineflow를 출퇴근 기록 중심에서 `하루 리듬 + 지식 인텔리전스` 방향으로 확장하는 Trend Lens v1을 추가했다.
+- `GET /api/trend-lens` 캐시 조회 API와 `POST /api/trend-lens/refresh` 수동 갱신 API를 추가했다.
+- EventBridge daily refresh와 security refresh rule을 추가해 하루 1회 전체 브리프와 30분 간격 공식 보안 신호 확인을 자동화했다.
+- KISA 보안공지 RSS, KISA 취약점 정보 RSS, CISA KEV JSON, Wikimedia Pageviews API를 allowlist source로 연결했다.
+- DynamoDB TTL `expiresAt`을 활성화하고 Trend Lens snapshot/cooldown item 저장 구조를 문서화했다.
+- 첫 화면 최근 기록 아래에 `Trend Lens` 섹션을 추가하고, 오늘 브리프와 분야별 상세/소스 상태를 분리해 표시했다.
+- `docs/modules/trend-lens.md`, `docs/research/daily-intelligence-dashboard-2026-06-07.md`, `docs/adr/0008-trend-lens-scheduled-intelligence-cache.md`를 추가했다.
+- API, Serverless 구현, 비용, 보안, 저장소, 배포 체크리스트, LLM 컨텍스트 문서를 Trend Lens 기준으로 갱신했다.

@@ -1,4 +1,4 @@
-import type { CommuteState, OperationalUsageSnapshot, WorkMode } from "./types";
+import type { CommuteState, OperationalUsageSnapshot, TrendLensSnapshot, WorkMode } from "./types";
 import { getValidAccessToken, refreshSession } from "./auth";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -85,6 +85,17 @@ export function fetchState() {
 
 export function fetchUsage() {
   return requestJson<OperationalUsageSnapshot>("/api/usage");
+}
+
+export function fetchTrendLens() {
+  return requestJson<TrendLensSnapshot>("/api/trend-lens");
+}
+
+export function refreshTrendLens(scope: "all" | "security" = "all") {
+  return requestJson<TrendLensSnapshot>("/api/trend-lens/refresh", {
+    method: "POST",
+    body: JSON.stringify({ scope, force: true }),
+  });
 }
 
 export function createCheckIn(mode: WorkMode, note: string) {

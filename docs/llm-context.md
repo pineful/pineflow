@@ -150,3 +150,26 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 색상은 obsidian/graphite UI를 기본으로 하고, 파인 그린은 로고와 작은 생명감 accent에만 제한한다. 핵심 데이터와 선택/focus는 cyan, 출근/퇴근/저장 같은 command action은 amber/orange, 위험 동작은 coral red로 분리한다.
 - 앱 첫 화면의 비용 신호등은 하단 운영 사용량 패널의 당일 스냅샷을 요약해 Free Tier 기준 안정/주의/위험/확인 불가 상태를 보여준다. 신호등은 별도 AWS 조회를 만들지 않아야 하며, 하단 운영 사용량 패널은 CloudWatch 기초 지표, 시간 순 추이, Free Tier 기준 예상 상태를 표시한다. 앱 Lambda에 Cost Explorer 권한을 추가하지 않고, 실제 청구액은 AWS Budgets와 Billing 콘솔에서 확인하는 구조를 유지한다. 같은 날짜의 사용량 스냅샷은 프론트엔드와 DynamoDB에 캐시해 비용 확인을 위한 반복 CloudWatch 호출을 피한다. 운영 지표 조회 실패는 기록 기능 오류처럼 상단 error banner로 띄우지 않는다.
 - 프론트엔드 S3 bucket은 `assets/` 객체만 30일 뒤 Intelligent-Tiering으로 전환한다. `index.html`은 CloudFront 첫 화면 안정성을 위해 Standard에 둔다. archive/deep archive 계열 전환은 현재 프론트엔드 객체에는 적용하지 않는다.
+## 2026-06-07 Trend Lens 확장
+
+Pineflow의 제품 성격은 `개인 출퇴근 기록`에서 `하루 리듬 + 지식 인텔리전스`로 확장되었다. 기존 출퇴근 기능은 여전히 첫 화면의 핵심이며, Trend Lens는 최근 기록 아래의 보조 지식 공간으로 시작한다.
+
+Trend Lens v1 원칙:
+
+- 하루 1회 전체 브리프 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 직접 호출한다.
+- 공식 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 `security` scope만 갱신한다.
+- 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 `all` 또는 `security`만 요청할 수 있다.
+- `GET /api/trend-lens`는 DynamoDB 캐시만 읽고 외부 source를 호출하지 않는다.
+- 모든 API route는 JWT authorizer가 필요하다. EventBridge 내부 이벤트는 public route가 아니다.
+- 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
+- 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
+- 캐시는 `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#LATEST`, `sk=TREND_LENS#SNAPSHOT#YYYY-MM-DD`에 저장한다.
+- DynamoDB TTL `expiresAt`으로 cache/guard item을 정리한다.
+- API key가 필요한 Trend source는 기본 비활성화한다. 필요 시 SSM Parameter Store Standard `SecureString`을 우선하고, GitHub Secrets/Lambda 평문 env/DynamoDB에는 저장하지 않는다.
+
+관련 문서:
+
+- `docs/modules/trend-lens.md`
+- `docs/research/daily-intelligence-dashboard-2026-06-07.md`
+- `docs/adr/0008-trend-lens-scheduled-intelligence-cache.md`
+- `docs/api-contract.md`

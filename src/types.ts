@@ -82,3 +82,54 @@ export type OperationalUsageSnapshot = {
   costEstimate: OperationalCostEstimate;
   note: string;
 };
+
+export type TrendLensCategoryId = "security" | "mandolin" | "it-content" | "education";
+
+export type TrendLensPriority = "urgent" | "high" | "watch" | "note";
+
+export type TrendLensRegion = "korea" | "global";
+
+export type TrendLensItem = {
+  id: string;
+  category: TrendLensCategoryId;
+  priority: TrendLensPriority;
+  title: string;
+  summary: string;
+  sourceName: string;
+  sourceUrl: string;
+  publishedAt?: string;
+  region: TrendLensRegion;
+  language: "ko" | "en";
+  reasonTags: string[];
+};
+
+export type TrendLensSection = {
+  id: TrendLensCategoryId;
+  title: string;
+  subtitle: string;
+  focus: string;
+  items: TrendLensItem[];
+};
+
+export type TrendLensSourceStatus = {
+  id: string;
+  label: string;
+  status: "ready" | "partial" | "unavailable" | "planned";
+  checkedAt: string;
+  message: string;
+};
+
+export type TrendLensSnapshot = {
+  generatedAt: string;
+  cacheDate: string;
+  cacheStatus: "fresh" | "cached" | "stale" | "partial" | "unavailable";
+  scope: "all" | "security";
+  title: string;
+  summary: string;
+  nextScheduledRefreshAt: string;
+  nextManualRefreshAllowedAt: string;
+  sections: TrendLensSection[];
+  briefItems: TrendLensItem[];
+  sourceStatuses: TrendLensSourceStatus[];
+  note: string;
+};

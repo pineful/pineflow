@@ -13,14 +13,26 @@ import {
   createCheckOut,
   deleteRecord,
   fetchState,
+  fetchTrendLens,
   fetchUsage,
   isSessionExpiredError,
+  refreshTrendLens,
   saveDailyGoal,
   updateRecord
 } from "./api";
 import { modeDescriptions, modeIcons, modeLabels, modePlans, productName, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
-import type { CommuteRecord, CommuteState, OperationalUsageSnapshot, UsageMetric, UsageTrend, WorkMode } from "./types";
+import type {
+  CommuteRecord,
+  CommuteState,
+  OperationalUsageSnapshot,
+  TrendLensItem,
+  TrendLensPriority,
+  TrendLensSnapshot,
+  UsageMetric,
+  UsageTrend,
+  WorkMode
+} from "./types";
 
 const workModes = Object.keys(modeLabels) as WorkMode[];
 
@@ -57,6 +69,7 @@ type HourlyWeather = {
 
 type FeedbackSound = "tap" | "open" | "start" | "finish" | "success";
 type UsageStatus = "idle" | "loading" | "ready" | "unavailable";
+type TrendLensStatus = "idle" | "loading" | "ready" | "refreshing" | "unavailable";
 type CostSignalLevel = "safe" | "watch" | "billable" | "loading" | "unavailable";
 
 type FlowChartPoint = {
@@ -316,6 +329,34 @@ function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: Usag
   };
 }
 
+function trendPriorityLabel(priority: TrendLensPriority) {
+  if (priority === "urgent") return "긴급";
+  if (priority === "high") return "중요";
+  if (priority === "watch") return "관찰";
+  return "참고";
+}
+
+function trendPriorityClass(priority: TrendLensPriority) {
+  return `priority${priority.charAt(0).toUpperCase()}${priority.slice(1)}`;
+}
+
+function trendRegionLabel(item: TrendLensItem) {
+  if (item.region === "korea") return "한국 우선";
+  return item.language === "ko" ? "한국어" : "글로벌 보조";
+}
+
+function trendLensTimeLabel(snapshot: TrendLensSnapshot | null) {
+  if (!snapshot) return "캐시 대기";
+  return `${formatDate(snapshot.generatedAt)} · ${formatTime(snapshot.generatedAt)}`;
+}
+
+function trendSourceStatusLabel(status: string) {
+  if (status === "ready") return "정상";
+  if (status === "partial") return "부분";
+  if (status === "planned") return "준비";
+  return "확인 필요";
+}
+
 function todayUsageCacheDate() {
   const today = new Date();
   const year = today.getFullYear();
@@ -388,6 +429,126 @@ function UsageTrendCard({ trend }: { trend: UsageTrend }) {
         {first?.label ?? "-"} → {latest?.label ?? "-"}
       </small>
     </article>
+  );
+}
+
+function TrendLensItemCard({ item }: { item: TrendLensItem }) {
+  return (
+    <a className={`trendItem ${trendPriorityClass(item.priority)}`} href={item.sourceUrl} target="_blank" rel="noreferrer">
+      <span>
+        <b>{trendPriorityLabel(item.priority)}</b>
+        <em>{trendRegionLabel(item)}</em>
+      </span>
+      <strong>{item.title}</strong>
+      <p>{item.summary}</p>
+      <small>{item.reasonTags.slice(0, 3).join(" · ")}</small>
+    </a>
+  );
+}
+
+function TrendLensPanel({
+  snapshot,
+  status,
+  onRefreshAll,
+  onRefreshSecurity
+}: {
+  snapshot: TrendLensSnapshot | null;
+  status: TrendLensStatus;
+  onRefreshAll: () => void;
+  onRefreshSecurity: () => void;
+}) {
+  const isBusy = status === "loading" || status === "refreshing";
+  const briefItems = snapshot?.briefItems ?? [];
+  const securitySection = snapshot?.sections.find((section) => section.id === "security");
+
+  return (
+    <section className="sectionBand intelligenceBand">
+      <div className="sectionTitle">
+        <h2>Trend Lens</h2>
+        <span>한국 우선 · 하루 1회 자동 브리프</span>
+      </div>
+      <div className="intelligencePanel">
+        <div className="intelligenceHeader">
+          <div>
+            <span>오늘 브리프</span>
+            <strong>{snapshot?.summary ?? "지식 브리프를 준비하고 있습니다."}</strong>
+            <p>
+              {status === "loading"
+                ? "오늘의 인텔리전스를 불러오는 중입니다."
+                : `마지막 정리 ${trendLensTimeLabel(snapshot)}`}
+            </p>
+          </div>
+          <div className="intelligenceActions">
+            <button type="button" disabled={isBusy} onClick={onRefreshSecurity}>
+              보안 신호 확인
+            </button>
+            <button type="button" disabled={isBusy} onClick={onRefreshAll}>
+              전체 새로고침
+            </button>
+          </div>
+        </div>
+
+        {securitySection && securitySection.items.length > 0 && (
+          <div className="securityPulse">
+            <span>긴급 보안 신호</span>
+            <strong>{securitySection.items[0].title}</strong>
+            <p>{securitySection.items[0].summary}</p>
+          </div>
+        )}
+
+        {briefItems.length > 0 ? (
+          <div className="briefGrid">
+            {briefItems.map((item) => (
+              <TrendLensItemCard item={item} key={item.id} />
+            ))}
+          </div>
+        ) : (
+          <p className="trendLensFallback">
+            아직 표시할 브리프가 없습니다. 자동 수집 전이라면 전체 새로고침으로 오늘의 렌즈를 만들 수 있습니다.
+          </p>
+        )}
+
+        <details className="trendLensDetails">
+          <summary>분야별 렌즈와 소스 상태 보기</summary>
+          <div className="trendSectionGrid">
+            {snapshot?.sections.map((section) => (
+              <article className="trendSection" key={section.id}>
+                <div>
+                  <span>{section.subtitle}</span>
+                  <strong>{section.title}</strong>
+                  <p>{section.focus}</p>
+                </div>
+                {section.items.length > 0 ? (
+                  <ul>
+                    {section.items.map((item) => (
+                      <li key={item.id}>
+                        <b>{trendPriorityLabel(item.priority)}</b>
+                        <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                          {item.title}
+                        </a>
+                        <small>{item.reasonTags.slice(0, 2).join(" · ")}</small>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="trendEmpty">다음 수집에서 이 분야 신호를 채웁니다.</p>
+                )}
+              </article>
+            ))}
+          </div>
+          <div className="trendSourceList">
+            {snapshot?.sourceStatuses.map((source, index) => (
+              <span className={`sourceStatus ${source.status}`} key={`${source.id}-${index}`}>
+                <b>{source.label}</b>
+                <em>{trendSourceStatusLabel(source.status)}</em>
+                <small>{source.message}</small>
+              </span>
+            ))}
+          </div>
+          <p className="trendLensNote">{snapshot?.note}</p>
+        </details>
+      </div>
+    </section>
   );
 }
 
@@ -1276,6 +1437,8 @@ function App() {
   });
   const [usage, setUsage] = useState<OperationalUsageSnapshot | null>(null);
   const [usageStatus, setUsageStatus] = useState<UsageStatus>("idle");
+  const [trendLens, setTrendLens] = useState<TrendLensSnapshot | null>(null);
+  const [trendLensStatus, setTrendLensStatus] = useState<TrendLensStatus>("idle");
   const [email, setEmail] = useState(() => (typeof window === "undefined" ? "" : getStoredEmail()));
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -1304,6 +1467,8 @@ function App() {
     setIsActionCoolingDown(false);
     setIsAuthenticated(false);
     setState(initialState);
+    setTrendLens(null);
+    setTrendLensStatus("idle");
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
     setExpandedSessionId("");
@@ -1416,6 +1581,29 @@ function App() {
     }, usageLoadDelayMs);
 
     return () => window.clearTimeout(timer);
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setTrendLens(null);
+      setTrendLensStatus("idle");
+      return;
+    }
+
+    setTrendLensStatus("loading");
+    fetchTrendLens()
+      .then((snapshot) => {
+        setTrendLens(snapshot);
+        setTrendLensStatus("ready");
+      })
+      .catch((error: unknown) => {
+        if (isSessionExpiredError(error)) {
+          expireSession();
+          return;
+        }
+        setTrendLens(null);
+        setTrendLensStatus("unavailable");
+      });
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -1801,6 +1989,26 @@ function App() {
     }
   }
 
+  async function updateTrendLens(scope: "all" | "security") {
+    setTrendLensStatus("refreshing");
+    setErrorMessage("");
+
+    try {
+      const snapshot = await refreshTrendLens(scope);
+      setTrendLens(snapshot);
+      setTrendLensStatus("ready");
+      playFeedback("success");
+      flashToast(scope === "security" ? "보안 신호를 다시 확인했어요" : "오늘 브리프를 새로 정리했어요");
+    } catch (error) {
+      if (isSessionExpiredError(error)) {
+        expireSession();
+        return;
+      }
+      setTrendLensStatus(trendLens ? "ready" : "unavailable");
+      handleAppError(error, "Trend Lens 새로고침에 실패했습니다.");
+    }
+  }
+
   function signOut() {
     clearSession();
     requestInFlightRef.current = false;
@@ -1816,6 +2024,8 @@ function App() {
     setIsActionCoolingDown(false);
     setIsAuthenticated(false);
     setState(initialState);
+    setTrendLens(null);
+    setTrendLensStatus("idle");
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
     setExpandedSessionId("");
@@ -2352,6 +2562,13 @@ function App() {
           )}
         </div>
       </section>
+
+      <TrendLensPanel
+        snapshot={trendLens}
+        status={trendLensStatus}
+        onRefreshAll={() => updateTrendLens("all")}
+        onRefreshSecurity={() => updateTrendLens("security")}
+      />
 
       <section className="sectionBand weatherBand">
         <div className="sectionTitle">
