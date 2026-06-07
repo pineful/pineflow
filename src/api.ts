@@ -24,8 +24,15 @@ export function isSessionExpiredError(error: unknown) {
   return error instanceof SessionExpiredError;
 }
 
+export function isApiRequestError(error: unknown): error is ApiRequestError {
+  return error instanceof ApiRequestError;
+}
+
 function messageForStatus(statusCode: number, serverMessage?: string) {
+  const message = serverMessage?.trim();
+
   if (statusCode === 429) {
+    if (message && message !== "Request failed.") return message;
     return "요청이 너무 빠르게 이어졌습니다. 잠시 후 다시 시도해주세요.";
   }
 
@@ -33,7 +40,6 @@ function messageForStatus(statusCode: number, serverMessage?: string) {
     return "서버가 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.";
   }
 
-  const message = serverMessage?.trim();
   if (!message || message === "Request failed." || message === "Unexpected server error.") {
     return "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.";
   }

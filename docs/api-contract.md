@@ -355,7 +355,16 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
 - `all` 수동 갱신은 기본 30분 cooldown을 둔다.
 - `security` 수동 갱신은 기본 5분 cooldown을 둔다.
 - `force=true`이면 사용자가 명시적으로 강제한 요청으로 보고 `all` 5분, `security` 1분의 짧은 연타 방지 cooldown만 적용한다.
-- cooldown 중이면 `429`.
+- cooldown 중이면 `429`와 함께 `nextManualRefreshAllowedAt`을 반환한다. 프론트엔드는 이 상황을 서버 장애가 아니라 방금 갱신한 상태로 안내한다.
 - 자동 수집은 public endpoint가 아니라 EventBridge가 Lambda 내부 이벤트를 호출한다.
 
 응답: `GET /api/trend-lens`와 같은 `TrendLensSnapshot`.
+
+cooldown 응답 예:
+
+```json
+{
+  "error": "Trend Lens는 방금 갱신했습니다. 잠시 후 다시 시도해주세요.",
+  "nextManualRefreshAllowedAt": "2026-06-07T09:35:00.000Z"
+}
+```

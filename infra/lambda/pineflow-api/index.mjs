@@ -661,9 +661,17 @@ async function loadUsageSnapshot(pk) {
 const trendLensPk = "SYSTEM#TREND_LENS";
 const trendLensLatestSk = "TREND_LENS#LATEST";
 const trendLensManualPrefix = "TREND_LENS#MANUAL#";
-const trendLensResponseLimitBytes = 512 * 1024;
+const trendLensDefaultResponseLimitBytes = 512 * 1024;
 const trendLensSourceTimeoutMs = 2200;
+const trendLensLargeSourceTimeoutMs = 4500;
 const trendLensSnapshotTtlDays = 30;
+const trendLensTextLimits = {
+  title: 180,
+  summary: 420,
+  statusMessage: 180,
+  note: 320,
+  reasonTag: 32
+};
 const trendLensManualCooldownMs = {
   all: 30 * 60 * 1000,
   security: 5 * 60 * 1000
@@ -707,7 +715,9 @@ const trendLensSources = {
     url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
     host: "www.cisa.gov",
     pathPrefix: "/sites/default/files/feeds/",
-    accept: "application/json"
+    accept: "application/json",
+    maxBytes: 2 * 1024 * 1024,
+    timeoutMs: trendLensLargeSourceTimeoutMs
   },
   kisaSecurityNotice: {
     id: "kisa-security-notice",
@@ -836,10 +846,49 @@ function isSafeSameHostLink(value, source) {
   }
 }
 
-async function readLimitedText(response) {
+function compactText(value = "", maxLength = 160) {
+  const normalized = String(value).replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+}
+
+function compactTrendItem(item) {
+  return {
+    ...item,
+    title: compactText(item.title, trendLensTextLimits.title),
+    summary: compactText(item.summary, trendLensTextLimits.summary),
+    reasonTags: (item.reasonTags ?? [])
+      .slice(0, 3)
+      .map((tag) => compactText(tag, trendLensTextLimits.reasonTag))
+  };
+}
+
+function compactTrendLensSnapshot(snapshot) {
+  const sections = (snapshot.sections ?? []).map((section) => ({
+    ...section,
+    subtitle: compactText(section.subtitle, trendLensTextLimits.summary),
+    focus: compactText(section.focus, trendLensTextLimits.summary),
+    items: dedupeItems((section.items ?? []).map(compactTrendItem)).slice(0, 8)
+  }));
+
+  return {
+    ...snapshot,
+    title: compactText(snapshot.title, trendLensTextLimits.title),
+    summary: compactText(snapshot.summary, trendLensTextLimits.summary),
+    note: compactText(snapshot.note, trendLensTextLimits.note),
+    briefItems: buildBriefItems(sections),
+    sections,
+    sourceStatuses: (snapshot.sourceStatuses ?? []).map((status) => ({
+      ...status,
+      message: compactText(status.message, trendLensTextLimits.statusMessage)
+    }))
+  };
+}
+
+async function readLimitedText(response, maxBytes) {
   if (!response.body?.getReader) {
     const text = await response.text();
-    if (Buffer.byteLength(text, "utf8") > trendLensResponseLimitBytes) {
+    if (Buffer.byteLength(text, "utf8") > maxBytes) {
       throw new Error("Trend Lens source response is too large.");
     }
     return text;
@@ -853,7 +902,7 @@ async function readLimitedText(response) {
     const { done, value } = await reader.read();
     if (done) break;
     total += value.byteLength;
-    if (total > trendLensResponseLimitBytes) {
+    if (total > maxBytes) {
       throw new Error("Trend Lens source response is too large.");
     }
     chunks.push(Buffer.from(value));
@@ -868,10 +917,12 @@ async function fetchTrendLensSource(source, url = source.url) {
   }
 
   let currentUrl = url;
+  const maxBytes = source.maxBytes ?? trendLensDefaultResponseLimitBytes;
+  const timeoutMs = source.timeoutMs ?? trendLensSourceTimeoutMs;
   for (let redirectCount = 0; redirectCount < 2; redirectCount += 1) {
     const response = await fetch(currentUrl, {
       redirect: "manual",
-      signal: AbortSignal.timeout(trendLensSourceTimeoutMs),
+      signal: AbortSignal.timeout(timeoutMs),
       headers: {
         accept: source.accept,
         "user-agent": "PineflowTrendLens/0.1"
@@ -893,7 +944,7 @@ async function fetchTrendLensSource(source, url = source.url) {
       throw new Error(`Trend Lens source returned ${response.status}.`);
     }
 
-    return readLimitedText(response);
+    return readLimitedText(response, maxBytes);
   }
 
   throw new Error("Trend Lens source redirected too many times.");
@@ -1167,7 +1218,7 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   const hasReady = statuses.some((status) => status.status === "ready");
   const hasUnavailable = statuses.some((status) => status.status === "unavailable");
 
-  return {
+  return compactTrendLensSnapshot({
     generatedAt: now.toISOString(),
     cacheDate: cacheDateFor(now),
     cacheStatus: hasReady && hasUnavailable ? "partial" : hasReady ? "fresh" : "unavailable",
@@ -1180,7 +1231,7 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
     briefItems,
     sourceStatuses: statuses,
     note: "원문 전문을 저장하지 않고 제목, 링크, 짧은 요약, 우선순위 근거만 보관합니다."
-  };
+  });
 }
 
 async function loadTrendLensSnapshot() {
@@ -1291,7 +1342,7 @@ async function refreshTrendLensSnapshot(scope = "all", source = "manual", option
     const nextAllowedAt = lastManualAt + cooldown;
     if (lastManualAt && nextAllowedAt > now.getTime()) {
       return json(429, {
-        error: "Trend Lens refresh is cooling down.",
+        error: "Trend Lens는 방금 갱신했습니다. 잠시 후 다시 시도해주세요.",
         nextManualRefreshAllowedAt: new Date(nextAllowedAt).toISOString()
       });
     }

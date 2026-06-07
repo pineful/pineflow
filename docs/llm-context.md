@@ -170,6 +170,9 @@ Trend Lens v1 원칙:
 - 캐시는 `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#LATEST`, `sk=TREND_LENS#SNAPSHOT#YYYY-MM-DD`에 저장한다.
 - DynamoDB TTL `expiresAt`으로 cache/guard item을 정리한다.
 - API key가 필요한 Trend source는 기본 비활성화한다. 필요 시 SSM Parameter Store Standard `SecureString`을 우선하고, GitHub Secrets/Lambda 평문 env/DynamoDB에는 저장하지 않는다.
+- Trend Lens source 응답 한도는 기본 512KB/2.2초다. CISA KEV 공식 JSON은 실제 응답이 1.5MB 안팎이므로 `cisa-kev`에만 2MB/4.5초 예외를 둔다.
+- Trend Lens snapshot은 DynamoDB 저장 전에 제목, 요약, source 상태 메시지, reason tag를 압축한다. 원문 전문이나 긴 외부 응답을 저장하지 않는다.
+- 외부 source 상태는 `infra/scripts/check-trend-lens-sources.mjs`로 수동 검증할 수 있다. 이 검증은 공개 네트워크 조회가 필요하므로 기본 `npm run verify`에는 포함하지 않는다.
 
 관련 문서:
 

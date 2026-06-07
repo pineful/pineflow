@@ -54,6 +54,8 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - Lambda reserved concurrency는 계속 `1`이다.
 - Lambda timeout은 외부 fetch를 고려해 8초로 제한한다.
 - source별 fetch timeout은 2.2초, 응답 크기는 512KB 이하로 제한한다.
+- 예외적으로 CISA KEV 공식 JSON은 현재 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout을 둔다. 다른 source의 기본 한도는 계속 512KB/2.2초다.
+- 저장 전에는 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다. DynamoDB item size를 넘기지 않기 위해 원문 전문이나 긴 설명을 snapshot payload에 넣지 않는다.
 - 보안 source와 분야별 관심도 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다.
 - 수동 refresh는 기본 cooldown을 두되, 사용자가 강제 refresh를 요청하면 짧은 연타 방지 cooldown만 적용한다.
 - redirect는 최대 1회만 허용하고 redirect 후에도 allowlist를 다시 검증한다.
@@ -70,3 +72,15 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - 소스 상태와 저장 정책은 별도 접힘 영역에 둔다.
 - `loading`, `refreshing`, `수집 전`, `확인 실패`, `이전 캐시`는 서로 다른 문구와 tone으로 구분한다. `캐시 대기`처럼 사용자가 기다려야 하는지 끝난 상태인지 알기 어려운 표현은 쓰지 않는다.
 - 비용 신호등과 보안 신호는 혼동하지 않는다. 비용은 운영 상태, 보안은 외부 인텔리전스다.
+
+## 수동 검증
+
+외부 allowlist source의 실제 응답 크기와 파싱 가능 여부는 필요할 때 다음 명령으로 확인한다.
+
+```powershell
+cd infra
+$env:NODE_OPTIONS='--use-system-ca'
+npm run check:trend-lens-sources
+```
+
+이 검증은 공개 source를 직접 조회하므로 기본 `npm run verify`에는 넣지 않는다. 배포 전 원인 불명의 Trend Lens 조회 오류가 생기면 먼저 이 스크립트로 source 응답 크기와 파싱 가능 여부를 확인한다.

@@ -132,4 +132,7 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - 전체 새로고침은 source 병렬 수집으로 보완했고, 강제 refresh는 짧은 연타 방지 cooldown만 적용한다.
 - 데스크톱 배치는 `dailyReviewGrid` 안에서 최근 기록과 오른쪽 보조 레일을 함께 관리한다. 오른쪽 보조 레일에는 Trend Lens와 날씨를 순서대로 배치한다.
 - Trend Lens의 `loading`, `refreshing`, `수집 전`, `확인 실패`, `이전 캐시` 상태 문구를 분리했다.
+- CISA KEV 공식 JSON이 512KB를 넘는 실제 응답을 반환하는 것을 확인하고, `cisa-kev`에만 2MB/4.5초 source 한도 예외를 적용했다.
+- Trend Lens snapshot 저장 전 제목/요약/source 상태 메시지를 압축해 DynamoDB item size와 원문 저장 위험을 줄였다.
+- 외부 source 실제 응답 크기와 파싱 가능 여부를 확인하는 `infra/scripts/check-trend-lens-sources.mjs` 수동 검증 스크립트를 추가했다.
 - Trend Lens 설계 문서, 리서치 문서, ADR 0008, API 계약, 보안/비용/저장소/배포 체크리스트를 갱신했다.

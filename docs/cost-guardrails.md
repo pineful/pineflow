@@ -98,4 +98,5 @@ Trend Lens는 하루 1회 전체 브리프와 30분 간격 보안 신호 확인�
 - SSM Parameter Store는 Standard `SecureString`만 우선 후보로 둔다.
 - Secrets Manager, Bedrock/LLM 자동 요약, 외부 paid news API, OpenSearch, SQS, Step Functions는 v1에서 사용하지 않는다.
 - DynamoDB는 single-table, 1 RCU / 1 WCU, GSI 없음.
-- Trend Lens snapshot은 원문 전문이 아니라 짧은 metadata만 저장한다.
+- Trend Lens snapshot은 원문 전문이 아니라 짧은 metadata만 저장한다. 저장 전 제목, 요약, source 상태 메시지, reason tag를 압축한다.
+- source 응답 한도는 기본 512KB/2.2초다. CISA KEV 공식 JSON만 실제 응답 크기를 반영해 2MB/4.5초 예외를 둔다.

@@ -15,6 +15,7 @@ import {
   fetchState,
   fetchTrendLens,
   fetchUsage,
+  isApiRequestError,
   isSessionExpiredError,
   refreshTrendLens,
   saveDailyGoal,
@@ -535,7 +536,7 @@ function TrendLensPanel({
   const statusCopy = trendLensStatusCopy(snapshot, status);
 
   return (
-    <section className="sectionBand intelligenceBand">
+    <section className="sectionBand intelligenceBand" aria-busy={isBusy}>
       <div className="sectionTitle">
         <h2>Trend Lens</h2>
         <span>한국 우선 · 하루 1회 자동 브리프</span>
@@ -2110,6 +2111,13 @@ function App() {
         expireSession();
         return;
       }
+
+      if (isApiRequestError(error) && error.statusCode === 429) {
+        setTrendLensStatus(trendLens ? "ready" : "unavailable");
+        flashToast(error.message);
+        return;
+      }
+
       setTrendLensStatus(trendLens ? "ready" : "unavailable");
       handleAppError(error, "Trend Lens 새로고침에 실패했습니다.");
     }

@@ -6453,3 +6453,93 @@ button.sessionEndpoint:hover:not(:disabled) {
     grid-template-columns: 1fr;
   }
 }
+
+/* 2026-06-07 Trend Lens recovery.
+   Keep the lower dashboard deterministic: recent sessions stay primary, and
+   Trend Lens plus weather behave as one compact side rail rather than scattered
+   app-shell grid items. */
+@media (min-width: 760px) and (max-width: 979px) {
+  .dailyReviewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dailyReviewGrid > .recentBand,
+  .dailyReviewGrid > .dailySideRail {
+    grid-column: 1;
+  }
+}
+
+@media (min-width: 980px) {
+  .dailyReviewGrid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(400px, 0.92fr);
+    gap: 18px;
+  }
+
+  .dailyReviewGrid > .recentBand {
+    grid-column: 1;
+  }
+
+  .dailyReviewGrid > .dailySideRail {
+    grid-column: 2;
+  }
+
+  .dailySideRail > .sectionBand {
+    width: 100%;
+  }
+
+  .dailySideRail > .intelligenceBand,
+  .dailySideRail > .weatherBand {
+    grid-column: auto;
+  }
+}
+
+.dailySideRail .intelligenceBand {
+  padding: 16px;
+}
+
+.dailySideRail .sectionTitle {
+  align-items: start;
+}
+
+.dailySideRail .sectionTitle h2 {
+  font-size: 0.98rem;
+}
+
+.dailySideRail .sectionTitle span {
+  max-width: 18rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.dailySideRail .intelligencePanel {
+  gap: 12px;
+}
+
+.dailySideRail .intelligenceHeader {
+  grid-template-columns: 1fr;
+}
+
+.dailySideRail .intelligenceActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dailySideRail .intelligenceActions button {
+  width: 100%;
+}
+
+.dailySideRail .intelligenceSnapshot {
+  grid-template-columns: 1fr;
+}
+
+.dailySideRail .trendTabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dailySideRail .trendItem p,
+.dailySideRail .trendFocusList p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}

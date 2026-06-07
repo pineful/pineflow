@@ -6,6 +6,7 @@
     "build": "tsc --noEmit",
     "synth": "cdk synth",
     "verify": "npm run build && npm run synth && node scripts/verify-template.mjs",
+    "check:trend-lens-sources": "node scripts/check-trend-lens-sources.mjs",
     "diff": "cdk diff",
     "deploy": "cdk deploy"
   },

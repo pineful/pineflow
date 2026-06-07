@@ -126,3 +126,8 @@
 - Trend Lens UI를 전체 폭 `오늘 브리프`와 분야별 탭 구조로 바꿔 오른쪽 좁은 칼럼에서 공간이 깨지지 않도록 정리했다.
 - Trend Lens 상태 문구를 `캐시 확인 중`, `수집 중`, `수집 전` 등으로 구분해 로딩 중인지 완료된 빈 상태인지 알 수 있게 했다.
 - 하단 배치를 `최근 기록` 왼쪽, `Trend Lens + 날씨` 오른쪽 보조 레일로 묶어 날씨 카드가 오른쪽 아래에 떠 있고 왼쪽이 비는 문제를 수정했다.
+- CISA KEV 공식 JSON이 현재 약 1.5MB라 기존 512KB source 한도에서 항상 실패하던 문제를 수정했다. `cisa-kev`에만 2MB/4.5초 예외를 두고, 다른 source는 기본 512KB/2.2초 한도를 유지한다.
+- Trend Lens snapshot을 DynamoDB에 저장하기 전에 제목, 요약, source 상태 메시지, reason tag를 압축하도록 보강했다.
+- Trend Lens 외부 source를 수동으로 검증하는 `infra/scripts/check-trend-lens-sources.mjs`를 추가했다.
+- 수동 새로고침 cooldown은 서버 실패처럼 보이지 않도록 429 메시지와 프론트 처리를 개선했다.
+- 하단 `dailyReviewGrid`에서 최근 기록과 오른쪽 보조 레일의 grid column을 명시하고, 760~979px 폭에서는 한 줄 흐름으로 내려가게 보정했다.

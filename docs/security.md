@@ -109,8 +109,10 @@ Trend Lens는 외부 정보를 수집하지만, 브라우저가 외부 source를
 - Lambda source allowlist는 exact host와 path prefix로 제한한다.
 - redirect는 최대 1회만 허용하며 redirect 후에도 allowlist를 다시 검증한다.
 - RSS는 DTD/entity 선언을 거부하고 `item/title/link/pubDate/description`만 제한적으로 읽는다.
-- source별 응답 크기는 512KB 이하, timeout은 2.2초 이하.
+- source별 응답 크기는 기본 512KB 이하, timeout은 기본 2.2초 이하.
+- CISA KEV 공식 JSON은 실제 응답이 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout 예외를 둔다.
 - 전체 refresh는 allowlist source를 병렬로 호출하되, source별 실패는 전체 API 실패가 아니라 source status로 낮춰 처리한다.
+- Trend Lens snapshot은 저장 전에 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - Lambda 로그에는 source body나 기사 내용을 기록하지 않는다.
 - API key가 필요하면 SSM Parameter Store Standard `SecureString`을 우선하고, GitHub Secrets/Variables, Lambda 평문 env, DynamoDB에는 저장하지 않는다.
