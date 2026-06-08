@@ -5864,6 +5864,16 @@ button.sessionEndpoint:hover:not(:disabled) {
   margin-top: 6px;
 }
 
+.trendNextStep,
+.trendLensFallback small {
+  display: block;
+  margin-top: 7px;
+  color: #f6c247;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
 .intelligenceActions {
   display: flex;
   gap: 8px;
@@ -6521,7 +6531,7 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .dailySideRail .intelligenceActions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
 }
 
 .dailySideRail .intelligenceActions button {

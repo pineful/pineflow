@@ -30,6 +30,7 @@ import type {
   TrendLensCategoryId,
   TrendLensItem,
   TrendLensPriority,
+  TrendLensSourceStatus,
   TrendLensSnapshot,
   UsageMetric,
   UsageTrend,
@@ -360,7 +361,8 @@ function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLe
       tone: "loading",
       label: "캐시 확인 중",
       title: "저장된 오늘 브리프를 확인하고 있습니다.",
-      detail: "잠시만 기다리면 오늘 캐시나 수집 전 상태가 표시됩니다."
+      detail: "잠시만 기다리면 오늘 캐시나 수집 전 상태가 표시됩니다.",
+      nextStep: "기다리면 자동으로 결과가 바뀝니다."
     };
   }
 
@@ -369,16 +371,18 @@ function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLe
       tone: "loading",
       label: "수집 중",
       title: "새 지식 브리프를 수집하고 있습니다.",
-      detail: "공식 보안 신호와 분야별 관심도 지표를 확인하는 중입니다. 보통 몇 초 안에 끝납니다."
+      detail: "공식 보안 신호와 분야별 관심도 지표를 확인하는 중입니다. 보통 몇 초 안에 끝납니다.",
+      nextStep: "지금은 버튼을 다시 누르지 않고 기다리는 상태입니다."
     };
   }
 
   if (status === "unavailable") {
     return {
       tone: "error",
-      label: "확인 실패",
-      title: "지식 브리프 상태를 불러오지 못했습니다.",
-      detail: "잠시 후 다시 시도하거나, 세션이 만료됐다면 다시 로그인해주세요."
+      label: "캐시 조회 실패",
+      title: "저장된 브리프를 읽지 못했습니다.",
+      detail: "브라우저 리로드보다 먼저 캐시 다시 조회를 눌러 저장된 값을 다시 확인하세요.",
+      nextStep: "계속 실패하거나 오늘 자료가 없다면 전체 새로고침으로 새 브리프를 수집합니다."
     };
   }
 
@@ -387,7 +391,8 @@ function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLe
       tone: "empty",
       label: "수집 전",
       title: "아직 오늘 브리프가 없습니다.",
-      detail: "자동 수집 전이라면 전체 새로고침으로 오늘의 렌즈를 바로 만들 수 있습니다."
+      detail: "자동 수집 전이라면 전체 새로고침으로 오늘의 렌즈를 바로 만들 수 있습니다.",
+      nextStep: "이미 수집된 값만 다시 보려면 캐시 다시 조회를 사용합니다."
     };
   }
 
@@ -396,7 +401,8 @@ function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLe
       tone: "empty",
       label: "표시 항목 없음",
       title: "오늘 표시할 브리프가 아직 없습니다.",
-      detail: "소스 상태를 열어 어떤 분야가 비어 있는지 확인하거나 전체 새로고침을 다시 시도해보세요."
+      detail: "소스 상태를 열어 어떤 분야가 비어 있는지 확인하거나 전체 새로고침을 다시 시도해보세요.",
+      nextStep: "전체 새로고침은 외부 소스를 다시 수집합니다."
     };
   }
 
@@ -405,7 +411,8 @@ function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLe
       tone: "stale",
       label: "이전 캐시",
       title: snapshot.summary,
-      detail: `마지막 정리 ${trendLensTimeLabel(snapshot)} · 오늘 자동 수집 전이면 새로고침할 수 있습니다.`
+      detail: `마지막 정리 ${trendLensTimeLabel(snapshot)} · 오늘 자동 수집 전이면 새로고침할 수 있습니다.`,
+      nextStep: "오늘 자료가 필요하면 전체 새로고침을 사용합니다."
     };
   }
 
@@ -413,7 +420,8 @@ function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLe
     tone: "ready",
     label: snapshot.cacheStatus === "partial" ? "부분 수집" : "오늘 브리프",
     title: snapshot.summary,
-    detail: `마지막 정리 ${trendLensTimeLabel(snapshot)}`
+    detail: `마지막 정리 ${trendLensTimeLabel(snapshot)}`,
+    nextStep: "최신 상태만 다시 확인하려면 캐시 다시 조회를 사용합니다."
   };
 }
 
@@ -422,6 +430,38 @@ function trendSourceStatusLabel(status: string) {
   if (status === "partial") return "부분";
   if (status === "planned") return "준비";
   return "확인 필요";
+}
+
+function trendLensFallbackStatuses(status: TrendLensStatus, errorMessage: string): TrendLensSourceStatus[] {
+  const checkedAt = new Date().toISOString();
+  const cacheMessage =
+    status === "unavailable"
+      ? errorMessage || "저장된 Trend Lens 캐시를 읽지 못했습니다. 캐시 다시 조회를 먼저 시도하세요."
+      : "아직 표시할 source 상태가 없습니다. 저장된 캐시를 확인하는 중이거나 첫 수집 전입니다.";
+
+  return [
+    {
+      id: "trend-cache-read",
+      label: "저장된 브리프 조회",
+      status: status === "unavailable" ? "unavailable" : "planned",
+      checkedAt,
+      message: cacheMessage
+    },
+    {
+      id: "trend-manual-refresh",
+      label: "전체 새로고침",
+      status: "planned",
+      checkedAt,
+      message: "저장된 캐시가 없거나 너무 오래됐을 때 외부 allowlist 소스를 다시 수집합니다."
+    },
+    {
+      id: "trend-storage-policy",
+      label: "저장 정책",
+      status: "planned",
+      checkedAt,
+      message: "원문 전문은 저장하지 않고 제목, 짧은 요약, 링크, 우선순위 근거만 저장합니다."
+    }
+  ];
 }
 
 function todayUsageCacheDate() {
@@ -516,11 +556,15 @@ function TrendLensItemCard({ item }: { item: TrendLensItem }) {
 function TrendLensPanel({
   snapshot,
   status,
+  errorMessage,
+  onReloadCache,
   onRefreshAll,
   onRefreshSecurity
 }: {
   snapshot: TrendLensSnapshot | null;
   status: TrendLensStatus;
+  errorMessage: string;
+  onReloadCache: () => void;
   onRefreshAll: () => void;
   onRefreshSecurity: () => void;
 }) {
@@ -534,6 +578,13 @@ function TrendLensPanel({
   const activeSection = sections.find((section) => section.id === activeCategory) ?? sections[0];
   const activeItems = activeSection?.items ?? [];
   const statusCopy = trendLensStatusCopy(snapshot, status);
+  const sourceStatuses =
+    snapshot?.sourceStatuses && snapshot.sourceStatuses.length > 0
+      ? snapshot.sourceStatuses
+      : trendLensFallbackStatuses(status, errorMessage);
+  const trendNote =
+    snapshot?.note ||
+    "Trend Lens는 저장된 캐시를 먼저 읽고, 전체 새로고침을 눌렀을 때만 외부 allowlist 소스를 다시 수집합니다.";
 
   return (
     <section className="sectionBand intelligenceBand" aria-busy={isBusy}>
@@ -547,8 +598,12 @@ function TrendLensPanel({
             <span>{statusCopy.label}</span>
             <strong>{statusCopy.title}</strong>
             <p>{statusCopy.detail}</p>
+            <small className="trendNextStep">{statusCopy.nextStep}</small>
           </div>
           <div className="intelligenceActions">
+            <button type="button" disabled={isBusy} onClick={onReloadCache}>
+              캐시 다시 조회
+            </button>
             <button type="button" disabled={isBusy} onClick={onRefreshSecurity}>
               보안 신호 확인
             </button>
@@ -590,6 +645,7 @@ function TrendLensPanel({
             <div>
               <strong>{statusCopy.title}</strong>
               <p>{statusCopy.detail}</p>
+              <small>{statusCopy.nextStep}</small>
             </div>
           </div>
         )}
@@ -644,7 +700,7 @@ function TrendLensPanel({
         <details className="trendLensDetails">
           <summary>수집 상태와 저장 정책 보기</summary>
           <div className="trendSourceList">
-            {snapshot?.sourceStatuses.map((source, index) => (
+            {sourceStatuses.map((source, index) => (
               <span className={`sourceStatus ${source.status}`} key={`${source.id}-${index}`}>
                 <b>{source.label}</b>
                 <em>{trendSourceStatusLabel(source.status)}</em>
@@ -652,7 +708,7 @@ function TrendLensPanel({
               </span>
             ))}
           </div>
-          <p className="trendLensNote">{snapshot?.note}</p>
+          <p className="trendLensNote">{trendNote}</p>
         </details>
       </div>
     </section>
@@ -1546,6 +1602,7 @@ function App() {
   const [usageStatus, setUsageStatus] = useState<UsageStatus>("idle");
   const [trendLens, setTrendLens] = useState<TrendLensSnapshot | null>(null);
   const [trendLensStatus, setTrendLensStatus] = useState<TrendLensStatus>("idle");
+  const [trendLensErrorMessage, setTrendLensErrorMessage] = useState("");
   const [email, setEmail] = useState(() => (typeof window === "undefined" ? "" : getStoredEmail()));
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -1576,6 +1633,7 @@ function App() {
     setState(initialState);
     setTrendLens(null);
     setTrendLensStatus("idle");
+    setTrendLensErrorMessage("");
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
     setExpandedSessionId("");
@@ -1694,23 +1752,11 @@ function App() {
     if (!isAuthenticated) {
       setTrendLens(null);
       setTrendLensStatus("idle");
+      setTrendLensErrorMessage("");
       return;
     }
 
-    setTrendLensStatus("loading");
-    fetchTrendLens()
-      .then((snapshot) => {
-        setTrendLens(snapshot);
-        setTrendLensStatus("ready");
-      })
-      .catch((error: unknown) => {
-        if (isSessionExpiredError(error)) {
-          expireSession();
-          return;
-        }
-        setTrendLens(null);
-        setTrendLensStatus("unavailable");
-      });
+    void reloadTrendLensCache();
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -2096,9 +2142,36 @@ function App() {
     }
   }
 
+  async function reloadTrendLensCache() {
+    setTrendLensStatus("loading");
+    setTrendLensErrorMessage("");
+    setErrorMessage("");
+
+    try {
+      const snapshot = await fetchTrendLens();
+      setTrendLens(snapshot);
+      setTrendLensStatus("ready");
+    } catch (error) {
+      if (isSessionExpiredError(error)) {
+        expireSession();
+        return;
+      }
+
+      const message = error instanceof Error ? error.message.trim() : "";
+      setTrendLens(null);
+      setTrendLensErrorMessage(
+        !message || message === "Request failed." || message === "Unexpected server error."
+          ? "저장된 Trend Lens 캐시 조회가 실패했습니다."
+          : message
+      );
+      setTrendLensStatus("unavailable");
+    }
+  }
+
   async function updateTrendLens(scope: "all" | "security") {
     setTrendLensStatus("refreshing");
     setErrorMessage("");
+    setTrendLensErrorMessage("");
 
     try {
       const snapshot = await refreshTrendLens(scope);
@@ -2114,12 +2187,19 @@ function App() {
 
       if (isApiRequestError(error) && error.statusCode === 429) {
         setTrendLensStatus(trendLens ? "ready" : "unavailable");
+        setTrendLensErrorMessage(error.message);
         flashToast(error.message);
         return;
       }
 
+      const message = error instanceof Error ? error.message.trim() : "";
       setTrendLensStatus(trendLens ? "ready" : "unavailable");
-      handleAppError(error, "Trend Lens 새로고침에 실패했습니다.");
+      setTrendLensErrorMessage(
+        !message || message === "Request failed." || message === "Unexpected server error."
+          ? "Trend Lens 새로고침이 실패했습니다."
+          : message
+      );
+      flashToast("Trend Lens 상태를 다시 확인해주세요");
     }
   }
 
@@ -2140,6 +2220,7 @@ function App() {
     setState(initialState);
     setTrendLens(null);
     setTrendLensStatus("idle");
+    setTrendLensErrorMessage("");
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
     setExpandedSessionId("");
@@ -2682,6 +2763,8 @@ function App() {
           <TrendLensPanel
             snapshot={trendLens}
             status={trendLensStatus}
+            errorMessage={trendLensErrorMessage}
+            onReloadCache={reloadTrendLensCache}
             onRefreshAll={() => updateTrendLens("all")}
             onRefreshSecurity={() => updateTrendLens("security")}
           />

@@ -165,7 +165,9 @@ Trend Lens v1 원칙:
 - 전체 refresh는 source를 병렬로 수집하고, source별 실패는 전체 API 실패가 아니라 `sourceStatuses`로 낮춰 기록한다.
 - Trend Lens UI는 분야 전체를 한 번에 늘어놓지 않는다. 오늘 브리프 lead/queue와 `보안`, `만돌린`, `IT 콘텐츠`, `교육` 탭으로 한 분야씩 보여준다.
 - 데스크톱 하단 배치는 `최근 기록` 왼쪽, `Trend Lens + 날씨` 오른쪽 보조 레일이다. 보조 레일 항목을 app shell grid에 따로 흩뿌리면 빈 영역이 생기므로 `dailyReviewGrid` / `dailySideRail` 구조를 유지한다.
-- Trend Lens 상태 문구는 `캐시 확인 중`, `수집 중`, `수집 전`, `확인 실패`, `이전 캐시`, `오늘 브리프`처럼 사용자가 다음 행동을 알 수 있게 구분한다.
+- Trend Lens 상태 문구는 `캐시 확인 중`, `수집 중`, `수집 전`, `캐시 조회 실패`, `이전 캐시`, `오늘 브리프`처럼 사용자가 다음 행동을 알 수 있게 구분한다.
+- Trend Lens에서 `캐시 다시 조회`는 저장된 DynamoDB snapshot만 다시 읽는 가벼운 확인이고, `전체 새로고침`은 외부 allowlist source를 다시 수집하는 동작이다. 두 동작을 같은 의미로 보이게 만들지 않는다.
+- Trend Lens details는 snapshot이 없어도 비어 있으면 안 된다. fallback으로 캐시 조회 상태, 전체 새로고침 역할, 저장 정책을 보여준다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - 캐시는 `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#LATEST`, `sk=TREND_LENS#SNAPSHOT#YYYY-MM-DD`에 저장한다.
 - DynamoDB TTL `expiresAt`으로 cache/guard item을 정리한다.

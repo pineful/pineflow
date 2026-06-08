@@ -131,3 +131,6 @@
 - Trend Lens 외부 source를 수동으로 검증하는 `infra/scripts/check-trend-lens-sources.mjs`를 추가했다.
 - 수동 새로고침 cooldown은 서버 실패처럼 보이지 않도록 429 메시지와 프론트 처리를 개선했다.
 - 하단 `dailyReviewGrid`에서 최근 기록과 오른쪽 보조 레일의 grid column을 명시하고, 760~979px 폭에서는 한 줄 흐름으로 내려가게 보정했다.
+- Trend Lens에 `캐시 다시 조회` 버튼을 추가해 저장된 캐시 조회와 외부 source 전체 새로고침을 분리했다.
+- Trend Lens 조회 실패 문구를 `캐시 조회 실패` 중심으로 바꾸고, 브라우저 리로드보다 캐시 다시 조회를 먼저 시도하도록 안내했다.
+- `수집 상태와 저장 정책 보기`는 snapshot이 없어도 캐시 조회 상태, 전체 새로고침 역할, 저장 정책 fallback row를 보여주도록 수정했다.
