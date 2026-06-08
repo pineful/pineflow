@@ -56,3 +56,9 @@ Trend Lens는 기존 DynamoDB single-table 안에서 global cache로 시작한�
 `TREND_LENS#LATEST`는 현재 화면에서 읽는 최신 snapshot이다. `SNAPSHOT#YYYY-MM-DD`는 일자별 보존용이며, TTL `expiresAt`으로 정리한다. `MANUAL#...` item은 수동 refresh cooldown을 기록한다.
 
 저장 payload는 원문이 아니라 `title`, `summary`, `sourceName`, `sourceUrl`, `publishedAt`, `region`, `language`, `reasonTags`, `sourceStatuses` 중심이다. snapshot은 400KB DynamoDB item limit보다 훨씬 작게 유지해야 하며, 권장 크기는 50KB 미만이다.
+
+## 낮은 RCU에서의 상태 조회
+
+Pineflow는 DynamoDB를 `1 RCU / 1 WCU`로 시작하므로, 사용자의 첫 화면 상태 조회에서 여러 읽기를 동시에 실행하면 작은 병렬 호출만으로도 throttling처럼 보일 수 있다. `/api/state`는 `SETTINGS`, `ACTIVE_SESSION`, 최근 `SESSION#` query를 순차로 읽어 낮은 capacity에서 생기는 순간 부하를 줄인다.
+
+프론트엔드도 `/api/state`를 가장 먼저 확인하고, Trend Lens나 운영 사용량 같은 보조 조회는 기록 상태가 성공/실패로 정리된 뒤 지연 호출한다. 기록 상태 조회가 실패한 초기 빈 배열은 실제 빈 기록으로 해석하지 않는다.

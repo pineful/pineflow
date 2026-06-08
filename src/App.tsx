@@ -72,6 +72,7 @@ type HourlyWeather = {
 };
 
 type FeedbackSound = "tap" | "open" | "start" | "finish" | "success";
+type RecordDataStatus = "idle" | "loading" | "ready" | "unavailable";
 type UsageStatus = "idle" | "loading" | "ready" | "unavailable";
 type TrendLensStatus = "idle" | "loading" | "ready" | "refreshing" | "unavailable";
 type CostSignalLevel = "safe" | "watch" | "billable" | "loading" | "unavailable";
@@ -149,6 +150,7 @@ const seoulCoordinates = {
 const weatherForecastDays = 5;
 const weatherForecastSlotWidth = 106;
 const usageLoadDelayMs = 4000;
+const trendLensInitialLoadDelayMs = 1400;
 
 const shortWeekdayFormatter = new Intl.DateTimeFormat("ko-KR", { weekday: "short" });
 const dayNumberFormatter = new Intl.DateTimeFormat("ko-KR", { day: "numeric" });
@@ -1381,6 +1383,7 @@ function TimeFlowGraph({
   carriedOver,
   modeLabel,
   greeting,
+  recordDataStatus,
   className = ""
 }: {
   minutes: number;
@@ -1396,25 +1399,46 @@ function TimeFlowGraph({
   carriedOver: boolean;
   modeLabel: string;
   greeting: string;
+  recordDataStatus: RecordDataStatus;
   className?: string;
 }) {
-  const safeProgress = Math.max(0, Math.min(progress, 100));
+  const hasKnownFlowData =
+    recordDataStatus === "ready" || records.length > 0 || Boolean(activeCheckInAt || firstCheckIn || lastCheckOut);
+  const isRecordDataPending = recordDataStatus === "idle" || recordDataStatus === "loading";
+  const isRecordDataUnavailable = recordDataStatus === "unavailable" && !hasKnownFlowData;
+  const safeProgress = hasKnownFlowData ? Math.max(0, Math.min(progress, 100)) : 0;
   const remainingMinutes = Math.max(goalMinutes - minutes, 0);
   const overtimeMinutes = Math.max(minutes - goalMinutes, 0);
   const chart = buildFlowChart(records, now, isActive ? activeCheckInAt : undefined, goalMinutes);
   const displayLastMarker = isActive ? "진행 중" : formatFlowBoundary(lastCheckOut, now);
-  const statusLabel = carriedOver ? (isActive ? "전날부터 진행" : "이어진 기록 완료") : isActive ? `${modeLabel} 진행 중` : "기록 대기";
-  const displayFlowMessage = carriedOver
-    ? isActive
-      ? `전날부터 이어진 ${modeLabel} 흐름이에요.`
-      : "전날 시작한 흐름이 오늘 마무리됐어요."
-    : isActive
-      ? `${modeLabel} 흐름이 ${formatDuration(currentSessionMinutes)}째 이어지고 있어요.`
-      : firstCheckIn
-        ? "오늘 기록은 잠시 쉬는 중입니다."
-        : "첫 기록을 시작하면 오늘의 흐름이 채워집니다.";
+  const statusLabel = isRecordDataPending
+    ? "기록 확인 중"
+    : isRecordDataUnavailable
+      ? "기록 확인 실패"
+      : carriedOver
+        ? isActive
+          ? "전날부터 진행"
+          : "이어진 기록 완료"
+        : isActive
+          ? `${modeLabel} 진행 중`
+          : "기록 대기";
+  const displayFlowMessage = !hasKnownFlowData
+    ? isRecordDataPending
+      ? "서버에서 내 기록을 확인하고 있습니다."
+      : "기록 데이터를 불러오지 못했습니다."
+    : carriedOver
+      ? isActive
+        ? `전날부터 이어진 ${modeLabel} 흐름이에요.`
+        : "전날 시작한 흐름이 오늘 마무리됐어요."
+      : isActive
+        ? `${modeLabel} 흐름이 ${formatDuration(currentSessionMinutes)}째 이어지고 있어요.`
+        : firstCheckIn
+          ? "오늘 기록은 잠시 쉬는 중입니다."
+          : "첫 기록을 시작하면 오늘의 흐름이 채워집니다.";
   const displayGoalMessage =
-    remainingMinutes > 0
+    !hasKnownFlowData
+      ? "서버 응답 전까지 빈 기록으로 판단하지 않습니다."
+      : remainingMinutes > 0
       ? `${formatDuration(remainingMinutes)}만 더 쌓으면 목표에 닿습니다.`
       : overtimeMinutes > 0
         ? `목표보다 ${formatDuration(overtimeMinutes)} 더 쌓았습니다.`
@@ -1423,21 +1447,21 @@ function TimeFlowGraph({
   return (
     <div
       className={`timeFlowGraph ${className} ${isActive ? "active" : ""} ${carriedOver ? "carriedOver" : ""}`}
-      aria-label={`오늘 누적 ${formatDuration(minutes)}, 목표 대비 ${safeProgress}%`}
+      aria-label={hasKnownFlowData ? `오늘 누적 ${formatDuration(minutes)}, 목표 대비 ${safeProgress}%` : statusLabel}
     >
       <div className="timeFlowKicker">
-        <span className={isActive ? "live" : ""}>{isActive ? `${modeLabel} 진행 중` : "기록 대기"}</span>
+        <span className={isActive && hasKnownFlowData ? "live" : ""}>{statusLabel}</span>
         {carriedOver && <span className="flowCarryStatus">{statusLabel}</span>}
-        <small>{carriedOver ? "자정 이후 구간만 오늘 누적" : greeting}</small>
+        <small>{!hasKnownFlowData ? "기록 조회 상태" : carriedOver ? "자정 이후 구간만 오늘 누적" : greeting}</small>
       </div>
       <div className="timeFlowHeader">
         <div>
           <span>오늘 누적</span>
-          <strong>{formatDuration(minutes)}</strong>
+          <strong>{hasKnownFlowData ? formatDuration(minutes) : isRecordDataPending ? "확인 중" : "확인 필요"}</strong>
         </div>
         <div>
-          <span>{remainingMinutes > 0 ? "목표까지" : "목표 달성"}</span>
-          <strong>{remainingMinutes > 0 ? formatDuration(remainingMinutes) : "완료"}</strong>
+          <span>{hasKnownFlowData ? (remainingMinutes > 0 ? "목표까지" : "목표 달성") : "목표 상태"}</span>
+          <strong>{hasKnownFlowData ? (remainingMinutes > 0 ? formatDuration(remainingMinutes) : "완료") : "--"}</strong>
         </div>
       </div>
       <p className="flowMessage">
@@ -1445,34 +1469,41 @@ function TimeFlowGraph({
         <strong>{displayGoalMessage}</strong>
       </p>
       <div className="timeFlowCanvas" aria-hidden="true">
-        <svg viewBox="0 0 320 122" role="img">
-          <path className="timeFlowGrid" d="M22 18V94M114 18V94M206 18V94M298 18V94M22 94H298M22 56H298" />
-          <line className="timeGoalLine" x1="22" x2="298" y1={chart.goalY} y2={chart.goalY} />
-          <line className="timeNowLine" x1={chart.nowX} x2={chart.nowX} y1="16" y2="98" />
-          <polygon className="timeFlowArea" points={chart.area} />
-          <polyline className="timeFlowLine" points={chart.line} />
-          {chart.recordPoints.map((point) => (
-            <circle
-              className={`timeFlowMarker ${point.type}`}
-              key={point.id}
-              cx={point.x}
-              cy={point.y}
-              r={point.type === "now" ? 6.8 : 4.8}
-            />
-          ))}
-          <text className="timeAxisLabel" x="22" y="116" textAnchor="middle">
-            00
-          </text>
-          <text className="timeAxisLabel" x="114" y="116" textAnchor="middle">
-            08
-          </text>
-          <text className="timeAxisLabel" x="206" y="116" textAnchor="middle">
-            16
-          </text>
-          <text className="timeAxisLabel" x="298" y="116" textAnchor="middle">
-            24
-          </text>
-        </svg>
+        {hasKnownFlowData ? (
+          <svg viewBox="0 0 320 122" role="img">
+            <path className="timeFlowGrid" d="M22 18V94M114 18V94M206 18V94M298 18V94M22 94H298M22 56H298" />
+            <line className="timeGoalLine" x1="22" x2="298" y1={chart.goalY} y2={chart.goalY} />
+            <line className="timeNowLine" x1={chart.nowX} x2={chart.nowX} y1="16" y2="98" />
+            <polygon className="timeFlowArea" points={chart.area} />
+            <polyline className="timeFlowLine" points={chart.line} />
+            {chart.recordPoints.map((point) => (
+              <circle
+                className={`timeFlowMarker ${point.type}`}
+                key={point.id}
+                cx={point.x}
+                cy={point.y}
+                r={point.type === "now" ? 6.8 : 4.8}
+              />
+            ))}
+            <text className="timeAxisLabel" x="22" y="116" textAnchor="middle">
+              00
+            </text>
+            <text className="timeAxisLabel" x="114" y="116" textAnchor="middle">
+              08
+            </text>
+            <text className="timeAxisLabel" x="206" y="116" textAnchor="middle">
+              16
+            </text>
+            <text className="timeAxisLabel" x="298" y="116" textAnchor="middle">
+              24
+            </text>
+          </svg>
+        ) : (
+          <div className="timeFlowDataNotice">
+            <span>{isRecordDataPending ? "조회 중" : "조회 실패"}</span>
+            <strong>{isRecordDataPending ? "기록 데이터를 확인하고 있습니다." : "기록 다시 조회가 필요합니다."}</strong>
+          </div>
+        )}
       </div>
       <div className="timeFlowFooter">
         <span>0%</span>
@@ -1482,15 +1513,15 @@ function TimeFlowGraph({
       <div className="flowInsights" aria-label="오늘 시간 요약">
         <div>
           <span>이번 흐름</span>
-          <strong>{isActive ? formatDuration(currentSessionMinutes) : "대기 중"}</strong>
+          <strong>{hasKnownFlowData ? (isActive ? formatDuration(currentSessionMinutes) : "대기 중") : "조회 필요"}</strong>
         </div>
         <div>
           <span>첫 출근</span>
-          <strong>{formatFlowBoundary(firstCheckIn, now)}</strong>
+          <strong>{hasKnownFlowData ? formatFlowBoundary(firstCheckIn, now) : "--"}</strong>
         </div>
         <div>
           <span>마지막 퇴근</span>
-          <strong>{displayLastMarker}</strong>
+          <strong>{hasKnownFlowData ? displayLastMarker : "--"}</strong>
         </div>
       </div>
     </div>
@@ -1717,6 +1748,7 @@ function RecordTimeEditor({
 
 function App() {
   const [state, setState] = useState<CommuteState>(initialState);
+  const [recordDataStatus, setRecordDataStatus] = useState<RecordDataStatus>("idle");
   const [mode, setMode] = useState<WorkMode>("focus");
   const [note, setNote] = useState("");
   const [now, setNow] = useState(new Date());
@@ -1772,6 +1804,7 @@ function App() {
     setIsActionCoolingDown(false);
     setIsAuthenticated(false);
     setState(initialState);
+    setRecordDataStatus("idle");
     setTrendLens(null);
     setTrendLensStatus("idle");
     setTrendLensErrorMessage("");
@@ -1790,6 +1823,63 @@ function App() {
 
     const message = error instanceof Error ? error.message.trim() : "";
     setErrorMessage(!message || message === "Request failed." || message === "Unexpected server error." ? fallback : message);
+  }
+
+  function recordLoadErrorMessage(error: unknown) {
+    if (isApiRequestError(error) && error.statusCode === 429) {
+      return "기록 조회 요청이 너무 빠르게 이어졌습니다. 잠시 후 다시 조회해주세요.";
+    }
+
+    const message = error instanceof Error ? error.message.trim() : "";
+    if (!message || message === "Request failed." || message === "Unexpected server error.") {
+      return "기록 데이터를 불러오지 못했습니다. 아직 기록이 없다는 뜻은 아닙니다.";
+    }
+
+    if (message.includes("서버가 요청을 처리하지 못했습니다")) {
+      return "기록 데이터를 불러오지 못했습니다. 서버 응답을 받지 못했으므로 빈 기록으로 판단하지 않습니다.";
+    }
+
+    return message;
+  }
+
+  function applyCommuteState(serverState: CommuteState) {
+    setState(serverState);
+    setRecordDataStatus("ready");
+    setErrorMessage("");
+  }
+
+  function syncDraftFromCommuteState(serverState: CommuteState) {
+    setMode(serverState.activeSession?.mode ?? "focus");
+    setNote(serverState.activeSession?.note ?? "");
+  }
+
+  function handleCommuteStateLoadError(error: unknown) {
+    if (isSessionExpiredError(error)) {
+      expireSession();
+      return;
+    }
+
+    setRecordDataStatus("unavailable");
+    setErrorMessage(recordLoadErrorMessage(error));
+  }
+
+  async function reloadCommuteState() {
+    if (!isAuthenticated || recordDataStatus === "loading") return;
+
+    setIsLoading(true);
+    setRecordDataStatus("loading");
+    setErrorMessage("");
+
+    try {
+      const serverState = await fetchState();
+      applyCommuteState(serverState);
+      syncDraftFromCommuteState(serverState);
+      startActionCooldown();
+    } catch (error) {
+      handleCommuteStateLoadError(error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function startActionCooldown() {
@@ -1854,20 +1944,13 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated) {
       setIsLoading(false);
+      setRecordDataStatus("idle");
       setUsage(null);
       setUsageStatus("idle");
       return;
     }
 
-    fetchState()
-      .then((serverState) => {
-        setState(serverState);
-        setMode(serverState.activeSession?.mode ?? "focus");
-        setNote(serverState.activeSession?.note ?? "");
-        startActionCooldown();
-      })
-      .catch((error: unknown) => handleAppError(error, "기록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요."))
-      .finally(() => setIsLoading(false));
+    void reloadCommuteState();
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -1912,8 +1995,16 @@ function App() {
       return;
     }
 
-    void reloadTrendLensCache();
-  }, [isAuthenticated]);
+    if (recordDataStatus === "idle" || recordDataStatus === "loading") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void reloadTrendLensCache();
+    }, trendLensInitialLoadDelayMs);
+
+    return () => window.clearTimeout(timer);
+  }, [isAuthenticated, recordDataStatus]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
@@ -2064,7 +2155,10 @@ function App() {
     activeCheckInTime !== undefined && Number.isFinite(activeCheckInTime)
       ? Math.max(0, Math.round((now.getTime() - activeCheckInTime) / 60000))
       : 0;
-  const isRecordActionDisabled = isLoading || isSaving || isActionCoolingDown;
+  const isRecordDataReady = recordDataStatus === "ready";
+  const isRecordDataLoading = recordDataStatus === "loading" || isLoading;
+  const hasDisplayableRecordData = isRecordDataReady || state.records.length > 0 || Boolean(state.activeSession);
+  const isRecordActionDisabled = !isRecordDataReady || isLoading || isSaving || isActionCoolingDown;
   const costSignal = costSignalFor(usage, usageStatus);
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
@@ -2144,7 +2238,7 @@ function App() {
 
     try {
       const serverState = await createCheckIn(mode, note);
-      setState(serverState);
+      applyCommuteState(serverState);
       setMode(serverState.activeSession?.mode ?? mode);
       setNote(serverState.activeSession?.note ?? note);
       resetRecordEdit();
@@ -2171,7 +2265,7 @@ function App() {
 
     try {
       const serverState = await createCheckOut();
-      setState(serverState);
+      applyCommuteState(serverState);
       setNote("");
       resetRecordEdit();
       setConfirmingDeleteRecordId("");
@@ -2192,7 +2286,7 @@ function App() {
     setErrorMessage("");
 
     try {
-      setState(await saveDailyGoal(value));
+      applyCommuteState(await saveDailyGoal(value));
       setIsGoalEditing(false);
       playFeedback("success");
       flashToast("목표 시간이 저장됐어요");
@@ -2262,7 +2356,7 @@ function App() {
     setErrorMessage("");
 
     try {
-      setState(await updateRecord(recordId, patch));
+      applyCommuteState(await updateRecord(recordId, patch));
       resetRecordEdit();
       playFeedback("success");
       flashToast("기록이 수정됐어요");
@@ -2283,7 +2377,7 @@ function App() {
     setErrorMessage("");
 
     try {
-      setState(await deleteRecord(recordId));
+      applyCommuteState(await deleteRecord(recordId));
       resetRecordEdit();
       setConfirmingDeleteRecordId("");
       setExpandedSessionId("");
@@ -2301,7 +2395,6 @@ function App() {
   async function reloadTrendLensCache() {
     setTrendLensStatus("loading");
     setTrendLensErrorMessage("");
-    setErrorMessage("");
 
     try {
       const snapshot = await fetchTrendLens();
@@ -2326,7 +2419,6 @@ function App() {
 
   async function updateTrendLens(scope: "all" | "security") {
     setTrendLensStatus("refreshing");
-    setErrorMessage("");
     setTrendLensErrorMessage("");
 
     try {
@@ -2374,6 +2466,7 @@ function App() {
     setIsActionCoolingDown(false);
     setIsAuthenticated(false);
     setState(initialState);
+    setRecordDataStatus("idle");
     setTrendLens(null);
     setTrendLensStatus("idle");
     setTrendLensErrorMessage("");
@@ -2525,6 +2618,7 @@ function App() {
           carriedOver={today.carriedOver}
           modeLabel={modeLabels[mode]}
           greeting={dashboardGreeting(now)}
+          recordDataStatus={recordDataStatus}
         />
 
         <div className="dashboardCommandStack">
@@ -2609,7 +2703,9 @@ function App() {
             >
               <span>{isActive ? "퇴근 기록" : "출근 기록"}</span>
               <small>
-                {isLoading
+                {recordDataStatus === "unavailable"
+                  ? "기록을 다시 조회한 뒤 사용할 수 있습니다"
+                  : isLoading
                   ? "내 기록을 불러오는 중입니다"
                   : isActive
                     ? "오늘의 세션을 마칩니다"
@@ -2635,51 +2731,84 @@ function App() {
             <h2>최근 기록</h2>
             <span>실수하면 시간 수정</span>
           </div>
-          <div className="workdayLens" aria-label="이번 주 근무일 흐름">
-            <div className="workdayLensHeader">
-              <div>
-                <span>이번 주 워크데이</span>
-                <strong>{formatDuration(workdayTotalMinutes)}</strong>
-              </div>
-              <em>{workdaySessionCount > 0 ? `${workdaySessionCount}개 세션` : "기록 대기"}</em>
+          {!hasDisplayableRecordData && isRecordDataLoading && (
+            <div className="recordDataState loading" role="status">
+              <span>기록 확인 중</span>
+              <strong>내 출퇴근 기록을 불러오고 있습니다.</strong>
+              <p>이 상태는 아직 기록이 없다는 뜻이 아닙니다.</p>
             </div>
-            <div className="workdayLensRail">
-              {workdayLens.map((day) => (
-                <div
-                  className={[
-                    "workdayTile",
-                    day.isToday ? "today" : "",
-                    day.isOpen ? "open" : "",
-                    day.holidayLabel ? "holiday" : "",
-                    day.isWeekend ? "weekend" : ""
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  key={day.key}
-                  style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
-                >
-                  <span>{day.weekday}</span>
-                  <strong>{day.dayNumber}</strong>
-                  <i aria-hidden="true" />
-                  <small>
-                    {day.isOpen
-                      ? "진행"
-                      : day.totalMinutes > 0
-                        ? formatDuration(day.totalMinutes)
-                        : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
-                  </small>
-                  {day.topMode && (
-                    <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
-                      {modeIcons[day.topMode]}
-                    </em>
-                  )}
-                  {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
+          )}
+          {!hasDisplayableRecordData && recordDataStatus === "unavailable" && (
+            <div className="recordDataState unavailable" role="alert">
+              <span>기록 조회 실패</span>
+              <strong>기록 데이터를 불러오지 못했습니다.</strong>
+              <p>서버 응답을 확인하지 못했으므로 빈 기록으로 표시하지 않습니다. 다시 조회한 뒤 출근/퇴근을 실행할 수 있습니다.</p>
+              <button type="button" disabled={isLoading} onClick={reloadCommuteState}>
+                기록 다시 조회
+              </button>
+            </div>
+          )}
+          {hasDisplayableRecordData && recordDataStatus === "unavailable" && (
+            <div className="recordDataState compact" role="status">
+              <strong>최신 기록 확인에 실패했습니다.</strong>
+              <button type="button" disabled={isLoading} onClick={reloadCommuteState}>
+                다시 조회
+              </button>
+            </div>
+          )}
+          {hasDisplayableRecordData && (
+            <>
+              <div className="workdayLens" aria-label="이번 주 근무일 흐름">
+                <div className="workdayLensHeader">
+                  <div>
+                    <span>이번 주 워크데이</span>
+                    <strong>{formatDuration(workdayTotalMinutes)}</strong>
+                  </div>
+                  <em>
+                    {recordDataStatus === "unavailable"
+                      ? "다시 조회 필요"
+                      : workdaySessionCount > 0
+                        ? `${workdaySessionCount}개 세션`
+                        : "기록 대기"}
+                  </em>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="timeline">
-            {recentSessions.map((session) => {
+                <div className="workdayLensRail">
+                  {workdayLens.map((day) => (
+                    <div
+                      className={[
+                        "workdayTile",
+                        day.isToday ? "today" : "",
+                        day.isOpen ? "open" : "",
+                        day.holidayLabel ? "holiday" : "",
+                        day.isWeekend ? "weekend" : ""
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      key={day.key}
+                      style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
+                    >
+                      <span>{day.weekday}</span>
+                      <strong>{day.dayNumber}</strong>
+                      <i aria-hidden="true" />
+                      <small>
+                        {day.isOpen
+                          ? "진행"
+                          : day.totalMinutes > 0
+                            ? formatDuration(day.totalMinutes)
+                            : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
+                      </small>
+                      {day.topMode && (
+                        <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
+                          {modeIcons[day.topMode]}
+                        </em>
+                      )}
+                      {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="timeline">
+                {recentSessions.map((session) => {
             const isEditingSession =
               editingRecordId === session.checkIn?.id || editingRecordId === session.checkOut?.id;
             const isConfirmingDelete = confirmingDeleteRecordId === session.id;
@@ -2908,11 +3037,13 @@ function App() {
                 </div>
               </article>
             );
-          })}
-            {state.records.length === 0 && (
-              <p className="emptyState">아직 기록이 없습니다. 오늘 첫 기록을 남겨보세요.</p>
-            )}
-          </div>
+              })}
+                {recordDataStatus === "ready" && state.records.length === 0 && (
+                  <p className="emptyState">아직 기록이 없습니다. 오늘 첫 기록을 남겨보세요.</p>
+                )}
+              </div>
+            </>
+          )}
         </section>
 
         <aside className="dailySideRail" aria-label="오늘 보조 정보">

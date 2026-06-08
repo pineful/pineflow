@@ -2126,6 +2126,33 @@ h1 {
   height: 100%;
 }
 
+.timeFlowDataNotice {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  height: 100%;
+  place-content: center;
+  gap: 8px;
+  padding: 18px;
+  text-align: center;
+}
+
+.timeFlowDataNotice span {
+  justify-self: center;
+  padding: 5px 12px;
+  border: 1px solid rgba(91, 220, 255, 0.3);
+  border-radius: 999px;
+  color: #8febff;
+  background: rgba(91, 220, 255, 0.12);
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
+.timeFlowDataNotice strong {
+  color: #f6fbff;
+  font-size: 1rem;
+}
+
 .timeFlowGrid {
   fill: none;
   stroke: rgba(101, 113, 102, 0.2);
@@ -3122,6 +3149,65 @@ h1 {
   color: #66746a;
   background: rgba(255, 255, 255, 0.56);
   text-align: center;
+}
+
+.recordDataState {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(91, 220, 255, 0.2);
+  border-radius: var(--radius-card);
+  color: #dfeeff;
+  background:
+    linear-gradient(180deg, rgba(22, 29, 42, 0.96), rgba(12, 17, 27, 0.96)),
+    #121925;
+}
+
+.recordDataState span {
+  color: #8fb6d8;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.recordDataState strong {
+  color: #fff;
+  font-size: 1.02rem;
+}
+
+.recordDataState p {
+  margin: 0;
+  color: rgba(222, 240, 255, 0.72);
+  line-height: 1.55;
+}
+
+.recordDataState button {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 10px 14px;
+  border: 1px solid rgba(91, 220, 255, 0.42);
+  border-radius: var(--radius-control);
+  color: #effbff;
+  background:
+    linear-gradient(180deg, rgba(25, 52, 76, 0.96), rgba(13, 28, 46, 0.96)),
+    #0d1c2e;
+  font-weight: 950;
+}
+
+.recordDataState.unavailable {
+  border-color: rgba(255, 107, 95, 0.42);
+  background:
+    linear-gradient(180deg, rgba(54, 25, 32, 0.94), rgba(17, 18, 28, 0.96)),
+    #141922;
+}
+
+.recordDataState.compact {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 12px 14px;
+}
+
+.recordDataState.compact button {
+  margin-top: 0;
 }
 
 .errorBanner {

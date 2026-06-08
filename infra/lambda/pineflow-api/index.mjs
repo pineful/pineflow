@@ -1424,32 +1424,30 @@ async function findSessionById(pk, sessionId) {
 }
 
 async function loadState(pk) {
-  const [settingsResult, activeResult, sessionsResult] = await Promise.all([
-    dynamodb.send(
-      new GetItemCommand({
-        TableName: tableName,
-        Key: objectToItem({ pk, sk: "SETTINGS" })
-      })
-    ),
-    dynamodb.send(
-      new GetItemCommand({
-        TableName: tableName,
-        Key: objectToItem({ pk, sk: "ACTIVE_SESSION" })
-      })
-    ),
-    dynamodb.send(
-      new QueryCommand({
-        TableName: tableName,
-        KeyConditionExpression: "pk = :pk and begins_with(sk, :sessionPrefix)",
-        ExpressionAttributeValues: {
-          ":pk": { S: pk },
-          ":sessionPrefix": { S: "SESSION#" }
-        },
-        ScanIndexForward: false,
-        Limit: 80
-      })
-    )
-  ]);
+  const settingsResult = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk, sk: "SETTINGS" })
+    })
+  );
+  const activeResult = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk, sk: "ACTIVE_SESSION" })
+    })
+  );
+  const sessionsResult = await dynamodb.send(
+    new QueryCommand({
+      TableName: tableName,
+      KeyConditionExpression: "pk = :pk and begins_with(sk, :sessionPrefix)",
+      ExpressionAttributeValues: {
+        ":pk": { S: pk },
+        ":sessionPrefix": { S: "SESSION#" }
+      },
+      ScanIndexForward: false,
+      Limit: 80
+    })
+  );
 
   const active = itemToObject(activeResult.Item);
   const settings = itemToObject(settingsResult.Item);
