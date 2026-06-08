@@ -125,8 +125,9 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - `GET /api/trend-lens`와 `POST /api/trend-lens/refresh`를 추가했다. 두 route 모두 API Gateway JWT authorizer를 통과해야 한다.
 - EventBridge daily rule을 추가해 매일 07:00 KST에 전체 Trend Lens 브리프를 자동 수집한다.
 - EventBridge security rule을 추가해 30분마다 KISA/CISA 기반 공식 보안 위험 신호를 갱신한다.
-- KISA 보안공지 RSS, KISA 취약점 정보 RSS, CISA KEV JSON, Wikimedia Pageviews API를 v1 allowlist source로 사용한다.
-- Google Trends는 공식 API alpha와 비용/키 관리 검토가 필요하므로 v1에서는 `준비` 상태로 문서화했다.
+- KISA 보안공지 RSS, KISA 취약점 정보 RSS, CISA KEV JSON, Google News RSS를 v1 allowlist source로 사용한다.
+- 만돌린, IT 콘텐츠, 교육 분야는 위키/백과 관심도 지표가 아니라 코드에 고정된 Google News RSS query에서 최신 소식을 수집한다. Wikipedia/Wikimedia/백과 계열 문서는 매일 볼 뉴스로 보지 않고 제외한다.
+- Google Trends는 공식 API alpha와 비용/키 관리 검토가 필요하므로 v1에서는 `후보` 상태로 문서화했다.
 - DynamoDB TTL `expiresAt`을 활성화해 Trend Lens snapshot과 manual cooldown guard item을 정리한다.
 - 첫 화면 최근 기록 아래에 `Trend Lens` / `오늘 브리프` 영역을 추가했다. 상세 분야는 탭으로 제공하고, source 상태는 접힘 영역으로 제공한다.
 - 전체 새로고침은 source 병렬 수집으로 보완했고, 강제 refresh는 짧은 연타 방지 cooldown만 적용한다.
@@ -142,5 +143,6 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - `/api/state` Lambda 내부 DynamoDB 조회도 `Promise.all` 병렬 읽기에서 순차 읽기로 바꿔 `1 RCU` 환경에서 순간 read spike가 생기지 않게 했다.
 - CISA KEV 공식 JSON이 512KB를 넘는 실제 응답을 반환하는 것을 확인하고, `cisa-kev`에만 2MB/4.5초 source 한도 예외를 적용했다.
 - Trend Lens snapshot 저장 전 제목/요약/source 상태 메시지를 압축해 DynamoDB item size와 원문 저장 위험을 줄였다.
+- 긴급 보안 신호와 Trend Lens 항목에는 source의 게재일/등록일을 표시한다. CISA KEV처럼 날짜만 제공되는 source는 날짜로, RSS처럼 시각이 있는 source는 일시로 표시한다.
 - 외부 source 실제 응답 크기와 파싱 가능 여부를 확인하는 `infra/scripts/check-trend-lens-sources.mjs` 수동 검증 스크립트를 추가했다.
 - Trend Lens 설계 문서, 리서치 문서, ADR 0008, API 계약, 보안/비용/저장소/배포 체크리스트를 갱신했다.

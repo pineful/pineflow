@@ -166,6 +166,8 @@ Trend Lens v1 원칙:
 - `GET /api/trend-lens`는 DynamoDB 캐시만 읽고 외부 source를 호출하지 않는다.
 - 모든 API route는 JWT authorizer가 필요하다. EventBridge 내부 이벤트는 public route가 아니다.
 - 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
+- 만돌린, IT 콘텐츠, 교육 분야는 Google News RSS allowlist query로 최신 소식을 수집한다. Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스가 아니므로 source로 쓰지 않는다.
+- 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존하고 UI에 게재일/등록일을 표시한다.
 - 전체 refresh는 source를 병렬로 수집하고, source별 실패는 전체 API 실패가 아니라 `sourceStatuses`로 낮춰 기록한다.
 - Trend Lens UI는 분야 전체를 한 번에 늘어놓지 않는다. 오늘 브리프 lead/queue와 `보안`, `만돌린`, `IT 콘텐츠`, `교육` 탭으로 한 분야씩 보여준다.
 - 데스크톱 하단 배치는 `최근 기록` 왼쪽, `Trend Lens + 날씨` 오른쪽 보조 레일이다. 보조 레일 항목을 app shell grid에 따로 흩뿌리면 빈 영역이 생기므로 `dailyReviewGrid` / `dailySideRail` 구조를 유지한다.

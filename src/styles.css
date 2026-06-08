@@ -6023,6 +6023,13 @@ button.sessionEndpoint:hover:not(:disabled) {
   font-size: 0.9rem;
 }
 
+.securityPulse small {
+  color: #b7d8e9;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .briefGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));

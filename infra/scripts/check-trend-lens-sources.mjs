@@ -1,5 +1,18 @@
 const sourceTimeoutMs = 8000;
 
+function googleNewsUrl(query, { hl, gl, ceid, maxAgeDays }) {
+  const url = new URL("https://news.google.com/rss/search");
+  url.searchParams.set("q", `${query} when:${maxAgeDays}d`);
+  url.searchParams.set("hl", hl);
+  url.searchParams.set("gl", gl);
+  url.searchParams.set("ceid", ceid);
+  return url.toString();
+}
+
+function rssItemCount(text) {
+  return [...text.matchAll(/<item\b[\s\S]*?<\/item>/gi)].length;
+}
+
 const sources = [
   {
     id: "cisa-kev",
@@ -26,14 +39,40 @@ const sources = [
     parser: (text) => `${[...text.matchAll(/<item\b[\s\S]*?<\/item>/gi)].length} rss items`
   },
   {
-    id: "wikimedia-pageviews",
-    label: "Wikimedia Pageviews",
-    url: "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia.org/all-access/user/Mandolin/daily/2026052400/2026060600",
+    id: "google-news-mandolin",
+    label: "Google News mandolin RSS",
+    url: googleNewsUrl('만돌린 OR mandolin OR mandolinist OR "Avi Avital" OR "classical mandolin"', {
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      maxAgeDays: 60
+    }),
     maxBytes: 512 * 1024,
-    parser: (text) => {
-      const data = JSON.parse(text);
-      return `${Array.isArray(data.items) ? data.items.length : 0} pageview points`;
-    }
+    parser: (text) => `${rssItemCount(text)} rss items`
+  },
+  {
+    id: "google-news-it-content",
+    label: "Google News IT content RSS",
+    url: googleNewsUrl("IT 콘텐츠 OR 기술 트렌드 OR 생성형 AI OR 사이버보안 콘텐츠 OR 개발자 콘텐츠 OR 테크 콘텐츠", {
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      maxAgeDays: 14
+    }),
+    maxBytes: 512 * 1024,
+    parser: (text) => `${rssItemCount(text)} rss items`
+  },
+  {
+    id: "google-news-education",
+    label: "Google News education trend RSS",
+    url: googleNewsUrl("교육 트렌드 OR 에듀테크 OR AI 교육 OR 디지털 교육 OR 교육부 AI", {
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      maxAgeDays: 14
+    }),
+    maxBytes: 512 * 1024,
+    parser: (text) => `${rssItemCount(text)} rss items`
   }
 ];
 

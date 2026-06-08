@@ -1,5 +1,12 @@
 # 변경 기록
 
+## 2026-06-08
+
+- Trend Lens의 만돌린, IT 콘텐츠, 교육 분야 source를 Wikimedia Pageviews에서 Google News RSS allowlist로 전환했다.
+- Wikipedia, Wikimedia, 백과사전, wiki mirror 계열 문서는 매일 볼 뉴스가 아니므로 Trend Lens 일일 브리프에서 제외하도록 정책과 필터를 추가했다.
+- 긴급 보안 신호와 Trend Lens 항목에 source의 게재일/등록일을 표시하도록 UI 메타 정보를 보강했다.
+- 외부 source 수동 검증 스크립트가 KISA/CISA와 Google News RSS 응답을 확인하도록 갱신했다.
+
 ## 2026-05-20
 
 - Pineflow 모바일 우선 출퇴근 기록 앱을 생성했습니다.

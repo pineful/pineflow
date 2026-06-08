@@ -735,12 +735,12 @@ const trendLensSources = {
     pathPrefix: "/kr/rss.do",
     accept: "application/rss+xml, application/xml, text/xml"
   },
-  wikimedia: {
-    id: "wikimedia-pageviews",
-    label: "Wikimedia Pageviews",
-    host: "wikimedia.org",
-    pathPrefix: "/api/rest_v1/metrics/pageviews/per-article/",
-    accept: "application/json"
+  googleNews: {
+    id: "google-news-rss",
+    label: "Google News RSS",
+    host: "news.google.com",
+    pathPrefix: "/rss/",
+    accept: "application/rss+xml, application/xml, text/xml"
   },
   googleTrendsPlanned: {
     id: "google-trends",
@@ -748,22 +748,78 @@ const trendLensSources = {
   }
 };
 
-const pageviewTopics = {
+const topicNewsFeeds = {
   mandolin: [
-    { project: "en.wikipedia.org", title: "Mandolin", label: "Mandolin", region: "global" },
-    { project: "en.wikipedia.org", title: "Avi_Avital", label: "Avi Avital", region: "global" },
-    { project: "en.wikipedia.org", title: "Chris_Thile", label: "Chris Thile", region: "global" },
-    { project: "en.wikipedia.org", title: "Classical_mandolin", label: "Classical mandolin", region: "global" }
+    {
+      id: "mandolin-korea",
+      label: "만돌린 한국 뉴스",
+      query: '만돌린 OR mandolin OR mandolinist OR "Avi Avital" OR "classical mandolin"',
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      region: "korea",
+      language: "ko",
+      maxAgeDays: 60
+    },
+    {
+      id: "mandolin-global",
+      label: "Mandolin global news",
+      query: 'mandolin OR mandolinist OR "classical mandolin" OR "Avi Avital" OR "mandolin festival" OR "mandolin masterclass"',
+      hl: "en-US",
+      gl: "US",
+      ceid: "US:en",
+      region: "global",
+      language: "en",
+      maxAgeDays: 60
+    }
   ],
   "it-content": [
-    { project: "en.wikipedia.org", title: "Cybersecurity", label: "Cybersecurity", region: "global" },
-    { project: "en.wikipedia.org", title: "Artificial_intelligence", label: "Artificial intelligence", region: "global" },
-    { project: "en.wikipedia.org", title: "GitHub_Actions", label: "GitHub Actions", region: "global" }
+    {
+      id: "it-content-korea",
+      label: "IT 콘텐츠 한국 뉴스",
+      query: 'IT 콘텐츠 OR 기술 트렌드 OR 생성형 AI OR 사이버보안 콘텐츠 OR 개발자 콘텐츠 OR 테크 콘텐츠',
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      region: "korea",
+      language: "ko",
+      maxAgeDays: 14
+    },
+    {
+      id: "it-content-global",
+      label: "IT content global news",
+      query: '"technology content" OR "developer content" OR "AI content creation" OR "cybersecurity content" OR "tech newsletter"',
+      hl: "en-US",
+      gl: "US",
+      ceid: "US:en",
+      region: "global",
+      language: "en",
+      maxAgeDays: 14
+    }
   ],
   education: [
-    { project: "en.wikipedia.org", title: "Educational_technology", label: "Educational technology", region: "global" },
-    { project: "en.wikipedia.org", title: "Artificial_intelligence_in_education", label: "AI in education", region: "global" },
-    { project: "en.wikipedia.org", title: "Online_learning", label: "Online learning", region: "global" }
+    {
+      id: "education-korea",
+      label: "교육 트렌드 한국 뉴스",
+      query: '교육 트렌드 OR 에듀테크 OR AI 교육 OR 디지털 교육 OR 교육부 AI',
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      region: "korea",
+      language: "ko",
+      maxAgeDays: 14
+    },
+    {
+      id: "education-global",
+      label: "Education trend global news",
+      query: '"AI in education" OR edtech OR "education trend" OR "digital learning" OR "teaching with AI"',
+      hl: "en-US",
+      gl: "US",
+      ceid: "US:en",
+      region: "global",
+      language: "en",
+      maxAgeDays: 14
+    }
   ]
 };
 
@@ -1005,7 +1061,8 @@ function parseRssItems(xml, limit = 8) {
       title: rssTagValue(item, "title"),
       link: rssTagValue(item, "link"),
       description: rssTagValue(item, "description"),
-      publishedAt: rssTagValue(item, "pubDate")
+      publishedAt: rssTagValue(item, "pubDate"),
+      sourceName: rssTagValue(item, "source")
     };
   });
 }
@@ -1065,7 +1122,7 @@ async function collectCisaKev(now) {
         summary: `${item.vendorProject ?? "공급사 미상"} ${item.product ?? "제품"} 취약점이 CISA KEV에 등록되었습니다. 한국 환경 영향 여부를 먼저 확인해야 합니다.`,
         sourceName: "CISA KEV",
         sourceUrl: "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
-        publishedAt: dateAdded.toISOString(),
+        publishedAt: item.dateAdded,
         region: "global",
         language: "en",
         reasonTags: ["공식", "실제 악용", item.knownRansomwareCampaignUse === "Known" ? "랜섬웨어 연관" : "패치 점검"]
@@ -1074,65 +1131,140 @@ async function collectCisaKev(now) {
   };
 }
 
-function wikimediaDate(date) {
-  return `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, "0")}${String(date.getUTCDate()).padStart(2, "0")}00`;
+function googleNewsUrl(feed) {
+  const url = new URL("https://news.google.com/rss/search");
+  url.searchParams.set("q", `${feed.query} when:${feed.maxAgeDays}d`);
+  url.searchParams.set("hl", feed.hl);
+  url.searchParams.set("gl", feed.gl);
+  url.searchParams.set("ceid", feed.ceid);
+  return url.toString();
 }
 
-function pageviewUrl(topic, start, end) {
-  const encodedTitle = encodeURIComponent(topic.title);
-  return `https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/${topic.project}/all-access/user/${encodedTitle}/daily/${wikimediaDate(start)}/${wikimediaDate(end)}`;
-}
-
-function trendDeltaLabel(deltaPercent) {
-  if (!Number.isFinite(deltaPercent)) return "비교 기준 없음";
-  if (deltaPercent > 0) return `이전 7일 대비 ${Math.round(deltaPercent)}% 증가`;
-  if (deltaPercent < 0) return `이전 7일 대비 ${Math.abs(Math.round(deltaPercent))}% 감소`;
-  return "이전 7일과 비슷함";
-}
-
-async function collectPageviewTopic(category, topic, now) {
-  const end = plusDays(now, -1);
-  const start = plusDays(end, -13);
-  const url = pageviewUrl(topic, start, end);
-  const text = await fetchTrendLensSource(trendLensSources.wikimedia, url);
-  const data = safeParseJson(text);
-  const views = Array.isArray(data?.items) ? data.items.map((item) => Number(item.views ?? 0)) : [];
-  const previous = views.slice(0, 7).reduce((sum, value) => sum + value, 0);
-  const recent = views.slice(7).reduce((sum, value) => sum + value, 0);
-  const deltaPercent = previous > 0 ? ((recent - previous) / previous) * 100 : Number.NaN;
-  const priority = deltaPercent >= 45 ? "high" : deltaPercent >= 15 ? "watch" : "note";
-
+function sourceForNewsFeed(feed) {
   return {
-    id: `pageview-${category}-${topic.title}`,
-    category,
-    priority,
-    title: topic.label,
-    summary: `${trendDeltaLabel(deltaPercent)}입니다. 최근 7일 조회 ${Math.round(recent).toLocaleString("ko-KR")}회를 콘텐츠/학습 주제 관심도의 보조 지표로 봅니다.`,
-    sourceName: "Wikimedia Pageviews",
-    sourceUrl: `https://${topic.project}/wiki/${encodeURIComponent(topic.title)}`,
-    publishedAt: now.toISOString(),
-    region: topic.region,
-    language: topic.project.startsWith("ko.") ? "ko" : "en",
-    reasonTags: ["관심도 보조", "7일 추이", priority === "high" ? "상승" : "관찰"]
+    ...trendLensSources.googleNews,
+    id: `google-news-${feed.id}`,
+    label: feed.label
   };
 }
 
-async function collectPageviewSection(category, now) {
-  const topics = pageviewTopics[category] ?? [];
-  const results = await Promise.allSettled(topics.map((topic) => collectPageviewTopic(category, topic, now)));
-  const items = results
-    .filter((result) => result.status === "fulfilled")
-    .map((result) => result.value)
-    .sort((left, right) => priorityWeight(right.priority) - priorityWeight(left.priority))
-    .slice(0, 4);
-  const failures = results.filter((result) => result.status === "rejected").length;
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function cleanNewsTitle(title, sourceName) {
+  const normalized = compactText(title, 220);
+  if (!sourceName) return normalized;
+  return normalized.replace(new RegExp(`\\s+-\\s+${escapeRegExp(sourceName)}$`, "i"), "").trim();
+}
+
+function isStaticKnowledgeNewsItem(item) {
+  const text = `${item.title} ${item.sourceName ?? ""} ${item.link}`.toLowerCase();
+  return /wikipedia|wikimedia|wikiwand|britannica|encyclopedia|fandom|dbpedia/.test(text);
+}
+
+function isRecentEnough(published, now, maxAgeDays) {
+  if (Number.isNaN(published.getTime())) return false;
+  const ageMs = now.getTime() - published.getTime();
+  return ageMs >= 0 && ageMs <= maxAgeDays * 24 * 60 * 60 * 1000;
+}
+
+function newsPriority(category, title, published, now) {
+  const ageHours = Math.max(0, (now.getTime() - published.getTime()) / 36e5);
+  const text = title.toLowerCase();
+
+  if (category === "mandolin") {
+    if (/concert|festival|competition|masterclass|recital|공연|콩쿠르|마스터클래스|페스티벌|리사이틀/.test(text)) {
+      return ageHours <= 240 ? "high" : "watch";
+    }
+    return ageHours <= 336 ? "watch" : "note";
+  }
+
+  if (/breaking|launch|released|report|survey|trend|policy|guideline|ai|security|사이버|보안|생성형|트렌드|정책|보고서|발표|출시/.test(text)) {
+    return ageHours <= 72 ? "high" : "watch";
+  }
+
+  return ageHours <= 96 ? "watch" : "note";
+}
+
+function newsSummaryFor(item, feed) {
+  const description = compactText(item.description, 180);
+  if (description) return description;
+  if (feed.id.startsWith("mandolin")) return "만돌린 연주, 아티스트, 레슨, 공연 흐름을 확인할 수 있는 최신 소식입니다.";
+  if (feed.id.startsWith("education")) return "교육 방법, 에듀테크, AI 학습 흐름을 따라가기 위한 최신 소식입니다.";
+  return "IT 콘텐츠 제작과 기술 흐름을 따라가기 위한 최신 소식입니다.";
+}
+
+async function collectNewsFeed(category, feed, now) {
+  const checkedAt = now.toISOString();
+  const source = sourceForNewsFeed(feed);
+  const text = await fetchTrendLensSource(trendLensSources.googleNews, googleNewsUrl(feed));
+  const rssItems = parseRssItems(text, 12)
+    .filter((item) => item.title && item.link && item.publishedAt)
+    .filter((item) => !isStaticKnowledgeNewsItem(item))
+    .map((item) => ({
+      ...item,
+      published: new Date(item.publishedAt)
+    }))
+    .filter((item) => isRecentEnough(item.published, now, feed.maxAgeDays))
+    .slice(0, 5);
+
   return {
     status: sourceStatus(
-      trendLensSources.wikimedia,
-      items.length > 0 && failures === 0 ? "ready" : items.length > 0 ? "partial" : "unavailable",
-      now.toISOString(),
-      `${category} 주제 ${items.length}개를 조회했습니다.${failures ? ` 실패 ${failures}개가 있습니다.` : ""}`
+      source,
+      rssItems.length > 0 ? "ready" : "partial",
+      checkedAt,
+      `${rssItems.length}개 최신 소식을 반영했습니다. 백과/위키 계열 정적 문서는 제외합니다.`
     ),
+    items: rssItems.map((item) => {
+      const sourceUrl = isSafeSameHostLink(item.link, trendLensSources.googleNews)
+        ? item.link
+        : googleNewsUrl(feed);
+      const sourceName = item.sourceName || source.label;
+      const title = cleanNewsTitle(item.title, sourceName);
+      return {
+        id: `news-${feed.id}-${item.id}`.slice(0, 180),
+        category,
+        priority: newsPriority(category, title, item.published, now),
+        title,
+        summary: newsSummaryFor(item, feed),
+        sourceName,
+        sourceUrl,
+        publishedAt: item.published.toISOString(),
+        region: feed.region,
+        language: feed.language,
+        reasonTags: [
+          feed.region === "korea" ? "한국 우선" : "글로벌 보조",
+          sourceName,
+          "최신 소식"
+        ]
+      };
+    })
+  };
+}
+
+async function collectNewsSection(category, now) {
+  const feeds = topicNewsFeeds[category] ?? [];
+  const results = await Promise.allSettled(feeds.map((feed) => collectNewsFeed(category, feed, now)));
+  const items = results
+    .filter((result) => result.status === "fulfilled")
+    .flatMap((result) => result.value.items)
+    .sort((left, right) => {
+      const priorityDiff = priorityWeight(right.priority) - priorityWeight(left.priority);
+      if (priorityDiff !== 0) return priorityDiff;
+      return new Date(right.publishedAt ?? 0).getTime() - new Date(left.publishedAt ?? 0).getTime();
+    })
+    .slice(0, 6);
+  const failures = results.filter((result) => result.status === "rejected").length;
+  const statuses = results.map((result, index) => {
+    if (result.status === "fulfilled") return result.value.status;
+    const source = sourceForNewsFeed(feeds[index]);
+    return sourceStatus(source, "unavailable", now.toISOString(), `${source.label} 최신 소식을 불러오지 못했습니다.`);
+  });
+
+  return {
+    statuses,
+    failures,
     items
   };
 }
@@ -1201,14 +1333,14 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
 
   if (scope === "all") {
     const categories = ["mandolin", "it-content", "education"];
-    const sectionResults = await Promise.allSettled(categories.map((category) => collectPageviewSection(category, now)));
+    const sectionResults = await Promise.allSettled(categories.map((category) => collectNewsSection(category, now)));
     sectionResults.forEach((result, index) => {
       const category = categories[index];
       if (result.status === "fulfilled") {
-        statuses.push(result.value.status);
+        statuses.push(...result.value.statuses);
         updates.push({ ...trendSectionBase(category), items: result.value.items });
       } else {
-        statuses.push(sourceStatus(trendLensSources.wikimedia, "unavailable", now.toISOString(), `${category} 관심도 지표를 불러오지 못했습니다.`));
+        statuses.push(sourceStatus(trendLensSources.googleNews, "unavailable", now.toISOString(), `${category} 최신 소식을 불러오지 못했습니다.`));
       }
     });
   }
@@ -1271,6 +1403,8 @@ function trendLensPlaceholderSnapshot() {
     sourceStatuses: [
       sourceStatus(trendLensSources.kisaSecurityNotice, "unavailable", now.toISOString(), "첫 보안 RSS 수집 전입니다."),
       sourceStatus(trendLensSources.kisaVulnerability, "unavailable", now.toISOString(), "첫 취약점 RSS 수집 전입니다."),
+      sourceStatus(trendLensSources.cisaKev, "unavailable", now.toISOString(), "첫 CISA KEV 수집 전입니다."),
+      sourceStatus(trendLensSources.googleNews, "unavailable", now.toISOString(), "첫 Google News RSS 수집 전입니다."),
       plannedSourceStatus(trendLensSources.googleTrendsPlanned, now.toISOString(), "아직 자동 수집하지 않습니다. 공식 API 비용, 키 관리, 이용 조건을 확인한 뒤 연결할 후보 소스입니다.")
     ],
     note: "첫 수집 전에는 외부 호출 없이 준비 상태만 보여줍니다."

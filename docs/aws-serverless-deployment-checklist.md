@@ -79,5 +79,5 @@ Trend Lens가 포함된 배포에서는 기존 비용/보안 확인 외에 다�
 - Lambda timeout은 8초 이하이다.
 - DynamoDB TTL `expiresAt`이 활성화되어 있다.
 - Trend Lens 추가로 DynamoDB GSI, Scan 권한, Cost Explorer 권한, NAT Gateway, VPC Lambda, Secrets Manager가 새로 생기지 않았다.
-- CloudFront CSP에 KISA/CISA/Wikimedia 같은 외부 source가 추가되지 않았다. 브라우저는 Pineflow API만 호출해야 한다.
+- CloudFront CSP에 KISA/CISA/Google News RSS 같은 외부 source가 추가되지 않았다. 브라우저는 Pineflow API만 호출해야 한다.
 - 수집 실패가 출퇴근 기록 기능의 오류로 표시되지 않고 Trend Lens 섹션 안에서만 표시된다.

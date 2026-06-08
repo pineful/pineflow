@@ -43,13 +43,15 @@ Pineflow는 더 이상 출퇴근만 관리하는 서비스가 아니다. 사용�
 - KISA 보안공지 RSS: 한국 우선 보안 신호.
 - KISA 취약점 정보 RSS: 한국 우선 취약점 신호.
 - CISA KEV JSON: 실제 악용 글로벌 보조 신호.
-- Wikimedia Pageviews API: 만돌린/IT/교육 관심도 보조 지표.
+- Google News RSS: 만돌린/IT/교육 최신 소식. 한국 소식을 우선하고 한국에 영향을 주는 영어권 글로벌 소식을 보조로 본다.
+
+Wikipedia, Wikimedia Pageviews, 백과사전류 문서는 매일 새로 볼 뉴스가 아니므로 일일 브리프 후보에서 제외한다. Google News RSS 결과에서도 위키/백과 계열 문서는 필터링한다.
 
 Google Trends는 중요하지만 v1에서는 바로 붙이지 않는다. 공식 API alpha, 인증, 비용, 이용 조건을 ADR로 따로 검토한 뒤 붙인다.
 
 ## 후속 질문/작업
 
-- 한국 IT 콘텐츠/교육 트렌드의 무키 공식/공개 소스를 더 보강할지 결정.
+- 한국 IT 콘텐츠/교육 트렌드의 공식/공개 소스를 더 보강할지 결정.
 - Google Trends 공식 API alpha 접근을 신청할지 결정.
 - 만돌린 아티스트/레슨 소스 목록을 사용자가 직접 고정할지 결정.
 - 긴 리포트 생성에 LLM을 사용할 경우 비용 상한과 API key 저장 방식을 ADR로 결정.

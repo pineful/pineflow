@@ -357,6 +357,22 @@ function trendRegionLabel(item: TrendLensItem) {
   return item.language === "ko" ? "한국어" : "글로벌 보조";
 }
 
+function trendPublishedLabel(item: TrendLensItem) {
+  if (!item.publishedAt) return "게재일 확인 필요";
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(item.publishedAt);
+  const published = new Date(item.publishedAt);
+  if (Number.isNaN(published.getTime())) return "게재일 확인 필요";
+  return isDateOnly
+    ? `게재 ${formatDate(item.publishedAt)}`
+    : `게재 ${formatDate(item.publishedAt)} · ${formatTime(item.publishedAt)}`;
+}
+
+function trendMetaLine(item: TrendLensItem, readStatus: TrendReadStatus, tagLimit = 2) {
+  const readLabel = readStatus === "readToday" ? "오늘 읽음" : readStatus === "readBefore" ? "이전에 읽음" : "";
+  const tags = item.reasonTags.slice(0, tagLimit).join(" · ");
+  return [trendPublishedLabel(item), item.sourceName, tags, readLabel].filter(Boolean).join(" · ");
+}
+
 function trendLensTimeLabel(snapshot: TrendLensSnapshot | null) {
   if (!snapshot) return "아직 확인 전";
   return `${formatDate(snapshot.generatedAt)} · ${formatTime(snapshot.generatedAt)}`;
@@ -649,7 +665,7 @@ function TrendLensItemCard({
       </span>
       <strong>{item.title}</strong>
       <p>{item.summary}</p>
-      <small>{readStatus === "unread" ? item.reasonTags.slice(0, 3).join(" · ") : readStatus === "readToday" ? "오늘 읽음" : "이전에 읽음"}</small>
+      <small>{trendMetaLine(item, readStatus, 3)}</small>
     </a>
   );
 }
@@ -724,6 +740,7 @@ function TrendLensPanel({
           <div className="securityPulse">
             <span>긴급 보안 신호</span>
             <strong>{securityItems[0].title}</strong>
+            <small>{trendMetaLine(securityItems[0], trendReadStatus(securityItems[0], readState), 2)}</small>
             <p>{securityItems[0].summary}</p>
           </div>
         )}
@@ -748,13 +765,7 @@ function TrendLensPanel({
                   >
                     <b>{trendPriorityLabel(item.priority)}</b>
                     <strong>{item.title}</strong>
-                    <small>
-                      {trendReadStatus(item, readState) === "unread"
-                        ? `${trendRegionLabel(item)} · ${item.reasonTags.slice(0, 2).join(" · ")}`
-                        : trendReadStatus(item, readState) === "readToday"
-                          ? "오늘 읽음"
-                          : "이전에 읽음"}
-                    </small>
+                    <small>{trendMetaLine(item, trendReadStatus(item, readState), 2)}</small>
                   </a>
                 ))
               ) : (
@@ -816,13 +827,7 @@ function TrendLensPanel({
                           {item.title}
                         </a>
                         <p>{item.summary}</p>
-                        <small>
-                          {trendReadStatus(item, readState) === "unread"
-                            ? `${trendRegionLabel(item)} · ${item.reasonTags.slice(0, 3).join(" · ")}`
-                            : trendReadStatus(item, readState) === "readToday"
-                              ? "오늘 읽음"
-                              : "이전에 읽음"}
-                        </small>
+                        <small>{trendMetaLine(item, trendReadStatus(item, readState), 3)}</small>
                       </li>
                     ))}
                   </ul>

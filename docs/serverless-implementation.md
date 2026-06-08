@@ -104,7 +104,7 @@ Trend Lens는 기존 Serverless 본선 안에서 구현한다. EC2/PostgreSQL Po
 - `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#MANUAL#all`
 - `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#MANUAL#security`
 
-Trend Lens 수집은 Lambda 내부 이벤트와 인증된 refresh route에서만 수행한다. 브라우저는 KISA, CISA, Wikimedia, Google Trends 같은 외부 source를 직접 호출하지 않으므로 CloudFront CSP를 넓히지 않는다.
+Trend Lens 수집은 Lambda 내부 이벤트와 인증된 refresh route에서만 수행한다. 브라우저는 KISA, CISA, Google News RSS, Google Trends 후보 같은 외부 source를 직접 호출하지 않으므로 CloudFront CSP를 넓히지 않는다.
 외부 source 호출은 병렬로 수행하고 source별 실패는 전체 API 실패가 아니라 `sourceStatuses`의 `unavailable` 상태로 낮춰 처리한다.
 
 비용 가드레일:

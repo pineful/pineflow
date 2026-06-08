@@ -11,12 +11,12 @@
     "deploy": "cdk deploy"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.232.1",
+    "aws-cdk-lib": "^2.258.0",
     "constructs": "^10.4.2"
   },
   "devDependencies": {
     "@types/node": "^24.10.2",
-    "aws-cdk": "^2.1034.0",
+    "aws-cdk": "^2.1126.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

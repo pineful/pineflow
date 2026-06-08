@@ -107,6 +107,8 @@ Trend Lens는 외부 정보를 수집하지만, 브라우저가 외부 source를
 - `POST /api/trend-lens/refresh`는 `scope=all|security` enum만 받는다.
 - 사용자가 입력한 URL, host, query, keyword로 Lambda가 fetch하지 않는다.
 - Lambda source allowlist는 exact host와 path prefix로 제한한다.
+- 만돌린, IT 콘텐츠, 교육 분야는 코드에 고정된 Google News RSS query만 사용한다. 사용자가 입력한 검색어나 외부 URL을 RSS query에 섞지 않는다.
+- Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스 source로 쓰지 않고 Google News RSS 결과에서도 제외한다.
 - redirect는 최대 1회만 허용하며 redirect 후에도 allowlist를 다시 검증한다.
 - RSS는 DTD/entity 선언을 거부하고 `item/title/link/pubDate/description`만 제한적으로 읽는다.
 - source별 응답 크기는 기본 512KB 이하, timeout은 기본 2.2초 이하.

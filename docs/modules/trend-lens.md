@@ -29,9 +29,11 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 - KISA 보안공지 RSS: 한국 우선 보안 신호.
 - KISA 취약점 정보 RSS: 한국 우선 취약점 신호.
 - CISA KEV JSON: 글로벌 보조, 실제 악용 신호.
-- Wikimedia Pageviews API: 만돌린, IT 콘텐츠, 교육 분야의 공개 관심도 보조 지표.
+- Google News RSS: 만돌린, IT 콘텐츠, 교육 분야의 최신 소식. 한국 소스를 우선하고, 한국에 영향을 줄 수 있는 영어권 글로벌 소스를 보조로 본다.
 
-Google Trends는 장기적으로 중요하지만, 공식 API가 alpha 성격이고 인증/사용 조건 검토가 필요하므로 v1에서는 소스 상태에 `준비`로 기록한다.
+Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 매일 볼 뉴스가 아니므로 Trend Lens 일일 브리프 source로 쓰지 않는다. Google News RSS 결과에서도 위키/백과 계열 문서는 필터링한다.
+
+Google Trends는 장기적으로 중요하지만, 공식 API가 alpha 성격이고 인증/사용 조건 검토가 필요하므로 v1에서는 소스 상태에 `후보`로 기록한다.
 
 API key가 필요해지는 소스는 기본 비활성화로 시작한다. 필요 시 GitHub Secrets, Lambda 평문 환경 변수, DynamoDB에는 저장하지 않고 SSM Parameter Store Standard `SecureString`을 우선한다. Secrets Manager는 secret당 월 비용이 생길 수 있으므로 기본 후보가 아니다.
 
@@ -56,7 +58,8 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - source별 fetch timeout은 2.2초, 응답 크기는 512KB 이하로 제한한다.
 - 예외적으로 CISA KEV 공식 JSON은 현재 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout을 둔다. 다른 source의 기본 한도는 계속 512KB/2.2초다.
 - 저장 전에는 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다. DynamoDB item size를 넘기지 않기 위해 원문 전문이나 긴 설명을 snapshot payload에 넣지 않는다.
-- 보안 source와 분야별 관심도 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다.
+- 보안 source와 분야별 뉴스 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다.
+- 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존한다. 보안 위험 신호의 판단에는 게재일/등록일이 중요하므로 UI에서도 반드시 표시한다.
 - 수동 refresh는 기본 cooldown을 두되, 사용자가 강제 refresh를 요청하면 짧은 연타 방지 cooldown만 적용한다.
 - redirect는 최대 1회만 허용하고 redirect 후에도 allowlist를 다시 검증한다.
 - DynamoDB TTL `expiresAt`을 켜서 캐시/가드 item이 자연스럽게 정리되게 한다.
