@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-06-06
+마지막 업데이트: 2026-06-08
 
 ## 현재 상태 요약
 
@@ -134,6 +134,7 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - Trend Lens의 `loading`, `refreshing`, `수집 전`, `캐시 조회 실패`, `이전 캐시` 상태 문구를 분리했다.
 - Trend Lens에 `캐시 다시 조회` 동작을 추가해 브라우저 리로드와 외부 source 재수집을 혼동하지 않게 했다.
 - Trend Lens source 상태 details는 snapshot이 없거나 조회가 실패해도 fallback row와 저장 정책을 표시한다.
+- Trend Lens 기사 읽음 상태를 브라우저 `localStorage`에 저장한다. 오늘 읽은 항목은 위치를 유지하며, 다음날 이후 같은 URL은 아래로 밀리고 흐리게 표시된다.
 - CISA KEV 공식 JSON이 512KB를 넘는 실제 응답을 반환하는 것을 확인하고, `cisa-kev`에만 2MB/4.5초 source 한도 예외를 적용했다.
 - Trend Lens snapshot 저장 전 제목/요약/source 상태 메시지를 압축해 DynamoDB item size와 원문 저장 위험을 줄였다.
 - 외부 source 실제 응답 크기와 파싱 가능 여부를 확인하는 `infra/scripts/check-trend-lens-sources.mjs` 수동 검증 스크립트를 추가했다.

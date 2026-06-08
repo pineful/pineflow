@@ -47,6 +47,7 @@ const initialState: CommuteState = {
 
 const soundStorageKey = "pineflow.sound-enabled";
 const usageCacheStorageKey = "pineflow.usage-cache.v1";
+const trendLensReadStorageKey = "pineflow.trend-lens-read.v1";
 const sessionRefreshIntervalMs = 30 * 60 * 1000;
 
 type WeatherState = {
@@ -74,6 +75,12 @@ type FeedbackSound = "tap" | "open" | "start" | "finish" | "success";
 type UsageStatus = "idle" | "loading" | "ready" | "unavailable";
 type TrendLensStatus = "idle" | "loading" | "ready" | "refreshing" | "unavailable";
 type CostSignalLevel = "safe" | "watch" | "billable" | "loading" | "unavailable";
+type TrendReadEntry = {
+  readAt: string;
+  readDate: string;
+};
+type TrendReadState = Record<string, TrendReadEntry>;
+type TrendReadStatus = "unread" | "readToday" | "readBefore";
 
 type FlowChartPoint = {
   x: number;
@@ -493,6 +500,51 @@ function storeUsageSnapshot(snapshot: OperationalUsageSnapshot) {
   window.localStorage.setItem(usageCacheStorageKey, JSON.stringify(snapshot));
 }
 
+function trendItemReadKey(item: TrendLensItem) {
+  return item.sourceUrl || `${item.category}:${item.id}`;
+}
+
+function getStoredTrendReadState(): TrendReadState {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(trendLensReadStorageKey) ?? "{}") as TrendReadState;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, entry]) => entry?.readAt && entry?.readDate)
+    );
+  } catch {
+    return {};
+  }
+}
+
+function storeTrendReadState(readState: TrendReadState) {
+  if (typeof window === "undefined") return;
+
+  const sortedEntries = Object.entries(readState)
+    .sort(([, left], [, right]) => new Date(right.readAt).getTime() - new Date(left.readAt).getTime())
+    .slice(0, 500);
+  window.localStorage.setItem(trendLensReadStorageKey, JSON.stringify(Object.fromEntries(sortedEntries)));
+}
+
+function trendReadStatus(item: TrendLensItem, readState: TrendReadState): TrendReadStatus {
+  const entry = readState[trendItemReadKey(item)];
+  if (!entry) return "unread";
+  return entry.readDate === todayUsageCacheDate() ? "readToday" : "readBefore";
+}
+
+function orderTrendItemsByReadState(items: TrendLensItem[], readState: TrendReadState) {
+  return items
+    .map((item, index) => ({ item, index, status: trendReadStatus(item, readState) }))
+    .sort((left, right) => {
+      const leftPenalty = left.status === "readBefore" ? 1 : 0;
+      const rightPenalty = right.status === "readBefore" ? 1 : 0;
+      if (leftPenalty !== rightPenalty) return leftPenalty - rightPenalty;
+      return left.index - right.index;
+    })
+    .map(({ item }) => item);
+}
+
 function formatUsageValue(value: number, unit: UsageMetric["unit"]) {
   return formatUsageMetric({
     id: "value",
@@ -539,16 +591,33 @@ function UsageTrendCard({ trend }: { trend: UsageTrend }) {
   );
 }
 
-function TrendLensItemCard({ item }: { item: TrendLensItem }) {
+function TrendLensItemCard({
+  item,
+  readStatus,
+  onRead
+}: {
+  item: TrendLensItem;
+  readStatus: TrendReadStatus;
+  onRead: (item: TrendLensItem) => void;
+}) {
   return (
-    <a className={`trendItem ${trendPriorityClass(item.priority)}`} href={item.sourceUrl} target="_blank" rel="noreferrer">
+    <a
+      className={`trendItem ${trendPriorityClass(item.priority)} ${readStatus}`}
+      href={item.sourceUrl}
+      target="_blank"
+      rel="noreferrer"
+      onAuxClick={(event) => {
+        if (event.button === 1) onRead(item);
+      }}
+      onClick={() => onRead(item)}
+    >
       <span>
         <b>{trendPriorityLabel(item.priority)}</b>
         <em>{trendRegionLabel(item)}</em>
       </span>
       <strong>{item.title}</strong>
       <p>{item.summary}</p>
-      <small>{item.reasonTags.slice(0, 3).join(" · ")}</small>
+      <small>{readStatus === "unread" ? item.reasonTags.slice(0, 3).join(" · ") : readStatus === "readToday" ? "오늘 읽음" : "이전에 읽음"}</small>
     </a>
   );
 }
@@ -557,6 +626,8 @@ function TrendLensPanel({
   snapshot,
   status,
   errorMessage,
+  readState,
+  onMarkRead,
   onReloadCache,
   onRefreshAll,
   onRefreshSecurity
@@ -564,19 +635,22 @@ function TrendLensPanel({
   snapshot: TrendLensSnapshot | null;
   status: TrendLensStatus;
   errorMessage: string;
+  readState: TrendReadState;
+  onMarkRead: (item: TrendLensItem) => void;
   onReloadCache: () => void;
   onRefreshAll: () => void;
   onRefreshSecurity: () => void;
 }) {
   const [activeCategory, setActiveCategory] = useState<TrendLensCategoryId>("security");
   const isBusy = status === "loading" || status === "refreshing";
-  const briefItems = snapshot?.briefItems ?? [];
+  const briefItems = orderTrendItemsByReadState(snapshot?.briefItems ?? [], readState);
   const leadItem = briefItems[0];
   const secondaryItems = briefItems.slice(1, 4);
   const sections = snapshot?.sections ?? [];
   const securitySection = snapshot?.sections.find((section) => section.id === "security");
   const activeSection = sections.find((section) => section.id === activeCategory) ?? sections[0];
-  const activeItems = activeSection?.items ?? [];
+  const activeItems = orderTrendItemsByReadState(activeSection?.items ?? [], readState);
+  const securityItems = orderTrendItemsByReadState(securitySection?.items ?? [], readState);
   const statusCopy = trendLensStatusCopy(snapshot, status);
   const sourceStatuses =
     snapshot?.sourceStatuses && snapshot.sourceStatuses.length > 0
@@ -613,25 +687,41 @@ function TrendLensPanel({
           </div>
         </div>
 
-        {securitySection && securitySection.items.length > 0 && (
+        {securitySection && securityItems.length > 0 && (
           <div className="securityPulse">
             <span>긴급 보안 신호</span>
-            <strong>{securitySection.items[0].title}</strong>
-            <p>{securitySection.items[0].summary}</p>
+            <strong>{securityItems[0].title}</strong>
+            <p>{securityItems[0].summary}</p>
           </div>
         )}
 
         {leadItem ? (
           <div className="intelligenceSnapshot">
-            <TrendLensItemCard item={leadItem} />
+            <TrendLensItemCard item={leadItem} readStatus={trendReadStatus(leadItem, readState)} onRead={onMarkRead} />
             <div className="briefQueue" aria-label="오늘 브리프 요약">
               <span>다음에 볼 신호</span>
               {secondaryItems.length > 0 ? (
                 secondaryItems.map((item) => (
-                  <a href={item.sourceUrl} key={item.id} rel="noreferrer" target="_blank">
+                  <a
+                    className={trendReadStatus(item, readState)}
+                    href={item.sourceUrl}
+                    key={item.id}
+                    rel="noreferrer"
+                    target="_blank"
+                    onAuxClick={(event) => {
+                      if (event.button === 1) onMarkRead(item);
+                    }}
+                    onClick={() => onMarkRead(item)}
+                  >
                     <b>{trendPriorityLabel(item.priority)}</b>
                     <strong>{item.title}</strong>
-                    <small>{trendRegionLabel(item)} · {item.reasonTags.slice(0, 2).join(" · ")}</small>
+                    <small>
+                      {trendReadStatus(item, readState) === "unread"
+                        ? `${trendRegionLabel(item)} · ${item.reasonTags.slice(0, 2).join(" · ")}`
+                        : trendReadStatus(item, readState) === "readToday"
+                          ? "오늘 읽음"
+                          : "이전에 읽음"}
+                    </small>
                   </a>
                 ))
               ) : (
@@ -679,13 +769,27 @@ function TrendLensPanel({
                 {activeItems.length > 0 ? (
                   <ul className="trendFocusList">
                     {activeItems.map((item) => (
-                      <li className={trendPriorityClass(item.priority)} key={item.id}>
+                      <li className={`${trendPriorityClass(item.priority)} ${trendReadStatus(item, readState)}`} key={item.id}>
                         <b>{trendPriorityLabel(item.priority)}</b>
-                        <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                        <a
+                          href={item.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          onAuxClick={(event) => {
+                            if (event.button === 1) onMarkRead(item);
+                          }}
+                          onClick={() => onMarkRead(item)}
+                        >
                           {item.title}
                         </a>
                         <p>{item.summary}</p>
-                        <small>{trendRegionLabel(item)} · {item.reasonTags.slice(0, 3).join(" · ")}</small>
+                        <small>
+                          {trendReadStatus(item, readState) === "unread"
+                            ? `${trendRegionLabel(item)} · ${item.reasonTags.slice(0, 3).join(" · ")}`
+                            : trendReadStatus(item, readState) === "readToday"
+                              ? "오늘 읽음"
+                              : "이전에 읽음"}
+                        </small>
                       </li>
                     ))}
                   </ul>
@@ -1603,6 +1707,7 @@ function App() {
   const [trendLens, setTrendLens] = useState<TrendLensSnapshot | null>(null);
   const [trendLensStatus, setTrendLensStatus] = useState<TrendLensStatus>("idle");
   const [trendLensErrorMessage, setTrendLensErrorMessage] = useState("");
+  const [trendReadState, setTrendReadState] = useState<TrendReadState>(getStoredTrendReadState);
   const [email, setEmail] = useState(() => (typeof window === "undefined" ? "" : getStoredEmail()));
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -1693,6 +1798,21 @@ function App() {
       setToastMessage("");
       toastTimerRef.current = undefined;
     }, 1600);
+  }
+
+  function markTrendItemRead(item: TrendLensItem) {
+    const nowDate = new Date();
+    setTrendReadState((previous) => {
+      const next = {
+        ...previous,
+        [trendItemReadKey(item)]: {
+          readAt: nowDate.toISOString(),
+          readDate: todayUsageCacheDate()
+        }
+      };
+      storeTrendReadState(next);
+      return next;
+    });
   }
 
   useEffect(() => {
@@ -2764,6 +2884,8 @@ function App() {
             snapshot={trendLens}
             status={trendLensStatus}
             errorMessage={trendLensErrorMessage}
+            readState={trendReadState}
+            onMarkRead={markTrendItemRead}
             onReloadCache={reloadTrendLensCache}
             onRefreshAll={() => updateTrendLens("all")}
             onRefreshSecurity={() => updateTrendLens("security")}

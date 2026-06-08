@@ -6024,6 +6024,28 @@ button.sessionEndpoint:hover:not(:disabled) {
   transform: translateY(-1px);
 }
 
+.trendItem.readToday,
+.briefQueue a.readToday,
+.trendFocusList li.readToday {
+  border-color: rgba(126, 224, 177, 0.3);
+  background:
+    linear-gradient(145deg, rgba(20, 45, 42, 0.78), rgba(10, 20, 34, 0.88)),
+    #101827;
+}
+
+.trendItem.readBefore,
+.briefQueue a.readBefore,
+.trendFocusList li.readBefore {
+  opacity: 0.48;
+  filter: saturate(0.58);
+}
+
+.trendItem.readBefore:hover,
+.briefQueue a.readBefore:hover,
+.trendFocusList li.readBefore:hover {
+  opacity: 0.72;
+}
+
 .trendItem > span {
   display: flex;
   align-items: center;
@@ -6078,6 +6100,18 @@ button.sessionEndpoint:hover:not(:disabled) {
   font-weight: 850;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.trendItem.readToday small,
+.briefQueue a.readToday small,
+.trendFocusList li.readToday small {
+  color: #7ee0b1;
+}
+
+.trendItem.readBefore small,
+.briefQueue a.readBefore small,
+.trendFocusList li.readBefore small {
+  color: rgba(222, 240, 255, 0.48);
 }
 
 .trendLensFallback {
