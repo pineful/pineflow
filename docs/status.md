@@ -139,6 +139,8 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - Trend Lens 기사 읽음 상태를 브라우저 `localStorage`에 저장한다. 오늘 읽은 항목은 위치를 유지하며, 다음날 이후 같은 URL은 아래로 밀리고 흐리게 표시된다.
 - 기록 데이터 조회 상태를 `loading/ready/unavailable`로 분리했다. `/api/state` 조회 실패 시 초기 빈 배열을 실제 빈 기록으로 표시하지 않고, 상단 시간 그래프와 최근 기록 영역에는 `확인 필요/기록 다시 조회`를 제공하며 출근/퇴근 실행을 잠근다.
 - 기록 수정 시/분 입력은 `type="number"`를 쓰지 않고 직접 편집 가능한 numeric text input으로 바꿨다. 기존 값 삭제 중에도 빈 입력 상태를 유지해 `12 -> 6` 같은 직접 수정을 막지 않는다.
+- 최근 기록 기본 표시 범위를 진행 중 세션 날짜 또는 가장 최근 세션 날짜 하나로 줄이고, 과거 기록은 `지난 1주 더 보기`로 1주 단위씩 펼치도록 변경했다.
+- `Workday Lens`를 최근 기록 위에서 `오늘의 흐름` 영역 안으로 옮겨, 최근 기록 목록은 세션 이력만 담당하고 주간 흐름은 별도 보조 요약으로 읽히게 했다.
 - 로그인 직후 기록 조회를 먼저 수행하고 Trend Lens 초기 조회는 지연시켜 낮은 API Gateway throttling 설정과 충돌하지 않게 했다.
 - `/api/state` Lambda 내부 DynamoDB 조회도 `Promise.all` 병렬 읽기에서 순차 읽기로 바꿔 `1 RCU` 환경에서 순간 read spike가 생기지 않게 했다.
 - CISA KEV 공식 JSON이 512KB를 넘는 실제 응답을 반환하는 것을 확인하고, `cisa-kev`에만 2MB/4.5초 source 한도 예외를 적용했다.

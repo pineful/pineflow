@@ -1144,6 +1144,19 @@ function buildRecentSessions(records: CommuteRecord[], now: Date): RecentSession
   return recentSessions.sort((left, right) => new Date(right.latestAt).getTime() - new Date(left.latestAt).getTime());
 }
 
+function addLocalDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setHours(0, 0, 0, 0);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function localDayTime(value: Date | string) {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+}
+
 function readLoginForm(form: HTMLFormElement, fallbackEmail: string, fallbackPassword: string) {
   const formData = new FormData(form);
   return {
@@ -1845,6 +1858,7 @@ function App() {
   const [editingOriginal, setEditingOriginal] = useState<RecordEditSnapshot | null>(null);
   const [confirmingDeleteRecordId, setConfirmingDeleteRecordId] = useState("");
   const [expandedSessionId, setExpandedSessionId] = useState("");
+  const [visibleHistoryWeeks, setVisibleHistoryWeeks] = useState(0);
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
   const [toastMessage, setToastMessage] = useState("");
@@ -1893,6 +1907,7 @@ function App() {
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
     setExpandedSessionId("");
+    setVisibleHistoryWeeks(0);
     setToastMessage("");
     setErrorMessage(message);
   }
@@ -2218,13 +2233,51 @@ function App() {
     () => summarizeToday(state.records, now, state.activeSession?.checkInAt),
     [now, state.activeSession?.checkInAt, state.records]
   );
-  const recentSessions = useMemo(() => buildRecentSessions(state.records, now).slice(0, 6), [now, state.records]);
+  const allRecentSessions = useMemo(() => buildRecentSessions(state.records, now), [now, state.records]);
+  const primaryRecentDateKey = useMemo(() => {
+    const openSession = allRecentSessions.find((session) => session.isOpen);
+    const primarySession = openSession ?? allRecentSessions[0];
+    return primarySession ? localDateKey(primarySession.anchorAt) : localDateKey(now);
+  }, [allRecentSessions, now]);
+  const visibleRecentSessions = useMemo(() => {
+    if (allRecentSessions.length === 0) return [];
+
+    const primaryDay = localDayTime(primaryRecentDateKey);
+    const visibleStart = addLocalDays(dateFromKey(primaryRecentDateKey), -7 * visibleHistoryWeeks).getTime();
+
+    return allRecentSessions.filter((session) => {
+      const sessionDay = localDayTime(session.anchorAt);
+      const isPrimaryDay = sessionDay === primaryDay;
+      const isExpandedHistory = visibleHistoryWeeks > 0 && sessionDay < primaryDay && sessionDay >= visibleStart;
+      const isPinnedForOpenPanel =
+        expandedSessionId === session.id ||
+        confirmingDeleteRecordId === session.id ||
+        editingRecordId === session.checkIn?.id ||
+        editingRecordId === session.checkOut?.id;
+
+      return isPrimaryDay || isExpandedHistory || isPinnedForOpenPanel;
+    });
+  }, [allRecentSessions, confirmingDeleteRecordId, editingRecordId, expandedSessionId, primaryRecentDateKey, visibleHistoryWeeks]);
+  const hasHiddenRecentHistory = useMemo(() => {
+    if (allRecentSessions.length === 0) return false;
+
+    const primaryDay = localDayTime(primaryRecentDateKey);
+    const visibleStart = addLocalDays(dateFromKey(primaryRecentDateKey), -7 * visibleHistoryWeeks).getTime();
+    return allRecentSessions.some((session) => {
+      const sessionDay = localDayTime(session.anchorAt);
+      return sessionDay < primaryDay && sessionDay < visibleStart;
+    });
+  }, [allRecentSessions, primaryRecentDateKey, visibleHistoryWeeks]);
   const workdayLens = useMemo(
     () => buildWorkdayLens(state.records, now, state.dailyGoalMinutes),
     [now, state.dailyGoalMinutes, state.records]
   );
   const workdayTotalMinutes = workdayLens.reduce((sum, day) => sum + day.totalMinutes, 0);
   const workdaySessionCount = workdayLens.reduce((sum, day) => sum + day.sessionCount, 0);
+
+  useEffect(() => {
+    setVisibleHistoryWeeks(0);
+  }, [primaryRecentDateKey]);
 
   const progress = Math.min(100, Math.round((today.totalMinutes / state.dailyGoalMinutes) * 100));
   const isActive = Boolean(state.activeSession);
@@ -2555,6 +2608,7 @@ function App() {
     resetRecordEdit();
     setConfirmingDeleteRecordId("");
     setExpandedSessionId("");
+    setVisibleHistoryWeeks(0);
     setIsGoalEditing(false);
     setDraftGoalMinutes(initialState.dailyGoalMinutes);
     setToastMessage("");
@@ -2840,57 +2894,8 @@ function App() {
           )}
           {hasDisplayableRecordData && (
             <>
-              <div className="workdayLens" aria-label="이번 주 근무일 흐름">
-                <div className="workdayLensHeader">
-                  <div>
-                    <span>이번 주 워크데이</span>
-                    <strong>{formatDuration(workdayTotalMinutes)}</strong>
-                  </div>
-                  <em>
-                    {recordDataStatus === "unavailable"
-                      ? "다시 조회 필요"
-                      : workdaySessionCount > 0
-                        ? `${workdaySessionCount}개 세션`
-                        : "기록 대기"}
-                  </em>
-                </div>
-                <div className="workdayLensRail">
-                  {workdayLens.map((day) => (
-                    <div
-                      className={[
-                        "workdayTile",
-                        day.isToday ? "today" : "",
-                        day.isOpen ? "open" : "",
-                        day.holidayLabel ? "holiday" : "",
-                        day.isWeekend ? "weekend" : ""
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      key={day.key}
-                      style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
-                    >
-                      <span>{day.weekday}</span>
-                      <strong>{day.dayNumber}</strong>
-                      <i aria-hidden="true" />
-                      <small>
-                        {day.isOpen
-                          ? "진행"
-                          : day.totalMinutes > 0
-                            ? formatDuration(day.totalMinutes)
-                            : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
-                      </small>
-                      {day.topMode && (
-                        <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
-                          {modeIcons[day.topMode]}
-                        </em>
-                      )}
-                      {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
-                    </div>
-                  ))}
-                </div>
-              </div>
               <div className="timeline">
-                {recentSessions.map((session) => {
+                {visibleRecentSessions.map((session) => {
             const isEditingSession =
               editingRecordId === session.checkIn?.id || editingRecordId === session.checkOut?.id;
             const isConfirmingDelete = confirmingDeleteRecordId === session.id;
@@ -3120,6 +3125,42 @@ function App() {
               </article>
             );
               })}
+                {recordDataStatus === "ready" && state.records.length > 0 && (
+                  <div className="recentHistoryControls">
+                    <span>
+                      {visibleHistoryWeeks > 0
+                        ? `지난 ${visibleHistoryWeeks}주 기록까지 표시 중`
+                        : "오늘 또는 가장 최근 하루만 먼저 보여줍니다"}
+                    </span>
+                    <div>
+                      {visibleHistoryWeeks > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playFeedback("tap");
+                            resetRecordEdit();
+                            setConfirmingDeleteRecordId("");
+                            setExpandedSessionId("");
+                            setVisibleHistoryWeeks(0);
+                          }}
+                        >
+                          접기
+                        </button>
+                      )}
+                      {hasHiddenRecentHistory && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playFeedback("open");
+                            setVisibleHistoryWeeks((weeks) => weeks + 1);
+                          }}
+                        >
+                          지난 1주 더 보기
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {recordDataStatus === "ready" && state.records.length === 0 && (
                   <p className="emptyState">아직 기록이 없습니다. 오늘 첫 기록을 남겨보세요.</p>
                 )}
@@ -3263,6 +3304,55 @@ function App() {
             </div>
           </div>
         )}
+        <div className="workdayLens" aria-label="이번 주 근무일 흐름">
+          <div className="workdayLensHeader">
+            <div>
+              <span>이번 주 워크데이</span>
+              <strong>{formatDuration(workdayTotalMinutes)}</strong>
+            </div>
+            <em>
+              {recordDataStatus === "unavailable"
+                ? "다시 조회 필요"
+                : workdaySessionCount > 0
+                  ? `${workdaySessionCount}개 세션`
+                  : "기록 대기"}
+            </em>
+          </div>
+          <div className="workdayLensRail">
+            {workdayLens.map((day) => (
+              <div
+                className={[
+                  "workdayTile",
+                  day.isToday ? "today" : "",
+                  day.isOpen ? "open" : "",
+                  day.holidayLabel ? "holiday" : "",
+                  day.isWeekend ? "weekend" : ""
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                key={day.key}
+                style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
+              >
+                <span>{day.weekday}</span>
+                <strong>{day.dayNumber}</strong>
+                <i aria-hidden="true" />
+                <small>
+                  {day.isOpen
+                    ? "진행"
+                    : day.totalMinutes > 0
+                      ? formatDuration(day.totalMinutes)
+                      : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
+                </small>
+                {day.topMode && (
+                  <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
+                    {modeIcons[day.topMode]}
+                  </em>
+                )}
+                {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="sectionBand usageBand">

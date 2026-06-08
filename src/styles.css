@@ -1143,6 +1143,15 @@ h1 {
   grid-column: 1 / -1;
 }
 
+.summaryBand {
+  grid-column: 1 / -1;
+}
+
+.summaryBand .workdayLens {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
 .usagePanel {
   display: grid;
   gap: 12px;
@@ -2525,6 +2534,55 @@ h1 {
 .timeline {
   display: grid;
   gap: 8px;
+}
+
+.recentHistoryControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  color: #b9cce1;
+  border: 1px dashed rgba(91, 220, 255, 0.26);
+  background: rgba(10, 18, 30, 0.58);
+  clip-path: var(--clip-compact-command);
+}
+
+.recentHistoryControls span {
+  min-width: 0;
+  color: #b9cce1;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.recentHistoryControls div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.recentHistoryControls button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid rgba(91, 220, 255, 0.32);
+  border-radius: 0;
+  color: #effcff;
+  background:
+    linear-gradient(180deg, rgba(31, 54, 82, 0.96), rgba(13, 28, 48, 0.96)),
+    #101c2e;
+  font-size: 0.72rem;
+  font-weight: 950;
+  clip-path: var(--clip-compact-command);
+  box-shadow:
+    0 10px 20px rgba(5, 12, 23, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.recentHistoryControls button:hover:not(:disabled) {
+  border-color: rgba(246, 194, 71, 0.72);
+  color: #fff5d7;
 }
 
 .timelineItem {
@@ -5797,6 +5855,18 @@ button.sessionEndpoint:hover:not(:disabled) {
 @media (max-width: 520px) {
   .workdayLens {
     padding: 10px;
+  }
+
+  .recentHistoryControls {
+    grid-template-columns: 1fr;
+  }
+
+  .recentHistoryControls div {
+    justify-content: stretch;
+  }
+
+  .recentHistoryControls button {
+    flex: 1 1 120px;
   }
 
   .workdayLensHeader {
