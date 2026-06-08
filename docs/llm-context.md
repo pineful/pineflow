@@ -168,6 +168,7 @@ Trend Lens v1 원칙:
 - Trend Lens 상태 문구는 `캐시 확인 중`, `수집 중`, `수집 전`, `캐시 조회 실패`, `이전 캐시`, `오늘 브리프`처럼 사용자가 다음 행동을 알 수 있게 구분한다.
 - Trend Lens에서 `캐시 다시 조회`는 저장된 DynamoDB snapshot만 다시 읽는 가벼운 확인이고, `전체 새로고침`은 외부 allowlist source를 다시 수집하는 동작이다. 두 동작을 같은 의미로 보이게 만들지 않는다.
 - Trend Lens details는 snapshot이 없어도 비어 있으면 안 된다. fallback으로 캐시 조회 상태, 전체 새로고침 역할, 저장 정책을 보여준다.
+- Trend Lens source 상태 영역은 수집 출처 점검표다. `planned`는 화면에서 `준비`가 아니라 `후보`로 표현하고, Google Trends처럼 아직 자동 수집하지 않는 소스는 실제 반영 소스 뒤에 둔다.
 - Trend Lens 읽음 상태는 브라우저 `localStorage`에 저장한다. 오늘 읽은 기사는 위치를 유지하고 `오늘 읽음`으로 표시하며, 다음날 이후 같은 URL은 목록 아래로 이동하고 흐리게 표시한다. v1에서는 사용자별 읽음 상태를 DynamoDB에 저장하지 않는다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - 캐시는 `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#LATEST`, `sk=TREND_LENS#SNAPSHOT#YYYY-MM-DD`에 저장한다.

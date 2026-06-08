@@ -6409,33 +6409,61 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendSourceList {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: start;
   gap: 8px;
   margin-top: 12px;
 }
 
 .sourceStatus {
   display: grid;
-  gap: 5px;
-  padding: 10px;
+  gap: 8px;
+  align-content: start;
+  min-height: 0;
+  padding: 12px;
   border: 1px solid rgba(91, 220, 255, 0.18);
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.045);
 }
 
+.sourceStatusTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
 .sourceStatus b {
+  overflow: hidden;
   color: #fff;
   font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sourceStatus em {
-  width: fit-content;
-  padding: 3px 6px;
-  border-radius: 4px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  min-height: 22px;
+  padding: 3px 8px;
+  border-radius: 999px;
   color: #06131c;
   background: #7ee0b1;
   font-size: 0.64rem;
   font-style: normal;
   font-weight: 950;
+  line-height: 1;
+}
+
+.sourceStatus em::before {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+  opacity: 0.58;
 }
 
 .sourceStatus.partial em {
@@ -6455,6 +6483,13 @@ button.sessionEndpoint:hover:not(:disabled) {
   color: rgba(222, 240, 255, 0.68);
   font-size: 0.68rem;
   line-height: 1.45;
+}
+
+.trendSourceGuide {
+  margin: 10px 0 0;
+  color: rgba(222, 240, 255, 0.72);
+  font-size: 0.76rem;
+  line-height: 1.55;
 }
 
 .trendLensNote {

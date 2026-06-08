@@ -1171,7 +1171,7 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
     plannedSourceStatus(
       trendLensSources.googleTrendsPlanned,
       now.toISOString(),
-      "Google Trends 공식 API는 alpha 성격이 있어 v1은 공개/무키 지표와 수동 리서치 근거를 우선합니다."
+      "아직 자동 수집하지 않습니다. 공식 API 비용, 키 관리, 이용 조건을 확인한 뒤 연결할 후보 소스입니다."
     )
   ];
   const updates = [];
@@ -1271,7 +1271,7 @@ function trendLensPlaceholderSnapshot() {
     sourceStatuses: [
       sourceStatus(trendLensSources.kisaSecurityNotice, "unavailable", now.toISOString(), "첫 보안 RSS 수집 전입니다."),
       sourceStatus(trendLensSources.kisaVulnerability, "unavailable", now.toISOString(), "첫 취약점 RSS 수집 전입니다."),
-      plannedSourceStatus(trendLensSources.googleTrendsPlanned, now.toISOString(), "공식 Google Trends API 사용 가능성을 검토 중입니다.")
+      plannedSourceStatus(trendLensSources.googleTrendsPlanned, now.toISOString(), "아직 자동 수집하지 않습니다. 공식 API 비용, 키 관리, 이용 조건을 확인한 뒤 연결할 후보 소스입니다.")
     ],
     note: "첫 수집 전에는 외부 호출 없이 준비 상태만 보여줍니다."
   };

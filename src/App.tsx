@@ -433,10 +433,40 @@ function trendLensStatusCopy(snapshot: TrendLensSnapshot | null, status: TrendLe
 }
 
 function trendSourceStatusLabel(status: string) {
-  if (status === "ready") return "정상";
-  if (status === "partial") return "부분";
-  if (status === "planned") return "준비";
+  if (status === "ready") return "반영됨";
+  if (status === "partial") return "일부 반영";
+  if (status === "planned") return "후보";
   return "확인 필요";
+}
+
+function trendSourceStatusMessage(source: TrendLensSourceStatus) {
+  if (source.id === "google-trends" && source.status === "planned") {
+    return "아직 자동 수집하지 않습니다. 공식 API 비용, 키 관리, 이용 조건을 확인한 뒤 연결할 후보 소스입니다.";
+  }
+
+  if (source.status === "ready") {
+    return source.message.replace("정상", "브리프 반영");
+  }
+
+  return source.message;
+}
+
+function orderTrendSourceStatuses(sources: TrendLensSourceStatus[]) {
+  const statusPriority: Record<TrendLensSourceStatus["status"], number> = {
+    ready: 0,
+    partial: 1,
+    unavailable: 2,
+    planned: 3
+  };
+
+  return sources
+    .map((source, index) => ({ source, index }))
+    .sort((left, right) => {
+      const priorityDiff = statusPriority[left.source.status] - statusPriority[right.source.status];
+      if (priorityDiff !== 0) return priorityDiff;
+      return left.index - right.index;
+    })
+    .map(({ source }) => source);
 }
 
 function trendLensFallbackStatuses(status: TrendLensStatus, errorMessage: string): TrendLensSourceStatus[] {
@@ -656,6 +686,7 @@ function TrendLensPanel({
     snapshot?.sourceStatuses && snapshot.sourceStatuses.length > 0
       ? snapshot.sourceStatuses
       : trendLensFallbackStatuses(status, errorMessage);
+  const orderedSourceStatuses = orderTrendSourceStatuses(sourceStatuses);
   const trendNote =
     snapshot?.note ||
     "Trend Lens는 저장된 캐시를 먼저 읽고, 전체 새로고침을 눌렀을 때만 외부 allowlist 소스를 다시 수집합니다.";
@@ -803,12 +834,17 @@ function TrendLensPanel({
 
         <details className="trendLensDetails">
           <summary>수집 상태와 저장 정책 보기</summary>
+          <p className="trendSourceGuide">
+            이 영역은 기사 목록이 아니라 오늘 브리프가 어떤 자료원에서 만들어졌는지 보여주는 출처 점검표입니다. 후보는 아직 자동 수집하지 않는 대기 소스입니다.
+          </p>
           <div className="trendSourceList">
-            {sourceStatuses.map((source, index) => (
+            {orderedSourceStatuses.map((source, index) => (
               <span className={`sourceStatus ${source.status}`} key={`${source.id}-${index}`}>
-                <b>{source.label}</b>
-                <em>{trendSourceStatusLabel(source.status)}</em>
-                <small>{source.message}</small>
+                <span className="sourceStatusTop">
+                  <b>{source.label}</b>
+                  <em>{trendSourceStatusLabel(source.status)}</em>
+                </span>
+                <small>{trendSourceStatusMessage(source)}</small>
               </span>
             ))}
           </div>
