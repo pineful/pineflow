@@ -144,6 +144,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - `Obsidian Command Glass`는 작은 컨트롤이나 배경 장식만 바꾸는 의미가 아니다. 상단 `Calm Live Board`, 최근 기록, 날씨, 운영 사용량처럼 첫 화면에서 큰 면적을 차지하는 표면도 graphite shell과 cyan/amber 데이터 대비를 가져야 한다. 핵심 카드가 기존 흰 카드나 녹색 계열 shell로 남아 있으면 사용자는 변경을 체감하지 못하므로 해당 상태를 완료로 보지 않는다.
 - 기록 조작 IA는 `Command Deck`으로 본다. 상단 오른쪽 영역은 일반 설정 폼이 아니라 세션을 시작/종료하기 전 마지막 조작 도크다. 모드 선택은 command tile, 빠른 메모는 command chip, 직접 메모는 data slot, 출근/퇴근은 docked command button으로 보이게 한다. 색만 바꾸고 2x2 카드 버튼이나 낡은 rectangle form으로 남아 있으면 완료로 보지 않는다.
 - `Command Deck`의 입력 필드는 흰색 일반 폼으로 되돌리지 않는다. 메모, 시간 숫자, 수정 입력은 data slot rail을 가져야 하며, 삭제 확인은 별도 confirmation deck으로 분리한다. 380px 안팎의 작은 모바일 폭에서는 컨트롤을 1열로 접어 텍스트를 숨기지 않는다.
+- 기록 수정의 시/분 입력은 브라우저 기본 `type="number"`로 되돌리지 않는다. controlled number input은 사용자가 `12`를 지우고 `6`을 입력하는 중간 빈 상태를 막을 수 있으므로, 두 자리 numeric text input과 blur 정규화로 직접 입력을 보장한다.
 - 기록 데이터는 `records.length`만으로 상태를 판단하지 않는다. `/api/state` 조회가 성공한 `ready` 상태에서만 `아직 기록이 없습니다`를 보여준다. 조회 실패 상태의 초기 빈 배열은 실제 빈 기록이 아니며, 출근/퇴근 실행도 잠근다. 상단 시간 그래프도 `ready` 전에는 `0분`이나 `대기 중`을 실제 기록처럼 보여주지 않고 `확인 중/확인 필요` 상태를 표시해야 한다.
 - 로그인 직후 API 호출은 기록 상태를 먼저 확인하고 Trend Lens/운영 지표 같은 보조 호출은 지연시킨다. API Gateway throttling을 낮게 두는 비용 가드레일 때문에 초기 병렬 호출이 기록 조회 실패처럼 보일 수 있다.
 - 서버의 `/api/state`는 DynamoDB `1 RCU` 기준을 고려해 settings, active session, recent sessions를 순차로 읽는다. 낮은 capacity를 유지하는 대신 첫 화면 조회에서 내부 병렬 read spike를 만들지 않는다.

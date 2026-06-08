@@ -145,3 +145,4 @@
 - 상단 시간 그래프도 `/api/state` 성공 전에는 `0분`, `대기 중`, `--:--`를 실제 데이터처럼 보여주지 않고 `확인 중` 또는 `확인 필요` 상태 패널로 표시한다.
 - 로그인 직후 Trend Lens 초기 조회를 기록 상태 조회 이후로 늦춰, 낮은 API Gateway throttling 설정에서 주요 기록 조회가 보조 정보 호출과 충돌할 가능성을 줄였다.
 - `/api/state`의 DynamoDB 읽기를 병렬에서 순차로 바꿔 `1 RCU` 환경에서 settings, active session, recent sessions 조회가 동시에 몰리지 않게 했다.
+- 기록 수정의 시/분 입력을 브라우저 기본 number input에서 두 자리 numeric text input으로 바꿔, 사용자가 기존 값을 지우고 직접 새 시간을 입력할 수 있게 했다.

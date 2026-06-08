@@ -984,6 +984,10 @@ function clampNumber(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function numericDraftValue(value: string, maxLength = 2) {
+  return value.replace(/\D/g, "").slice(0, maxLength);
+}
+
 function setEditorDatePart(value: string, dateKeyValue: string) {
   const current = parseEditorValue(value);
   const nextDate = dateFromKey(dateKeyValue);
@@ -1607,6 +1611,67 @@ function RecordTimeEditor({
   const period = hour24 >= 12 ? "pm" : "am";
   const days = dayRailOptions(date);
   const isSelectedToday = selectedKey === localDateKey(new Date());
+  const focusedTimeFieldRef = useRef<"hour" | "minute" | null>(null);
+  const [hourInput, setHourInput] = useState(String(hour12));
+  const [minuteInput, setMinuteInput] = useState(padNumber(minute));
+
+  useEffect(() => {
+    if (focusedTimeFieldRef.current !== "hour") {
+      setHourInput(String(hour12));
+    }
+    if (focusedTimeFieldRef.current !== "minute") {
+      setMinuteInput(padNumber(minute));
+    }
+  }, [hour12, minute, value]);
+
+  function focusTimeInput(event: SyntheticEvent<HTMLInputElement>, field: "hour" | "minute") {
+    focusedTimeFieldRef.current = field;
+    event.currentTarget.select();
+  }
+
+  function changeHourInput(rawValue: string) {
+    const nextInput = numericDraftValue(rawValue);
+    setHourInput(nextInput);
+    if (!nextInput) return;
+
+    const nextHour = Number(nextInput);
+    if (nextHour >= 1 && nextHour <= 12) {
+      onChange(setEditorHour(value, nextHour));
+    }
+  }
+
+  function changeMinuteInput(rawValue: string) {
+    const nextInput = numericDraftValue(rawValue);
+    setMinuteInput(nextInput);
+    if (!nextInput) return;
+
+    const nextMinute = Number(nextInput);
+    if (nextMinute >= 0 && nextMinute <= 59) {
+      onChange(setEditorMinute(value, nextMinute));
+    }
+  }
+
+  function finishHourInput() {
+    focusedTimeFieldRef.current = null;
+    const nextHour = Number(hourInput);
+    if (hourInput && nextHour >= 1 && nextHour <= 12) {
+      onChange(setEditorHour(value, nextHour));
+      setHourInput(String(nextHour));
+      return;
+    }
+    setHourInput(String(hour12));
+  }
+
+  function finishMinuteInput() {
+    focusedTimeFieldRef.current = null;
+    const nextMinute = Number(minuteInput);
+    if (minuteInput && nextMinute >= 0 && nextMinute <= 59) {
+      onChange(setEditorMinute(value, nextMinute));
+      setMinuteInput(padNumber(nextMinute));
+      return;
+    }
+    setMinuteInput(padNumber(minute));
+  }
 
   return (
     <div className="timeEditor" aria-label={`${recordType === "check-in" ? "출근" : "퇴근"} 시간 수정`}>
@@ -1684,25 +1749,37 @@ function RecordTimeEditor({
         <label className="timeNumberField">
           <span>시</span>
           <input
-            type="number"
-            min="1"
-            max="12"
+            type="text"
             inputMode="numeric"
-            value={hour12}
+            pattern="[0-9]*"
+            maxLength={2}
+            autoComplete="off"
+            value={hourInput}
             disabled={disabled}
-            onChange={(event) => onChange(setEditorHour(value, Number(event.target.value)))}
+            aria-label="시 직접 입력"
+            aria-invalid={Boolean(hourInput) && !(Number(hourInput) >= 1 && Number(hourInput) <= 12)}
+            onFocus={(event) => focusTimeInput(event, "hour")}
+            onMouseUp={(event) => event.preventDefault()}
+            onBlur={finishHourInput}
+            onChange={(event) => changeHourInput(event.target.value)}
           />
         </label>
         <label className="timeNumberField">
           <span>분</span>
           <input
-            type="number"
-            min="0"
-            max="59"
+            type="text"
             inputMode="numeric"
-            value={padNumber(minute)}
+            pattern="[0-9]*"
+            maxLength={2}
+            autoComplete="off"
+            value={minuteInput}
             disabled={disabled}
-            onChange={(event) => onChange(setEditorMinute(value, Number(event.target.value)))}
+            aria-label="분 직접 입력"
+            aria-invalid={Boolean(minuteInput) && !(Number(minuteInput) >= 0 && Number(minuteInput) <= 59)}
+            onFocus={(event) => focusTimeInput(event, "minute")}
+            onMouseUp={(event) => event.preventDefault()}
+            onBlur={finishMinuteInput}
+            onChange={(event) => changeMinuteInput(event.target.value)}
           />
         </label>
       </div>
