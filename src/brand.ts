@@ -1,7 +1,8 @@
 import type { WorkMode } from "./types";
 
 export const productName = "Pineflow";
-export const tagline = "나만의 리듬으로 흐르는 하루 기록";
+export const serviceTitle = "작업사령탑";
+export const tagline = "기록 · 날씨 · 지식 브리프";
 
 export const modeLabels: Record<WorkMode, string> = {
   focus: "집중 근무",
@@ -18,10 +19,10 @@ export const modeIcons: Record<WorkMode, string> = {
 };
 
 export const modeDescriptions: Record<WorkMode, string> = {
-  focus: "혼자 깊게 하는 일",
-  remote: "장소가 중요한 일",
-  study: "배우거나 연습하는 일",
-  project: "결과물을 만드는 일"
+  focus: "깊은 일",
+  remote: "장소 기반",
+  study: "학습/연습",
+  project: "결과물"
 };
 
 export const modePlans: Record<WorkMode, string[]> = {

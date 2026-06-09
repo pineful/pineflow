@@ -21,7 +21,7 @@ import {
   saveDailyGoal,
   updateRecord
 } from "./api";
-import { modeDescriptions, modeIcons, modeLabels, modePlans, productName, tagline } from "./brand";
+import { modeDescriptions, modeIcons, modeLabels, modePlans, productName, serviceTitle, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
 import type {
   CommuteRecord,
@@ -279,8 +279,8 @@ function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: Usag
     return {
       level: "loading" as CostSignalLevel,
       label: "확인 중",
-      title: "비용 신호 확인 중",
-      message: "오늘 운영 지표를 천천히 불러오는 중입니다.",
+      title: "비용 확인 중",
+      message: "운영 지표 조회 중",
       meta: "기록 기능과 분리"
     };
   }
@@ -290,8 +290,8 @@ function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: Usag
       level: "unavailable" as CostSignalLevel,
       label: "확인 필요",
       title: "사용량 확인 불가",
-      message: "운영 지표만 불러오지 못했습니다. 기록 기능에는 영향이 없습니다.",
-      meta: "하단 패널에서 상태 확인"
+      message: "기록 기능은 별도입니다.",
+      meta: "하단에서 재조회"
     };
   }
 
@@ -300,7 +300,7 @@ function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: Usag
       level: "loading" as CostSignalLevel,
       label: "대기",
       title: "비용 신호 대기",
-      message: "로그인 후 당일 스냅샷으로 비용 위험을 요약합니다.",
+      message: "당일 캐시 대기",
       meta: "추가 자동 호출 없음"
     };
   }
@@ -317,7 +317,7 @@ function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: Usag
       level: "billable" as CostSignalLevel,
       label: "위험",
       title: "비용 확인 필요",
-      message: `${billableItems[0].label} 항목이 무료 기준을 넘었을 수 있습니다.`,
+      message: `${billableItems[0].label} 기준 초과 가능`,
       meta: `${cacheLabel} · ${usageLabel}`
     };
   }
@@ -327,7 +327,7 @@ function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: Usag
       level: "watch" as CostSignalLevel,
       label: "주의",
       title: "비용 추이 관찰",
-      message: `${watchItems[0].label} 항목이 무료 기준에 가까워지고 있습니다.`,
+      message: `${watchItems[0].label} 기준 근접`,
       meta: `${cacheLabel} · ${usageLabel}`
     };
   }
@@ -335,8 +335,8 @@ function costSignalFor(usage: OperationalUsageSnapshot | null, usageStatus: Usag
   return {
     level: "safe" as CostSignalLevel,
     label: "안심",
-    title: "비용 상태 안정",
-    message: "이번 달 운영량은 현재 Free Tier 기준 안쪽으로 보입니다.",
+    title: "비용 안정",
+    message: "Free Tier 안쪽 예상",
     meta: `${cacheLabel} · ${usageLabel}`
   };
 }
@@ -2494,7 +2494,7 @@ function App() {
 
   const progress = Math.min(100, Math.round((today.totalMinutes / state.dailyGoalMinutes) * 100));
   const isActive = Boolean(state.activeSession);
-  const accountEmail = email || getStoredEmail() || "Pineflow 계정";
+  const accountEmail = email || getStoredEmail() || `${serviceTitle} 계정`;
   const selectedModePlan = modePlans[mode];
   const activeIntent = state.activeSession?.note || note;
   const activeCheckInAt = state.activeSession ? new Date(state.activeSession.checkInAt) : null;
@@ -2851,7 +2851,7 @@ function App() {
           <header className="topBar">
             <Logo />
             <div>
-              <p className="eyebrow">개인 출퇴근 기록</p>
+              <p className="eyebrow">{serviceTitle}</p>
               <BrandWordmark />
             </div>
           </header>
@@ -2873,7 +2873,7 @@ function App() {
               />
               <button className="primaryAction" type="submit" disabled={isSaving}>
                 <span>비밀번호 설정</span>
-                <small>Pineflow 계정을 활성화합니다</small>
+                <small>{serviceTitle} 시작</small>
               </button>
             </form>
           ) : (
@@ -2881,7 +2881,7 @@ function App() {
               <div>
                 <p>Private sign in</p>
                 <strong>로그인</strong>
-                <span>관리자가 만든 계정으로만 Pineflow를 사용할 수 있습니다.</span>
+                <span>관리자 계정으로만 사용할 수 있습니다.</span>
               </div>
               <input
                 type="email"
@@ -2901,7 +2901,7 @@ function App() {
               />
               <button className="primaryAction" type="submit" disabled={isSaving}>
                 <span>로그인</span>
-                <small>내 기록을 안전하게 불러옵니다</small>
+                <small>안전하게 시작</small>
               </button>
             </form>
           )}
@@ -2918,7 +2918,7 @@ function App() {
         <header className="topBar">
           <Logo />
           <div>
-            <p className="eyebrow">개인 출퇴근 기록</p>
+            <p className="eyebrow">{serviceTitle}</p>
             <BrandWordmark />
           </div>
           <details className="accountMenu" onToggle={handleAccountToggle}>
@@ -2986,26 +2986,26 @@ function App() {
           recordDataStatus={recordDataStatus}
         />
 
-        <section className="heroHistoryDock" aria-label="최근 출퇴근 흐름">
+        <section className="heroHistoryDock" aria-label="최근 작업 흐름">
           <div className="heroHistoryHeader">
             <div>
-              <span>최근 기록</span>
-              <strong>{isActive ? "진행 중인 흐름" : "가장 가까운 하루"}</strong>
+              <span>최근 세션</span>
+              <strong>{isActive ? "진행 중" : "최근 하루"}</strong>
             </div>
             <button type="button" onClick={openHistoryArchive}>
-              기록 보관함
+              보관함
             </button>
           </div>
           {!hasDisplayableRecordData && isRecordDataLoading && (
             <div className="heroHistoryState" role="status">
-              <strong>기록을 확인하고 있습니다.</strong>
-              <p>아직 빈 기록이라고 판단하지 않고 서버 응답을 기다립니다.</p>
+              <strong>기록 확인 중</strong>
+              <p>응답 대기 중입니다.</p>
             </div>
           )}
           {!hasDisplayableRecordData && recordDataStatus === "unavailable" && (
             <div className="heroHistoryState warning" role="alert">
-              <strong>기록 상태를 확인하지 못했습니다.</strong>
-              <p>잠시 후 다시 조회하거나 세션이 만료됐다면 다시 로그인해주세요.</p>
+              <strong>확인 실패</strong>
+              <p>다시 조회해주세요.</p>
               <button type="button" disabled={isLoading} onClick={reloadCommuteState}>
                 다시 조회
               </button>
@@ -3045,15 +3045,15 @@ function App() {
                 ))
               ) : (
                 <div className="heroHistoryState">
-                  <strong>오늘 첫 기록을 기다리고 있습니다.</strong>
-                  <p>출근을 누르면 이곳에 오늘의 흐름이 함께 표시됩니다.</p>
+                  <strong>첫 기록 대기</strong>
+                  <p>출근하면 표시됩니다.</p>
                 </div>
               )}
             </div>
           )}
           {hasDisplayableRecordData && recordDataStatus === "unavailable" && (
             <div className="heroHistoryInlineWarning" role="status">
-              <span>최신 동기화 실패</span>
+              <span>동기화 실패</span>
               <button type="button" disabled={isLoading} onClick={reloadCommuteState}>
                 다시 조회
               </button>
@@ -3072,13 +3072,13 @@ function App() {
 
           <div className="recordSetup">
             <div className="recordSetupTitle">
-              <strong>{isActive ? "세션 모니터" : "세션 커맨드"}</strong>
-              <span>{isActive ? "현재 기록값" : "모드 · 메모 · 실행"}</span>
+              <strong>{isActive ? "세션" : "커맨드"}</strong>
+              <span>{isActive ? "기록 중" : "선택 후 실행"}</span>
             </div>
             {isActive ? (
               <div className="activePlan compact">
                 <div>
-                  <span>종류</span>
+                  <span>모드</span>
                   <strong>{modeLabels[mode]}</strong>
                 </div>
                 <div>
@@ -3125,11 +3125,11 @@ function App() {
                   ))}
                 </div>
                 <label className="noteField compact">
-                  <span>기록에 남길 메모</span>
+                  <span>메모</span>
                   <input
                     value={note}
                     onChange={(event) => setNote(event.target.value)}
-                    placeholder="예: Pineflow 화면 정리"
+                    placeholder="예: 화면 정리"
                   />
                 </label>
               </>
@@ -3146,14 +3146,14 @@ function App() {
               <span>{isActive ? "퇴근 기록" : "출근 기록"}</span>
               <small>
                 {recordDataStatus === "unavailable"
-                  ? "기록을 다시 조회한 뒤 사용할 수 있습니다"
+                  ? "기록 조회 필요"
                   : isLoading
-                  ? "내 기록을 불러오는 중입니다"
+                  ? "불러오는 중"
                   : isActive
-                    ? "오늘의 세션을 마칩니다"
+                    ? "세션 종료"
                     : note
-                      ? `${note} 기록으로 시작합니다`
-                      : `${modeLabels[mode]} 기록으로 시작합니다`}
+                      ? `${note} 시작`
+                      : `${modeLabels[mode]} 시작`}
               </small>
             </button>
           </div>

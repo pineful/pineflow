@@ -1,6 +1,6 @@
 # 분야별 작업 지도
 
-마지막 업데이트: 2026-06-05
+마지막 업데이트: 2026-06-09
 
 ## 목적
 
@@ -20,7 +20,7 @@
 
 | 분야 | 주 책임 | 주요 코드 | 반드시 같이 볼 문서 |
 | --- | --- | --- | --- |
-| 제품 방향 | 개인 출퇴근 기록 서비스의 범위와 우선순위 | `src/brand.ts`, `src/App.tsx` | `docs/product-plan.md`, `docs/llm-context.md`, `docs/status.md` |
+| 제품 방향 | `작업사령탑` 서비스 범위, 오늘 리듬, Trend Lens, 비용/보안 우선순위 | `src/brand.ts`, `src/App.tsx` | `docs/product-plan.md`, `docs/llm-context.md`, `docs/status.md` |
 | 브랜딩/로고 | Pineflow 이름, 워드마크, 앱 아이콘, 로고 판독성 | `src/brand.ts`, `src/App.tsx`, `src/styles.css`, `public/pineflow-icon.svg` | `docs/brand.md`, `docs/modules/branding.md`, `docs/research/pineflow-logo-*.md` |
 | 대시보드/오늘 요약 | 오늘 누적 시간, 목표 대비 진행, 그래프, 태블릿 배치 | `src/App.tsx`, `src/date.ts`, `src/styles.css` | `docs/modules/summary.md`, `docs/research/dashboard-ux-redesign-2026-05-24.md` |
 | 기록 UX | 출근/퇴근 CTA, 메모, 업무 유형, 최근 기록, 시간 수정 | `src/App.tsx`, `src/api.ts`, `src/types.ts`, `src/date.ts`, `src/styles.css` | `docs/modules/recording.md`, `docs/api-contract.md`, `docs/research/record-time-editor-ux-2026-05-26.md` |

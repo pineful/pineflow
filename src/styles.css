@@ -7442,3 +7442,213 @@ button.sessionEndpoint:hover:not(:disabled) {
     max-height: calc(100vh - 20px);
   }
 }
+
+/* 2026-06-09: Command Center density pass.
+   The hero dashboard now treats the recent session dock as a compact companion
+   to the main flow graph instead of a separate floating island. */
+@media (min-width: 760px) {
+  .appShell {
+    width: min(100%, 1320px);
+  }
+
+  .heroPanel {
+    grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+    grid-template-areas:
+      "top top"
+      "signal signal"
+      "flow side"
+      "history side";
+    gap: 14px 18px;
+    align-items: start;
+  }
+
+  .topBar {
+    grid-area: top;
+  }
+
+  .costSignal {
+    grid-area: signal;
+  }
+
+  .heroFlow {
+    grid-area: flow;
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 0;
+  }
+
+  .heroHistoryDock {
+    grid-area: history;
+  }
+
+  .dashboardCommandStack {
+    grid-area: side;
+    gap: 12px;
+  }
+
+  .clockBlock strong {
+    font-size: 3.65rem;
+  }
+}
+
+.heroHistoryDock {
+  gap: 10px;
+  padding: 12px;
+  border-radius: 0;
+  clip-path: var(--clip-command);
+}
+
+.heroHistoryHeader {
+  min-height: 34px;
+}
+
+.heroHistoryHeader strong,
+.heroHistoryState strong {
+  font-size: 0.9rem;
+}
+
+.heroHistoryHeader span,
+.heroSessionMeta small,
+.heroSessionFooter span,
+.heroHistoryState p,
+.heroHistoryInlineWarning span {
+  font-size: 0.7rem;
+}
+
+.heroHistoryHeader button,
+.heroHistoryState button,
+.heroHistoryInlineWarning button {
+  min-height: 32px;
+  padding: 0 11px;
+  font-size: 0.68rem;
+}
+
+.heroSessionGrid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.heroSessionCard {
+  grid-template-columns: minmax(120px, 0.86fr) minmax(190px, 1.18fr) minmax(84px, 0.46fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 76px;
+  padding: 10px 11px;
+}
+
+.heroSessionMeta {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+}
+
+.heroSessionFlow {
+  grid-template-columns: minmax(62px, 0.46fr) minmax(54px, 1fr) minmax(70px, 0.52fr);
+  gap: 6px;
+}
+
+.heroSessionFlow > span {
+  min-height: 42px;
+  padding: 6px 8px;
+}
+
+.heroSessionFlow strong {
+  font-size: 0.86rem;
+}
+
+.heroSessionFooter {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  min-width: 0;
+}
+
+.heroSessionFooter span {
+  max-width: 9.5rem;
+}
+
+.heroHistoryState {
+  min-height: 72px;
+  padding: 12px;
+}
+
+.recordSetup {
+  gap: 8px;
+  padding: 12px;
+}
+
+.recordSetupTitle {
+  min-height: 30px;
+  padding-bottom: 8px;
+}
+
+.recordSetupTitle span {
+  font-size: 0.68rem;
+}
+
+.recordSetup .modeControl.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.recordSetup .modeControl.compact button {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 48px;
+  padding: 8px 10px 8px 16px;
+}
+
+.recordSetup .modeControl.compact button strong {
+  font-size: 0.8rem;
+}
+
+.recordSetup .modeControl.compact button span {
+  font-size: 0.66rem;
+  line-height: 1.18;
+}
+
+.recordSetup .planChips.compact {
+  gap: 6px;
+}
+
+.recordSetup .planChips.compact button {
+  min-height: 34px;
+  padding: 6px 7px;
+  font-size: 0.68rem;
+}
+
+.recordSetup .noteField.compact span {
+  font-size: 0.68rem;
+}
+
+.recordSetup .noteField.compact input {
+  min-height: 40px;
+}
+
+.primaryAction {
+  min-height: 70px;
+  padding: 14px 18px;
+}
+
+.primaryAction span {
+  font-size: 1rem;
+}
+
+.primaryAction small {
+  font-size: 0.72rem;
+}
+
+@media (max-width: 760px) {
+  .heroSessionCard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heroSessionFooter {
+    justify-items: start;
+  }
+
+  .recordSetup .modeControl.compact,
+  .recordSetup .planChips.compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
