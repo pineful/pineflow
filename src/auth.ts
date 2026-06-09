@@ -2,7 +2,8 @@ const region = import.meta.env.VITE_COGNITO_REGION ?? "";
 const userPoolClientId = import.meta.env.VITE_COGNITO_USER_POOL_CLIENT_ID ?? "";
 const tokenStorageKey = "pineflow.access-token";
 const refreshTokenStorageKey = "pineflow.refresh-token";
-const emailStorageKey = "pineflow.email";
+const emailStorageKey = "pineflow.session-email";
+const legacyEmailStorageKey = "pineflow.email";
 
 type AuthResult = {
   AccessToken?: string;
@@ -74,7 +75,8 @@ export function getStoredRefreshToken() {
 }
 
 export function getStoredEmail() {
-  return window.localStorage.getItem(emailStorageKey) ?? "";
+  window.localStorage.removeItem(legacyEmailStorageKey);
+  return window.sessionStorage.getItem(emailStorageKey) ?? "";
 }
 
 export function saveSession(accessToken: string, email: string, refreshToken?: string) {
@@ -82,13 +84,15 @@ export function saveSession(accessToken: string, email: string, refreshToken?: s
   if (refreshToken) {
     window.sessionStorage.setItem(refreshTokenStorageKey, refreshToken);
   }
-  window.localStorage.setItem(emailStorageKey, email);
+  window.sessionStorage.setItem(emailStorageKey, email);
+  window.localStorage.removeItem(legacyEmailStorageKey);
 }
 
 export function clearSession() {
   window.sessionStorage.removeItem(tokenStorageKey);
   window.sessionStorage.removeItem(refreshTokenStorageKey);
-  window.localStorage.removeItem(emailStorageKey);
+  window.sessionStorage.removeItem(emailStorageKey);
+  window.localStorage.removeItem(legacyEmailStorageKey);
 }
 
 function jwtExpiration(token: string) {

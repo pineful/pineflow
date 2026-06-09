@@ -15,6 +15,7 @@ Pineflow는 당분간 개인 사용 서비스이므로 공개 가입을 열지 �
 - 현재는 로그인 이메일 표시와 로그아웃을 제공하고, 이후 내 정보/암호 변경 같은 기능이 붙을 수 있는 확장 지점을 같은 메뉴 안에 둔다.
 - 브라우저에 오래 열린 탭은 access token만 믿지 않고 refresh token으로 세션을 갱신한다.
 - access token과 refresh token은 모두 `sessionStorage`에만 저장한다. `localStorage`에는 refresh token을 저장하지 않는다.
+- 로그인 화면에 다시 표시하기 위한 email도 `sessionStorage`에만 저장한다. 과거 `localStorage`의 `pineflow.email` 값은 읽기 시 제거해 탭을 닫은 뒤 계정 식별자가 남지 않게 한다.
 - Cognito refresh token validity는 1일로 제한한다. 페이지가 열려 있는 동안만 하루 이내 세션 유지가 가능하고, 탭을 닫으면 일반적인 장기 세션은 남지 않아야 한다.
 - 프론트엔드는 API 요청 전, 30분 주기, 창 포커스/가시성 복귀 시점에 token refresh를 시도한다. refresh에 실패하면 세션을 정리하고 로그인 화면으로 되돌려 `request failed`만 남는 상태를 만들지 않는다.
 - Chrome 암호 관리자/Windows Hello 자동 입력이 React state에 늦게 반영될 수 있으므로 로그인 submit 시점에는 `FormData`로 실제 form 값을 다시 읽는다. 입력 name과 autocomplete 속성은 제거하지 않는다.

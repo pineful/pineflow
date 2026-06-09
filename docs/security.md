@@ -1,6 +1,6 @@
 # 보안 설계
 
-마지막 업데이트: 2026-06-04
+마지막 업데이트: 2026-06-09
 
 ## 현재 원칙
 
@@ -65,6 +65,27 @@ Pineflow는 개인용 서비스지만 인터넷에 노출될 수 있으므로 pr
 - PoC용 `PINEFLOW_OWNER_KEY`
 
 현재 `.gitignore`는 운영 환경 파일을 제외한다. 예시는 `.env.example`, `.env.production.example`만 커밋하며, 예시 값은 실제 secret으로 쓰지 않는다.
+
+## 인증 정보와 저장소 점검
+
+2026-06-09 점검 기준으로 Pineflow 운영 본선은 사용자 ID와 비밀번호를 애플리케이션 DB에 저장하지 않는다. 사용자는 Cognito User Pool에 관리자 생성 방식으로 존재하며, 비밀번호 검증과 해시 저장은 Cognito가 담당한다. Pineflow의 DynamoDB item에는 Cognito `sub` 기반 partition key, 설정, 활성 세션, 완료 세션, Trend Lens/운영 사용량 캐시만 저장한다.
+
+사용 중인 저장소와 용도:
+
+- Cognito User Pool: 사용자 계정과 비밀번호 검증. 앱 코드는 비밀번호 원문이나 해시를 읽거나 저장하지 않는다.
+- DynamoDB single-table: `USER#<cognito-sub>` 아래 설정, `ACTIVE_SESSION`, `SESSION#...` 기록, `SYSTEM#TREND_LENS` 캐시, 운영 사용량 캐시. 비밀번호나 장기 secret을 저장하지 않는다.
+- S3/CloudFront: 정적 프론트엔드 배포. S3 public access는 차단하고 CloudFront OAC로만 접근한다.
+- 브라우저 `sessionStorage`: Cognito access token, refresh token, 로그인 화면 표시용 email. 탭을 닫으면 사라져야 한다.
+- 브라우저 `localStorage`: 비용 사용량 당일 캐시, Trend Lens 읽음 상태, 효과음 설정처럼 secret이 아닌 UI 보조 상태만 저장한다.
+- PostgreSQL: `server/`와 Docker Compose에 남아 있는 EC2 PoC 전용 저장소다. 운영 본선 기능은 이 경로를 확장하지 않는다.
+
+현재 외부 API key가 필요한 운영 source는 없다. 날씨는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 호출하고, Trend Lens는 Lambda allowlist에 고정된 공개 RSS/JSON만 수집한다. 향후 API key가 필요한 source를 추가한다면 기본 비활성화로 시작하고, key는 SSM Parameter Store Standard `SecureString`에 저장한다. GitHub Secrets/Variables, Lambda 평문 환경 변수, DynamoDB, 프론트엔드 번들에는 API key를 넣지 않는다.
+
+점검 중 보완한 사항:
+
+- 로그인 email 보조값을 `localStorage`에서 `sessionStorage`로 옮기고, 과거 `pineflow.email` localStorage key는 세션 읽기 시 제거한다.
+- `.gitignore`가 `.env*`를 기본 제외하고 예시 파일만 허용하도록 바꿨다.
+- `.env.example`, `.env.production.example`의 PoC secret 예시는 실제처럼 보이는 값이 아니라 교체 안내형 placeholder만 사용한다.
 
 ## 레거시 PoC 주의사항
 

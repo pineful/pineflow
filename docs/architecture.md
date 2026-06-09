@@ -1,12 +1,14 @@
 # 아키텍처
 
-마지막 업데이트: 2026-05-29
+마지막 업데이트: 2026-06-09
 
 ## 애플리케이션 형태
 
 Pineflow의 운영 본선은 AWS Serverless입니다. 프론트엔드는 Vite React 앱을 S3에 올리고 CloudFront로 제공합니다. 인증은 Cognito User Pool을 사용하며, API는 API Gateway HTTP API와 Lambda가 담당합니다. 기록 데이터의 원천 저장소는 DynamoDB single-table입니다.
 
 기존 Express/PostgreSQL/Docker Compose 구성은 PoC입니다. PoC 문서와 파일은 과거 설계 참고와 데이터 이관 검토를 위해 보존하지만, 새 기능의 본선 구현 대상은 아닙니다.
+
+전체 아키텍처와 데이터 플로우는 `docs/diagrams/pineflow-architecture-infographic.svg`에 인포그래픽으로 정리합니다. 이 그림은 브라우저 저장소, Cognito 인증 경계, API Gateway/Lambda/DynamoDB 흐름, Trend Lens 외부 소스, GitHub OIDC 배포, 비용/보안 가드레일을 한 화면에서 확인하기 위한 기준 자료입니다.
 
 ## 본선 Serverless 경계
 

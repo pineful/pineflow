@@ -6792,3 +6792,377 @@ button.sessionEndpoint:hover:not(:disabled) {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+
+/* 2026-06-09: dashboard history integration and wide Trend Lens board. */
+.heroHistoryDock {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(91, 220, 255, 0.24);
+  border-radius: 6px;
+  background:
+    linear-gradient(135deg, rgba(13, 30, 45, 0.9), rgba(13, 22, 34, 0.78)),
+    rgba(10, 24, 36, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.heroHistoryHeader,
+.heroSessionFooter,
+.heroHistoryInlineWarning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heroHistoryHeader div,
+.heroHistoryState {
+  display: grid;
+  gap: 5px;
+}
+
+.heroHistoryHeader span,
+.heroSessionMeta small,
+.heroSessionFooter span,
+.heroHistoryState p,
+.heroHistoryInlineWarning span {
+  color: rgba(210, 235, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.heroHistoryHeader strong,
+.heroHistoryState strong {
+  color: #f7fbff;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.heroHistoryHeader button,
+.heroHistoryState button,
+.heroHistoryInlineWarning button,
+.historyCloseButton,
+.historySearchBar button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(91, 220, 255, 0.36);
+  border-radius: 5px;
+  color: #f7fbff;
+  background: linear-gradient(135deg, rgba(11, 38, 60, 0.96), rgba(15, 29, 44, 0.96));
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.heroHistoryHeader button:hover,
+.heroHistoryState button:hover,
+.heroHistoryInlineWarning button:hover,
+.historyCloseButton:hover,
+.historySearchBar button:hover {
+  border-color: rgba(124, 235, 255, 0.72);
+}
+
+.heroSessionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.heroSessionCard {
+  --session-progress: 0%;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(91, 220, 255, 0.22);
+  border-left: 4px solid #5bdcff;
+  border-radius: 5px;
+  background: linear-gradient(135deg, rgba(13, 22, 34, 0.98), rgba(17, 33, 50, 0.92));
+}
+
+.heroSessionCard.open {
+  border-left-color: #ffd06a;
+}
+
+.heroSessionMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.heroSessionFlow {
+  display: grid;
+  grid-template-columns: minmax(82px, 0.8fr) minmax(84px, 1.2fr) minmax(82px, 0.8fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.heroSessionFlow > span {
+  display: grid;
+  gap: 3px;
+  min-height: 50px;
+  padding: 8px 10px;
+  border: 1px solid rgba(128, 221, 255, 0.2);
+  background: rgba(6, 15, 26, 0.62);
+}
+
+.heroSessionFlow small {
+  color: #65e5ff;
+  font-size: 0.64rem;
+  font-weight: 950;
+}
+
+.heroSessionFlow strong {
+  color: #f7fbff;
+  font-size: 0.94rem;
+  font-weight: 950;
+}
+
+.heroSessionFlow i {
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(118, 144, 174, 0.28);
+}
+
+.heroSessionFlow i::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: max(8%, var(--session-progress));
+  border-radius: inherit;
+  background: linear-gradient(90deg, #5bdcff, #ffd06a);
+  content: "";
+}
+
+.heroSessionFooter strong {
+  color: #ffd06a;
+  font-size: 0.88rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.heroSessionFooter span {
+  min-width: 0;
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.heroHistoryState {
+  min-height: 92px;
+  place-content: center;
+  padding: 14px;
+  border: 1px dashed rgba(91, 220, 255, 0.34);
+  border-radius: 5px;
+  background: rgba(6, 15, 26, 0.32);
+  text-align: center;
+}
+
+.heroHistoryState.warning {
+  border-color: rgba(255, 98, 98, 0.48);
+  background: rgba(80, 18, 28, 0.34);
+}
+
+.heroHistoryInlineWarning {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 196, 90, 0.3);
+  border-radius: 5px;
+  background: rgba(255, 196, 90, 0.08);
+}
+
+.historyOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: clamp(16px, 4vw, 44px);
+  overflow: auto;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(91, 220, 255, 0.14), transparent 30%),
+    rgba(3, 8, 14, 0.76);
+  backdrop-filter: blur(14px);
+}
+
+.historyArchivePanel {
+  width: min(1120px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+}
+
+.historyArchiveTitle,
+.historySearchBar {
+  display: grid;
+  gap: 10px;
+}
+
+.historyArchiveTitle {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.historySearchBar {
+  grid-template-columns: minmax(170px, 0.7fr) minmax(220px, 1fr) auto;
+  align-items: end;
+  margin: 14px 0 18px;
+  padding: 12px;
+  border: 1px solid rgba(91, 220, 255, 0.18);
+  border-radius: 5px;
+  background: rgba(7, 18, 29, 0.48);
+}
+
+.historySearchBar label {
+  display: grid;
+  gap: 6px;
+}
+
+.historySearchBar label span {
+  color: rgba(210, 235, 255, 0.72);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.historySearchBar input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(91, 220, 255, 0.32);
+  border-radius: 5px;
+  color: #f7fbff;
+  background: rgba(6, 15, 26, 0.82);
+  font: inherit;
+  font-weight: 850;
+}
+
+.dailyReviewGrid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dailyReviewGrid > .dailySideRail {
+  min-width: 0;
+  width: 100%;
+}
+
+.dailySideRail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+.trendCategoryMatrix {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.trendCategoryCard {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(91, 220, 255, 0.2);
+  border-radius: 5px;
+  background: linear-gradient(145deg, rgba(11, 27, 43, 0.98), rgba(14, 22, 34, 0.95));
+}
+
+.trendCategoryCard > div,
+.trendCategoryCard ul,
+.trendCategoryCard li {
+  display: grid;
+  gap: 7px;
+}
+
+.trendCategoryCard ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trendCategoryCard li {
+  min-width: 0;
+  padding-left: 10px;
+  border-left: 3px solid rgba(91, 220, 255, 0.5);
+}
+
+.trendCategoryCard li.priorityUrgent,
+.trendCategoryCard li.priorityHigh {
+  border-left-color: #ffca66;
+}
+
+.trendCategoryCard li.readBefore {
+  opacity: 0.56;
+}
+
+.trendCategoryCard span,
+.trendCategoryCard small,
+.trendCategoryCard p {
+  color: rgba(210, 235, 255, 0.72);
+  line-height: 1.45;
+}
+
+.trendCategoryCard span {
+  color: #65e5ff;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.trendCategoryCard strong,
+.trendCategoryCard a {
+  color: #f7fbff;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.trendCategoryCard b {
+  justify-self: start;
+  padding: 2px 7px;
+  color: #06111d;
+  background: #ffd06a;
+  font-size: 0.62rem;
+  font-weight: 950;
+}
+
+@media (min-width: 981px) {
+  .dailySideRail .trendTabsPanel {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .trendCategoryMatrix {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .trendCategoryMatrix {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroSessionGrid,
+  .historySearchBar,
+  .trendCategoryMatrix {
+    grid-template-columns: 1fr;
+  }
+
+  .heroSessionFlow {
+    grid-template-columns: 1fr;
+  }
+
+  .historyOverlay {
+    padding: 10px;
+  }
+
+  .historyArchivePanel {
+    max-height: calc(100vh - 20px);
+  }
+}

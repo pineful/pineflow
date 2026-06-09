@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Pineflow Serverless Architecture and Data Flow</title>
+  <desc id="desc">Pineflow의 브라우저, CloudFront, Cognito, API Gateway, Lambda, DynamoDB, 외부 소스, CI/CD, 비용/보안 가드레일 흐름을 한 화면에 보여준다.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111d"/>
+      <stop offset="0.55" stop-color="#101a2a"/>
+      <stop offset="1" stop-color="#07131a"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#122238"/>
+      <stop offset="1" stop-color="#0b1524"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5bdcff"/>
+      <stop offset="1" stop-color="#7ee0b1"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffd06a"/>
+      <stop offset="1" stop-color="#ff8b3d"/>
+    </linearGradient>
+    <marker id="arrowCyan" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#5bdcff"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2 2 L10 6 L2 10 Z" fill="#ffd06a"/>
+    </marker>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .bg { fill: url(#bg); }
+      .grid { stroke: rgba(91,220,255,0.08); stroke-width: 1; }
+      .panel { fill: url(#card); stroke: rgba(91,220,255,0.36); stroke-width: 1.5; rx: 16; }
+      .panel2 { fill: rgba(8,18,30,0.92); stroke: rgba(255,208,106,0.28); stroke-width: 1.5; rx: 14; }
+      .title { fill: #f7fbff; font: 800 34px "Segoe UI", Arial, sans-serif; }
+      .subtitle { fill: rgba(210,235,255,0.74); font: 600 16px "Segoe UI", Arial, sans-serif; }
+      .h { fill: #f7fbff; font: 800 21px "Segoe UI", Arial, sans-serif; }
+      .b { fill: rgba(220,240,255,0.82); font: 600 14px "Segoe UI", Arial, sans-serif; }
+      .s { fill: rgba(220,240,255,0.64); font: 600 12px "Segoe UI", Arial, sans-serif; }
+      .tag { fill: #06131c; font: 800 12px "Segoe UI", Arial, sans-serif; }
+      .line { fill: none; stroke: #5bdcff; stroke-width: 3; marker-end: url(#arrowCyan); }
+      .line2 { fill: none; stroke: #ffd06a; stroke-width: 3; marker-end: url(#arrowAmber); }
+      .dash { fill: none; stroke: rgba(126,224,177,0.7); stroke-width: 2; stroke-dasharray: 8 8; marker-end: url(#arrowCyan); }
+      .warn { fill: #ff6b5f; }
+      .ok { fill: #7ee0b1; }
+      .accent { fill: #5bdcff; }
+      .amber { fill: #ffd06a; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="900"/>
+  <g opacity="0.8">
+    <path class="grid" d="M0 80H1400M0 160H1400M0 240H1400M0 320H1400M0 400H1400M0 480H1400M0 560H1400M0 640H1400M0 720H1400M0 800H1400"/>
+    <path class="grid" d="M100 0V900M200 0V900M300 0V900M400 0V900M500 0V900M600 0V900M700 0V900M800 0V900M900 0V900M1000 0V900M1100 0V900M1200 0V900M1300 0V900"/>
+  </g>
+
+  <text class="title" x="56" y="64">Pineflow Serverless Architecture</text>
+  <text class="subtitle" x="56" y="94">Cognito가 계정/비밀번호를 맡고, Pineflow DB에는 기록과 캐시만 저장합니다. GitHub 배포는 OIDC Role Assume 방식입니다.</text>
+
+  <rect class="panel" x="54" y="150" width="260" height="190"/>
+  <text class="h" x="82" y="188">사용자 브라우저</text>
+  <text class="b" x="82" y="222">React/Vite UI</text>
+  <text class="b" x="82" y="248">sessionStorage: JWT, email</text>
+  <text class="b" x="82" y="274">localStorage: 읽음/비용 캐시</text>
+  <text class="s" x="82" y="306">비밀번호와 API key는 저장하지 않음</text>
+  <circle class="accent" cx="274" cy="185" r="11" filter="url(#softGlow)"/>
+
+  <rect class="panel" x="410" y="132" width="250" height="100"/>
+  <text class="h" x="436" y="172">CloudFront</text>
+  <text class="b" x="436" y="199">HTTPS, CSP, OAC</text>
+  <rect class="panel" x="410" y="258" width="250" height="100"/>
+  <text class="h" x="436" y="298">S3 Frontend</text>
+  <text class="b" x="436" y="325">Public Access Block</text>
+
+  <rect class="panel" x="770" y="122" width="250" height="124"/>
+  <text class="h" x="798" y="162">Cognito User Pool</text>
+  <text class="b" x="798" y="192">관리자 생성 사용자만</text>
+  <text class="b" x="798" y="218">비밀번호 해시/검증 담당</text>
+
+  <rect class="panel" x="770" y="298" width="250" height="112"/>
+  <text class="h" x="798" y="338">API Gateway</text>
+  <text class="b" x="798" y="366">JWT authorizer 필수</text>
+  <text class="s" x="798" y="390">1 req/sec, burst 5</text>
+
+  <rect class="panel" x="1088" y="268" width="250" height="160"/>
+  <text class="h" x="1116" y="308">Lambda API</text>
+  <text class="b" x="1116" y="338">Node.js 24.x</text>
+  <text class="b" x="1116" y="364">reserved concurrency 1</text>
+  <text class="b" x="1116" y="390">JWT sub만 신뢰</text>
+
+  <rect class="panel" x="1088" y="492" width="250" height="168"/>
+  <text class="h" x="1116" y="532">DynamoDB</text>
+  <text class="b" x="1116" y="562">single-table, 1 RCU / 1 WCU</text>
+  <text class="b" x="1116" y="588">USER#sub: 설정/세션</text>
+  <text class="b" x="1116" y="614">SYSTEM#: Trend/Usage cache</text>
+  <text class="s" x="1116" y="642">비밀번호/secret 저장 안 함</text>
+
+  <rect class="panel2" x="770" y="520" width="250" height="120"/>
+  <text class="h" x="798" y="560">CloudWatch</text>
+  <text class="b" x="798" y="590">Logs 7일 보관</text>
+  <text class="b" x="798" y="616">Usage metrics 캐시</text>
+
+  <rect class="panel2" x="56" y="506" width="288" height="202"/>
+  <text class="h" x="84" y="548">Trend Lens Sources</text>
+  <text class="b" x="84" y="582">KISA 보안공지 / 취약점</text>
+  <text class="b" x="84" y="608">CISA KEV</text>
+  <text class="b" x="84" y="634">Google News RSS</text>
+  <text class="b" x="84" y="660">Open-Meteo / BigDataCloud</text>
+  <text class="s" x="84" y="688">allowlist source만 Lambda/브라우저에서 호출</text>
+
+  <rect class="panel2" x="410" y="518" width="250" height="166"/>
+  <text class="h" x="438" y="558">EventBridge</text>
+  <text class="b" x="438" y="590">07:00 KST daily brief</text>
+  <text class="b" x="438" y="616">30분마다 보안 신호</text>
+  <text class="s" x="438" y="646">public endpoint가 아닌 Lambda direct event</text>
+
+  <rect class="panel2" x="56" y="760" width="350" height="82"/>
+  <text class="h" x="84" y="796">GitHub Actions</text>
+  <text class="b" x="84" y="824">OIDC token → IAM Role AssumeRole</text>
+
+  <rect class="panel2" x="462" y="760" width="350" height="82"/>
+  <text class="h" x="490" y="796">CDK / CloudFormation</text>
+  <text class="b" x="490" y="824">장기 AWS Access Key 없이 배포</text>
+
+  <rect class="panel2" x="866" y="760" width="474" height="82"/>
+  <text class="h" x="894" y="796">Guardrails</text>
+  <text class="b" x="894" y="824">Budgets $1/$3/$5 · SSM SecureString for future API keys</text>
+
+  <path class="line" d="M314 202 C350 190 372 184 410 182"/>
+  <path class="line" d="M535 232 V258"/>
+  <path class="line" d="M314 258 C504 258 600 328 770 354"/>
+  <path class="line" d="M1020 354 C1048 354 1060 354 1088 354"/>
+  <path class="line" d="M1213 428 V492"/>
+  <path class="line2" d="M895 246 V298"/>
+  <path class="dash" d="M1020 576 C1046 576 1060 576 1088 576"/>
+  <path class="dash" d="M660 590 C712 590 736 582 770 580"/>
+  <path class="line2" d="M344 608 C374 606 388 602 410 596"/>
+  <path class="line2" d="M535 518 C690 452 930 438 1088 374"/>
+  <path class="line2" d="M406 802 H462"/>
+  <path class="line2" d="M812 802 H866"/>
+
+  <g transform="translate(1090 142)">
+    <rect x="0" y="0" width="250" height="82" rx="12" fill="rgba(126,224,177,0.1)" stroke="rgba(126,224,177,0.35)"/>
+    <circle class="ok" cx="28" cy="28" r="9"/>
+    <text class="h" x="52" y="35">보안 기본값</text>
+    <text class="s" x="24" y="62">Self sign-up off · No GSI · No public S3 · No secrets in GitHub</text>
+  </g>
+
+  <g transform="translate(52 374)">
+    <rect x="0" y="0" width="606" height="74" rx="12" fill="rgba(255,208,106,0.08)" stroke="rgba(255,208,106,0.3)"/>
+    <circle class="amber" cx="30" cy="28" r="9"/>
+    <text class="h" x="54" y="35">Secret boundary</text>
+    <text class="s" x="24" y="60">현재 운영에는 외부 API key 없음. 필요 시 SSM Parameter Store Standard SecureString만 사용한다.</text>
+  </g>
+</svg>

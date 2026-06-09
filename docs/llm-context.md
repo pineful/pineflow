@@ -1,6 +1,6 @@
 # LLM 작업 컨텍스트
 
-마지막 업데이트: 2026-06-08
+마지막 업데이트: 2026-06-09
 
 ## 목적
 
@@ -39,6 +39,7 @@ Pineflow는 회사에 속해 있지 않은 개인도 자신의 출근, 퇴근, �
 - 모든 API route는 JWT authorizer 적용.
 - Lambda는 JWT claim의 `sub`만 신뢰하고, 클라이언트가 보낸 사용자 ID를 신뢰하지 않는다.
 - 브라우저에는 API access token과 refresh token을 `sessionStorage`에만 저장한다.
+- 로그인 email 보조값도 `sessionStorage`에만 둔다. 과거 `localStorage` email key가 보이면 제거한다.
 - GitHub에 장기 AWS Access Key, SSH private key, DB secret을 저장하지 않는다.
 - CI/CD의 AWS 접근은 OIDC 기반 IAM Role assume만 허용한다.
 - CloudFront는 CSP와 보안 응답 헤더를 유지한다.
@@ -125,8 +126,9 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 기록 입력은 출근/퇴근 CTA와 같은 상단 패널 안에 둔다. 메모 작성 후 버튼을 찾아 다시 이동하는 구조로 되돌리지 않는다.
 - 최근 기록은 상단 패널 바로 아래에 두고, 각 기록에서 시간, 기록 종류, 메모 수정이 가능해야 한다. 기록 수정 API를 바꾸면 `docs/api-contract.md`, `docs/modules/recording.md`, `docs/modules/serverless-storage.md`를 함께 갱신한다.
 - 기록 삭제는 `DELETE /api/records/{recordId}`로 세션 전체를 삭제한다. Pineflow 저장소는 출근/퇴근을 하나의 `SESSION#...` item에 저장하므로, 출근 또는 퇴근 이벤트 하나만 삭제하는 partial delete를 만들면 깨진 세션이 생긴다. 활성 세션 삭제 시 `ACTIVE_SESSION`도 같은 transaction에서 삭제해야 한다.
+- 최근 기록 요약은 상단 흐름 그래프와 같은 정보 계층이다. 첫 화면 하단에 긴 최근 기록 피드를 다시 만들지 말고, 진행 중이거나 가장 최근 날짜의 세션만 그래프 안의 요약 dock에 탑재한다. 전체 히스토리는 `기록 보관함` overlay/dialog에서 날짜와 키워드 검색으로 조회한다.
 - 최근 기록 정렬은 실제 출근/퇴근 record의 `timestamp` 최신순이다. DynamoDB session query 결과나 세션 시작일 정렬을 그대로 UI에 노출하면, 자정을 넘긴 세션과 퇴근 시각 보정 기록이 엉뚱한 위치에 묶인다.
-- 최근 기록 UI의 기본 단위는 개별 이벤트가 아니라 세션이다. 같은 session id의 출근/퇴근을 한 `Session Strip` 카드 안에 묶는다. 기본 목록은 전체 히스토리 feed가 아니다. 진행 중인 세션이 있으면 그 세션이 속한 날짜만, 진행 중인 세션이 없으면 가장 최근 세션 날짜만 먼저 보여준다. 더 오래된 기록은 사용자가 요청할 때마다 1주씩 추가로 펼쳐야 한다. 기본 상태에서는 날짜, 상태, 업무 유형, 총 시간, 진행 레일, 메모 미리보기만 보여주고 정확한 출근/퇴근 시각은 반복 노출하지 않는다. 세션을 펼치면 요약 카드를 유지한 채 아래에 같은 그래프를 반복하지 말고, 요약 카드가 정확한 `IN/OUT` 시각, 전체 메모, endpoint 편집, `세션 삭제`를 제공하는 detail panel로 전환되어야 한다. 삭제 버튼을 목록 기본 표면에 항상 보이게 되돌리면 안 된다.
+- 최근 기록 UI의 기본 단위는 개별 이벤트가 아니라 세션이다. 같은 session id의 출근/퇴근을 한 `Session Strip` 카드 안에 묶는다. 기본 대시보드에서는 전체 히스토리 feed를 보여주지 않는다. 진행 중인 세션이 있으면 그 세션이 속한 날짜만, 진행 중인 세션이 없으면 가장 최근 세션 날짜만 먼저 보여준다. 과거 기록은 `기록 보관함`에서 검색하고, 필요할 때 1주 단위 추가 보기로 확장한다. 기본 상태에서는 날짜, 상태, 업무 유형, 총 시간, 진행 레일, 메모 미리보기만 보여주고 정확한 출근/퇴근 시각은 반복 노출하지 않는다. 세션을 펼치면 요약 카드를 유지한 채 아래에 같은 그래프를 반복하지 말고, 요약 카드가 정확한 `IN/OUT` 시각, 전체 메모, endpoint 편집, `세션 삭제`를 제공하는 detail panel로 전환되어야 한다. 삭제 버튼을 목록 기본 표면에 항상 보이게 되돌리면 안 된다.
 - `Workday Lens`는 최근 기록 목록 위에 끼워 넣지 않고 `오늘의 흐름` 영역 안의 보조 주간 요약으로 둔다. 이는 월요일 시작 7일 기준의 working day 요약이며, 오늘/주말/공휴일/명절/진행 중/기록 있음/빈 날을 작은 tile과 진행 bar로 표시한다. 월간 캘린더나 Google Calendar 일정을 첫 화면에 바로 크게 넣지 말고, 실제 연동 전에는 OAuth/개인 일정 데이터 취급 ADR을 먼저 작성한다.
 - 대시보드 요약처럼 시간순 계산이 필요한 함수는 `state.records`를 직접 `sort()`하지 말고 복사본을 정렬한다. React state 배열을 직접 mutate하면 최근 기록 순서가 화면에서 뒤섞인다. 누적 시간 계산은 flat record를 단순 순서로 짝짓지 말고 record id의 세션 id 기준으로 출근/퇴근을 묶어야 한다.
 - 최근 기록 목록은 사용자가 남긴 메모를 업무 유형 아이콘과 함께 바로 보여줘야 한다. 메모를 수정 화면 안에만 숨기면 개인 기록 서비스의 핵심 가치가 사라진다.
@@ -153,6 +155,8 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 헤더 브랜드는 밝은 뉴트럴 타일 위의 compact mark와 `pineflow` 소문자 워드마크를 함께 사용한다. 어두운 히어로 배경에 마크를 직접 올리거나 일반 `h1` 글꼴로 `Pineflow`를 표시하면 최종 시안의 색감과 타이포 의도가 깨진다.
 - 색상은 obsidian/graphite UI를 기본으로 하고, 파인 그린은 로고와 작은 생명감 accent에만 제한한다. 핵심 데이터와 선택/focus는 cyan, 출근/퇴근/저장 같은 command action은 amber/orange, 위험 동작은 coral red로 분리한다.
 - 앱 첫 화면의 비용 신호등은 하단 운영 사용량 패널의 당일 스냅샷을 요약해 Free Tier 기준 안정/주의/위험/확인 불가 상태를 보여준다. 신호등은 별도 AWS 조회를 만들지 않아야 하며, 하단 운영 사용량 패널은 CloudWatch 기초 지표, 시간 순 추이, Free Tier 기준 예상 상태를 표시한다. 앱 Lambda에 Cost Explorer 권한을 추가하지 않고, 실제 청구액은 AWS Budgets와 Billing 콘솔에서 확인하는 구조를 유지한다. 같은 날짜의 사용량 스냅샷은 프론트엔드와 DynamoDB에 캐시해 비용 확인을 위한 반복 CloudWatch 호출을 피한다. 운영 지표 조회 실패는 기록 기능 오류처럼 상단 error banner로 띄우지 않는다.
+- Trend Lens는 최근 기록 긴 피드가 사라진 하단 폭을 활용하는 넓은 지식 보드다. 넓은 화면에서는 `보안`, `만돌린`, `IT 콘텐츠`, `교육`을 카테고리 카드로 동시에 스캔하게 하고, 좁은 화면에서는 탭으로 한 분야씩 전환한다.
+- 아키텍처와 데이터 플로우 설명이 필요하면 `docs/diagrams/pineflow-architecture-infographic.svg`를 기준으로 한다. 이 그림은 Cognito 비밀번호 경계, DynamoDB 저장 항목, SSM SecureString 후보, OIDC 배포 흐름을 함께 보여준다.
 - 프론트엔드 S3 bucket은 `assets/` 객체만 30일 뒤 Intelligent-Tiering으로 전환한다. `index.html`은 CloudFront 첫 화면 안정성을 위해 Standard에 둔다. archive/deep archive 계열 전환은 현재 프론트엔드 객체에는 적용하지 않는다.
 ## 2026-06-07 Trend Lens 확장
 

@@ -16,7 +16,7 @@ $env:NODE_OPTIONS='--use-system-ca'
 
 ```powershell
 & "C:\Program Files\nodejs\npm.cmd" install
-$env:POSTGRES_PASSWORD='local-dev-password-change-me'
+$env:POSTGRES_PASSWORD='replace-with-local-random-password'
 docker compose up -d postgres
 & "C:\Program Files\nodejs\npm.cmd" run api
 & "C:\Program Files\nodejs\npm.cmd" run build

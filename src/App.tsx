@@ -785,7 +785,46 @@ function TrendLensPanel({
         )}
 
         {sections.length > 0 && (
-          <div className="trendTabsPanel">
+          <>
+            <div className="trendCategoryMatrix" aria-label="분야별 브리프 전체 보기">
+              {sections.map((section) => {
+                const matrixItems = orderTrendItemsByReadState(section.items, readState).slice(0, 3);
+
+                return (
+                  <article className="trendCategoryCard" key={section.id}>
+                    <div>
+                      <span>{section.subtitle}</span>
+                      <strong>{section.title}</strong>
+                      <p>{section.focus}</p>
+                    </div>
+                    {matrixItems.length > 0 ? (
+                      <ul>
+                        {matrixItems.map((item) => (
+                          <li className={`${trendPriorityClass(item.priority)} ${trendReadStatus(item, readState)}`} key={item.id}>
+                            <b>{trendPriorityLabel(item.priority)}</b>
+                            <a
+                              href={item.sourceUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              onAuxClick={(event) => {
+                                if (event.button === 1) onMarkRead(item);
+                              }}
+                              onClick={() => onMarkRead(item)}
+                            >
+                              {item.title}
+                            </a>
+                            <small>{trendMetaLine(item, trendReadStatus(item, readState), 2)}</small>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="trendEmpty">다음 수집에서 이 분야 신호를 채웁니다.</p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+            <div className="trendTabsPanel">
             <div className="trendTabs" role="tablist" aria-label="Trend Lens 분야">
               {sections.map((section) => (
                 <button
@@ -836,7 +875,8 @@ function TrendLensPanel({
                 )}
               </article>
             )}
-          </div>
+            </div>
+          </>
         )}
 
         <details className="trendLensDetails">
@@ -1142,6 +1182,48 @@ function buildRecentSessions(records: CommuteRecord[], now: Date): RecentSession
   });
 
   return recentSessions.sort((left, right) => new Date(right.latestAt).getTime() - new Date(left.latestAt).getTime());
+}
+
+function sessionDurationLabel(session: RecentSession) {
+  if (session.durationMinutes === undefined) return "시간 확인 필요";
+  return session.isOpen ? `진행 ${formatDuration(session.durationMinutes)}` : formatDuration(session.durationMinutes);
+}
+
+function sessionProgressPercent(session: RecentSession, goalMinutes: number) {
+  if (session.durationMinutes === undefined || goalMinutes <= 0) return 0;
+  return Math.min(100, Math.round((session.durationMinutes / goalMinutes) * 100));
+}
+
+function sessionDateMatches(session: RecentSession, dateKeyFilter: string) {
+  if (!dateKeyFilter) return true;
+  return [session.anchorAt, session.checkIn?.timestamp, session.checkOut?.timestamp]
+    .filter(Boolean)
+    .some((value) => localDateKey(value as string) === dateKeyFilter);
+}
+
+function sessionSearchText(session: RecentSession) {
+  return [
+    formatDate(session.anchorAt),
+    session.checkIn ? formatDate(session.checkIn.timestamp) : "",
+    session.checkIn ? formatTime(session.checkIn.timestamp) : "",
+    session.checkOut ? formatDate(session.checkOut.timestamp) : "",
+    session.checkOut ? formatTime(session.checkOut.timestamp) : "",
+    session.isOpen ? "진행 중" : "완료",
+    session.spansDays ? "날짜를 넘어 이어진 세션" : "",
+    modeLabels[session.mode],
+    session.note
+  ]
+    .join(" ")
+    .toLocaleLowerCase("ko-KR");
+}
+
+function filterHistorySessions(sessions: RecentSession[], dateKeyFilter: string, query: string) {
+  const normalizedQuery = query.trim().toLocaleLowerCase("ko-KR");
+  return sessions.filter((session) => {
+    if (!sessionDateMatches(session, dateKeyFilter)) return false;
+    if (!normalizedQuery) return true;
+    return sessionSearchText(session).includes(normalizedQuery);
+  });
 }
 
 function addLocalDays(date: Date, days: number) {
@@ -1859,6 +1941,9 @@ function App() {
   const [confirmingDeleteRecordId, setConfirmingDeleteRecordId] = useState("");
   const [expandedSessionId, setExpandedSessionId] = useState("");
   const [visibleHistoryWeeks, setVisibleHistoryWeeks] = useState(0);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyDateFilter, setHistoryDateFilter] = useState("");
+  const [historyQuery, setHistoryQuery] = useState("");
   const [isGoalEditing, setIsGoalEditing] = useState(false);
   const [draftGoalMinutes, setDraftGoalMinutes] = useState(initialState.dailyGoalMinutes);
   const [toastMessage, setToastMessage] = useState("");
@@ -1908,6 +1993,9 @@ function App() {
     setConfirmingDeleteRecordId("");
     setExpandedSessionId("");
     setVisibleHistoryWeeks(0);
+    setIsHistoryOpen(false);
+    setHistoryDateFilter("");
+    setHistoryQuery("");
     setToastMessage("");
     setErrorMessage(message);
   }
@@ -2258,6 +2346,20 @@ function App() {
       return isPrimaryDay || isExpandedHistory || isPinnedForOpenPanel;
     });
   }, [allRecentSessions, confirmingDeleteRecordId, editingRecordId, expandedSessionId, primaryRecentDateKey, visibleHistoryWeeks]);
+  const dashboardRecentSessions = useMemo(() => {
+    if (allRecentSessions.length === 0) return [];
+
+    const primaryDay = localDayTime(primaryRecentDateKey);
+    return allRecentSessions
+      .filter((session) => session.isOpen || localDayTime(session.anchorAt) === primaryDay)
+      .slice(0, 2);
+  }, [allRecentSessions, primaryRecentDateKey]);
+  const hasHistoryFilter = Boolean(historyDateFilter || historyQuery.trim());
+  const filteredHistorySessions = useMemo(
+    () => filterHistorySessions(allRecentSessions, historyDateFilter, historyQuery),
+    [allRecentSessions, historyDateFilter, historyQuery]
+  );
+  const historySessions = hasHistoryFilter ? filteredHistorySessions : visibleRecentSessions;
   const hasHiddenRecentHistory = useMemo(() => {
     if (allRecentSessions.length === 0) return false;
 
@@ -2295,6 +2397,22 @@ function App() {
   const hasDisplayableRecordData = isRecordDataReady || state.records.length > 0 || Boolean(state.activeSession);
   const isRecordActionDisabled = !isRecordDataReady || isLoading || isSaving || isActionCoolingDown;
   const costSignal = costSignalFor(usage, usageStatus);
+
+  function openHistoryArchive() {
+    playFeedback("open");
+    setIsHistoryOpen(true);
+  }
+
+  function closeHistoryArchive() {
+    playFeedback("tap");
+    setIsHistoryOpen(false);
+  }
+
+  function clearHistoryFilters() {
+    playFeedback("tap");
+    setHistoryDateFilter("");
+    setHistoryQuery("");
+  }
 
   async function submitLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -2757,6 +2875,81 @@ function App() {
           recordDataStatus={recordDataStatus}
         />
 
+        <section className="heroHistoryDock" aria-label="최근 출퇴근 흐름">
+          <div className="heroHistoryHeader">
+            <div>
+              <span>최근 기록</span>
+              <strong>{isActive ? "진행 중인 흐름" : "가장 가까운 하루"}</strong>
+            </div>
+            <button type="button" onClick={openHistoryArchive}>
+              기록 보관함
+            </button>
+          </div>
+          {!hasDisplayableRecordData && isRecordDataLoading && (
+            <div className="heroHistoryState" role="status">
+              <strong>기록을 확인하고 있습니다.</strong>
+              <p>아직 빈 기록이라고 판단하지 않고 서버 응답을 기다립니다.</p>
+            </div>
+          )}
+          {!hasDisplayableRecordData && recordDataStatus === "unavailable" && (
+            <div className="heroHistoryState warning" role="alert">
+              <strong>기록 상태를 확인하지 못했습니다.</strong>
+              <p>잠시 후 다시 조회하거나 세션이 만료됐다면 다시 로그인해주세요.</p>
+              <button type="button" disabled={isLoading} onClick={reloadCommuteState}>
+                다시 조회
+              </button>
+            </div>
+          )}
+          {hasDisplayableRecordData && (
+            <div className="heroSessionGrid">
+              {dashboardRecentSessions.length > 0 ? (
+                dashboardRecentSessions.map((session) => (
+                  <article className={session.isOpen ? "heroSessionCard open" : "heroSessionCard"} key={session.id}>
+                    <div className="heroSessionMeta">
+                      <span className="timelineMode">
+                        <span aria-hidden="true">{modeIcons[session.mode]}</span>
+                        {modeLabels[session.mode]}
+                      </span>
+                      <small>{formatDate(session.anchorAt)}</small>
+                    </div>
+                    <div
+                      className="heroSessionFlow"
+                      style={{ "--session-progress": `${sessionProgressPercent(session, state.dailyGoalMinutes)}%` } as CSSProperties}
+                    >
+                      <span>
+                        <small>IN</small>
+                        <strong>{session.checkIn ? formatTime(session.checkIn.timestamp) : "--:--"}</strong>
+                      </span>
+                      <i aria-hidden="true" />
+                      <span>
+                        <small>{session.isOpen ? "NOW" : "OUT"}</small>
+                        <strong>{session.checkOut ? formatTime(session.checkOut.timestamp) : session.isOpen ? "진행 중" : "--:--"}</strong>
+                      </span>
+                    </div>
+                    <div className="heroSessionFooter">
+                      <strong>{sessionDurationLabel(session)}</strong>
+                      {session.note.trim() && <span>{session.note.trim()}</span>}
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="heroHistoryState">
+                  <strong>오늘 첫 기록을 기다리고 있습니다.</strong>
+                  <p>출근을 누르면 이곳에 오늘의 흐름이 함께 표시됩니다.</p>
+                </div>
+              )}
+            </div>
+          )}
+          {hasDisplayableRecordData && recordDataStatus === "unavailable" && (
+            <div className="heroHistoryInlineWarning" role="status">
+              <span>최신 동기화 실패</span>
+              <button type="button" disabled={isLoading} onClick={reloadCommuteState}>
+                다시 조회
+              </button>
+            </div>
+          )}
+        </section>
+
         <div className="dashboardCommandStack">
           <div className="clockBlock">
             <p>{formatDate(now)}</p>
@@ -2861,12 +3054,38 @@ function App() {
         </div>
       )}
 
-      <div className="dailyReviewGrid">
-        <section className="sectionBand recentBand">
-          <div className="sectionTitle">
-            <h2>최근 기록</h2>
-            <span>실수하면 시간 수정</span>
-          </div>
+      {isHistoryOpen && (
+        <div className="historyOverlay" role="presentation">
+          <section className="sectionBand recentBand historyArchivePanel" role="dialog" aria-modal="true" aria-label="기록 보관함">
+            <div className="sectionTitle historyArchiveTitle">
+              <div>
+                <h2>기록 보관함</h2>
+                <span>날짜와 키워드로 과거 흐름을 찾습니다.</span>
+              </div>
+              <button className="historyCloseButton" type="button" onClick={closeHistoryArchive}>
+                닫기
+              </button>
+            </div>
+            <div className="historySearchBar" role="search">
+              <label>
+                <span>날짜</span>
+                <input type="date" value={historyDateFilter} onChange={(event) => setHistoryDateFilter(event.target.value)} />
+              </label>
+              <label>
+                <span>키워드</span>
+                <input
+                  type="search"
+                  value={historyQuery}
+                  placeholder="메모, 유형, 날짜 검색"
+                  onChange={(event) => setHistoryQuery(event.target.value)}
+                />
+              </label>
+              {(historyDateFilter || historyQuery) && (
+                <button type="button" onClick={clearHistoryFilters}>
+                  검색 초기화
+                </button>
+              )}
+            </div>
           {!hasDisplayableRecordData && isRecordDataLoading && (
             <div className="recordDataState loading" role="status">
               <span>기록 확인 중</span>
@@ -2895,7 +3114,7 @@ function App() {
           {hasDisplayableRecordData && (
             <>
               <div className="timeline">
-                {visibleRecentSessions.map((session) => {
+                {historySessions.map((session) => {
             const isEditingSession =
               editingRecordId === session.checkIn?.id || editingRecordId === session.checkOut?.id;
             const isConfirmingDelete = confirmingDeleteRecordId === session.id;
@@ -3125,15 +3344,25 @@ function App() {
               </article>
             );
               })}
+                {recordDataStatus === "ready" && state.records.length > 0 && historySessions.length === 0 && (
+                  <p className="emptyState">검색 조건에 맞는 기록이 없습니다.</p>
+                )}
                 {recordDataStatus === "ready" && state.records.length > 0 && (
                   <div className="recentHistoryControls">
                     <span>
-                      {visibleHistoryWeeks > 0
+                      {hasHistoryFilter
+                        ? `${filteredHistorySessions.length}개 세션 검색됨`
+                        : visibleHistoryWeeks > 0
                         ? `지난 ${visibleHistoryWeeks}주 기록까지 표시 중`
                         : "오늘 또는 가장 최근 하루만 먼저 보여줍니다"}
                     </span>
                     <div>
-                      {visibleHistoryWeeks > 0 && (
+                      {hasHistoryFilter && (
+                        <button type="button" onClick={clearHistoryFilters}>
+                          검색 초기화
+                        </button>
+                      )}
+                      {!hasHistoryFilter && visibleHistoryWeeks > 0 && (
                         <button
                           type="button"
                           onClick={() => {
@@ -3147,7 +3376,7 @@ function App() {
                           접기
                         </button>
                       )}
-                      {hasHiddenRecentHistory && (
+                      {!hasHistoryFilter && hasHiddenRecentHistory && (
                         <button
                           type="button"
                           onClick={() => {
@@ -3167,8 +3396,11 @@ function App() {
               </div>
             </>
           )}
-        </section>
+          </section>
+        </div>
+      )}
 
+      <div className="dailyReviewGrid">
         <aside className="dailySideRail" aria-label="오늘 보조 정보">
           <TrendLensPanel
             snapshot={trendLens}
