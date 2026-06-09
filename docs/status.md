@@ -106,6 +106,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - Trend Lens를 하단 폭을 넓게 쓰는 지식 보드로 재배치하고, 넓은 화면에서는 분야별 카드를 동시에 볼 수 있게 보강.
 - 전체 시스템 아키텍처와 데이터 플로우를 `docs/diagrams/pineflow-architecture-infographic.svg` 인포그래픽으로 추가.
 - Trend Lens 보안 항목에서 CVE 번호만 제목처럼 보이지 않도록 CISA KEV vendor/product/취약점 설명과 KISA/CISA 교차 참조를 사용해 `짧은 취약점 설명 · CVE-...` 형식으로 저장하도록 보강.
+- 현재 날씨 요약을 하단 별도 카드에서 상단 대시보드 시계 아래 weather deck으로 이동하고, 체감/습도/바람/5일 예보는 같은 덱을 펼쳤을 때 보이도록 재배치.
 
 ## 검증됨
 

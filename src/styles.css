@@ -650,6 +650,165 @@ h1 {
   font-size: 0.83rem;
 }
 
+.dashboardWeatherDeck {
+  overflow: hidden;
+  color: #eff7ff;
+  border: 1px solid rgba(91, 220, 255, 0.28);
+  border-radius: var(--radius-card);
+  background:
+    linear-gradient(145deg, rgba(20, 31, 47, 0.76), rgba(8, 14, 24, 0.7)),
+    rgba(10, 16, 26, 0.68);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 24px rgba(3, 8, 15, 0.12);
+}
+
+.dashboardWeatherDeck summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.dashboardWeatherDeck summary::-webkit-details-marker {
+  display: none;
+}
+
+.weatherSummaryKicker {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  padding: 0 8px;
+  color: #ffe0a8;
+  border-left: 3px solid #5bdcff;
+  background: rgba(8, 14, 24, 0.42);
+  clip-path: var(--clip-compact-command);
+  font-size: 0.66rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.weatherNowSummary {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.weatherNowSummary .weatherGlyph {
+  width: 20px;
+  height: 20px;
+}
+
+.weatherNowSummary strong {
+  color: #f8fbff;
+  font-size: 1.38rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.weatherNowSummary span,
+.weatherNowSummary small {
+  overflow: hidden;
+  color: #c4d5e7;
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weatherNowSummary small {
+  color: #91acc7;
+}
+
+.weatherNowSummary em {
+  grid-column: 2 / -1;
+  width: fit-content;
+  color: #ffcf7a;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.weatherNowSummary.pending {
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+
+.weatherNowSummary.pending strong {
+  font-size: 0.9rem;
+}
+
+.weatherNowSummary.pending span {
+  white-space: normal;
+}
+
+.weatherLessLabel,
+.dashboardWeatherDeck[open] .weatherMoreLabel {
+  display: none;
+}
+
+.dashboardWeatherDeck[open] .weatherLessLabel {
+  display: inline;
+}
+
+.dashboardWeatherDeck summary > b {
+  color: #5bdcff;
+  border: 1px solid rgba(91, 220, 255, 0.32);
+  padding: 6px 9px;
+  background: rgba(91, 220, 255, 0.08);
+  clip-path: var(--clip-compact-command);
+  font-size: 0.68rem;
+  font-weight: 950;
+}
+
+.dashboardWeatherDeck[open] summary {
+  border-bottom: 1px solid rgba(91, 220, 255, 0.2);
+}
+
+.dashboardWeatherDeck[open] summary > b {
+  color: #ffcf7a;
+  border-color: rgba(255, 180, 77, 0.32);
+  background: rgba(255, 180, 77, 0.1);
+}
+
+.dashboardWeatherDetail {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px;
+}
+
+.dashboardWeatherMetrics {
+  min-height: 0;
+}
+
+@media (max-width: 560px) {
+  .dashboardWeatherDeck summary {
+    grid-template-columns: 1fr auto;
+  }
+
+  .weatherSummaryKicker {
+    grid-column: 1 / -1;
+    justify-content: start;
+    min-height: 28px;
+  }
+
+  .weatherNowSummary {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+
+  .weatherNowSummary small,
+  .weatherNowSummary em {
+    grid-column: 2 / -1;
+  }
+}
+
 .recordSetup {
   display: grid;
   gap: 10px;
@@ -6703,10 +6862,9 @@ button.sessionEndpoint:hover:not(:disabled) {
   }
 }
 
-/* 2026-06-07 Trend Lens recovery.
-   Keep the lower dashboard deterministic: recent sessions stay primary, and
-   Trend Lens plus weather behave as one compact side rail rather than scattered
-   app-shell grid items. */
+/* 2026-06-09 Trend Lens recovery.
+   Weather now lives in the top dashboard clock deck, so the lower intelligence
+   board should use the full review width instead of leaving a phantom rail. */
 @media (min-width: 760px) and (max-width: 979px) {
   .dailyReviewGrid {
     grid-template-columns: 1fr;
@@ -6720,7 +6878,7 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 @media (min-width: 980px) {
   .dailyReviewGrid {
-    grid-template-columns: minmax(0, 1.08fr) minmax(400px, 0.92fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
   }
 
@@ -6729,15 +6887,14 @@ button.sessionEndpoint:hover:not(:disabled) {
   }
 
   .dailyReviewGrid > .dailySideRail {
-    grid-column: 2;
+    grid-column: 1;
   }
 
   .dailySideRail > .sectionBand {
     width: 100%;
   }
 
-  .dailySideRail > .intelligenceBand,
-  .dailySideRail > .weatherBand {
+  .dailySideRail > .intelligenceBand {
     grid-column: auto;
   }
 }
@@ -6791,6 +6948,15 @@ button.sessionEndpoint:hover:not(:disabled) {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.dashboardWeatherDetail .weatherDetails {
+  min-height: 0;
+}
+
+.dashboardWeatherDetail .weatherForecastScroller {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /* 2026-06-09: dashboard history integration and wide Trend Lens board. */

@@ -1473,6 +1473,87 @@ function WeatherChart({ hourly }: { hourly: HourlyWeather[] }) {
   );
 }
 
+function WeatherDashboardDeck({ weather }: { weather: WeatherState }) {
+  const isReady = weather.status === "ready";
+  const tone = weather.condition ? weatherTone(weather.condition) : "sun";
+
+  return (
+    <details className={`dashboardWeatherDeck ${weather.status}`}>
+      <summary>
+        <span className="weatherSummaryKicker">지금 날씨</span>
+        {isReady ? (
+          <div className="weatherNowSummary">
+            <div className={`weatherGlyph ${tone}`} aria-hidden="true" />
+            <strong>{weather.temperature ?? "--"}°</strong>
+            <span>{weather.condition}</span>
+            <small>{weather.locationLabel}</small>
+            <em>강수 {weather.precipitationProbability ?? 0}%</em>
+          </div>
+        ) : (
+          <div className="weatherNowSummary pending">
+            <strong>{weather.status === "loading" ? "확인 중" : "확인 필요"}</strong>
+            <span>{weather.status === "loading" ? "현재 위치 날씨를 불러옵니다" : weather.message}</span>
+          </div>
+        )}
+        <b>
+          <span className="weatherMoreLabel">자세히</span>
+          <span className="weatherLessLabel">접기</span>
+        </b>
+      </summary>
+      <div className="dashboardWeatherDetail">
+        {isReady ? (
+          <>
+            <div className="weatherDetails dashboardWeatherMetrics">
+              <span>
+                <small>체감</small>
+                <strong>{weather.apparentTemperature}°</strong>
+              </span>
+              <span>
+                <small>습도</small>
+                <strong>{weather.humidity}%</strong>
+              </span>
+              <span>
+                <small>강수</small>
+                <strong>{weather.precipitationProbability ?? 0}%</strong>
+              </span>
+              <span>
+                <small>바람</small>
+                <strong>{weather.windSpeed}km/h</strong>
+              </span>
+            </div>
+            {weather.hourly && weather.hourly.length > 0 && (
+              <div
+                className="weatherForecastScroller"
+                aria-label={`${weatherForecastDays}일 시간대별 날씨`}
+                style={{ "--forecast-width": `${weather.hourly.length * weatherForecastSlotWidth}px` } as CSSProperties}
+              >
+                <div className="weatherForecastTrack">
+                  <WeatherChart hourly={weather.hourly} />
+                  <div className="weatherTimeline">
+                    {weather.hourly.map((slot) => (
+                      <article className="weatherSlot" key={slot.time}>
+                        <span>{slot.label}</span>
+                        <div className={`weatherGlyph ${weatherTone(slot.condition)}`} aria-hidden="true" />
+                        <strong>{slot.temperature}°</strong>
+                        <small>{slot.condition}</small>
+                        <em style={{ "--rain": `${slot.precipitationProbability}%` } as CSSProperties}>
+                          강수 {slot.precipitationProbability}%
+                        </em>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="weatherFallback">{weather.status === "loading" ? "날씨를 불러오는 중입니다." : weather.message}</p>
+        )}
+      </div>
+    </details>
+  );
+}
+
 function TimeFlowGraph({
   minutes,
   goalMinutes,
@@ -2957,6 +3038,8 @@ function App() {
             <span>{tagline}</span>
           </div>
 
+          <WeatherDashboardDeck weather={weather} />
+
           <div className="recordSetup">
             <div className="recordSetupTitle">
               <strong>{isActive ? "세션 모니터" : "세션 커맨드"}</strong>
@@ -3412,70 +3495,6 @@ function App() {
             onRefreshAll={() => updateTrendLens("all")}
             onRefreshSecurity={() => updateTrendLens("security")}
           />
-
-          <section className="sectionBand weatherBand">
-            <div className="sectionTitle">
-              <h2>오늘 날씨</h2>
-              <span>{weather.locationLabel}</span>
-            </div>
-            {weather.status === "ready" ? (
-              <div className="weatherGrid">
-                <div className={`weatherMain ${weather.condition ? weatherTone(weather.condition) : ""}`}>
-                  <div className={`weatherGlyphLarge ${weather.condition ? weatherTone(weather.condition) : "sun"}`} aria-hidden="true" />
-                  <div>
-                    <strong>{weather.temperature}°</strong>
-                    <span>{weather.condition}</span>
-                  </div>
-                </div>
-                <div className="weatherDetails">
-                  <span>
-                    <small>체감</small>
-                    <strong>{weather.apparentTemperature}°</strong>
-                  </span>
-                  <span>
-                    <small>습도</small>
-                    <strong>{weather.humidity}%</strong>
-                  </span>
-                  <span>
-                    <small>강수</small>
-                    <strong>{weather.precipitationProbability ?? 0}%</strong>
-                  </span>
-                  <span>
-                    <small>바람</small>
-                    <strong>{weather.windSpeed}km/h</strong>
-                  </span>
-                </div>
-                {weather.hourly && weather.hourly.length > 0 && (
-                  <div
-                    className="weatherForecastScroller"
-                    aria-label={`${weatherForecastDays}일 시간대별 날씨`}
-                    style={{ "--forecast-width": `${weather.hourly.length * weatherForecastSlotWidth}px` } as CSSProperties}
-                  >
-                    <div className="weatherForecastTrack">
-                      <WeatherChart hourly={weather.hourly} />
-                      <div className="weatherTimeline">
-                        {weather.hourly.map((slot) => (
-                          <article className="weatherSlot" key={slot.time}>
-                            <span>{slot.label}</span>
-                            <div className={`weatherGlyph ${weatherTone(slot.condition)}`} aria-hidden="true" />
-                            <strong>{slot.temperature}°</strong>
-                            <small>{slot.condition}</small>
-                            <em style={{ "--rain": `${slot.precipitationProbability}%` } as CSSProperties}>
-                              강수 {slot.precipitationProbability}%
-                            </em>
-                          </article>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="weatherFallback">
-                {weather.status === "loading" ? "날씨를 불러오는 중입니다." : weather.message}
-              </p>
-            )}
-          </section>
         </aside>
       </div>
 
