@@ -10,6 +10,7 @@
 - 전체 시스템 아키텍처와 데이터 플로우를 `docs/diagrams/pineflow-architecture-infographic.svg` 인포그래픽으로 추가했습니다.
 - Trend Lens 보안 항목 제목이 CVE 번호만으로 보이지 않도록 CISA KEV의 vendor/product/취약점 유형과 KISA/CISA 교차 참조를 사용해 `짧은 취약점 설명 · CVE-...` 형식으로 보강했습니다.
 - 현재 날씨 요약을 상단 대시보드의 현재 시각 아래에 기본 표시하고, 세부 지표와 5일 예보는 같은 weather deck을 펼쳐 보는 구조로 옮겼습니다.
+- 날씨 상세를 펼쳤을 때 왼쪽 누적 시간 그래프까지 같이 늘어나지 않도록, 그래프 카드는 상단 정렬로 고정하고 weather deck 상세만 내부 스크롤로 확장되게 조정했습니다.
 
 ## 2026-06-08
 

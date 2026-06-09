@@ -784,6 +784,13 @@ h1 {
   padding: 10px;
 }
 
+.dashboardWeatherDeck[open] .dashboardWeatherDetail {
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 .dashboardWeatherMetrics {
   min-height: 0;
 }
@@ -4766,6 +4773,8 @@ button.delete {
     grid-area: flow;
     grid-column: auto;
     grid-row: auto;
+    align-self: start;
+    min-height: auto;
   }
 
   .dashboardCommandStack {
@@ -6957,6 +6966,12 @@ button.sessionEndpoint:hover:not(:disabled) {
 .dashboardWeatherDetail .weatherForecastScroller {
   max-width: 100%;
   overflow-x: auto;
+}
+
+@media (min-width: 760px) {
+  .dashboardWeatherDeck[open] .dashboardWeatherDetail {
+    max-height: clamp(320px, 42vh, 460px);
+  }
 }
 
 /* 2026-06-09: dashboard history integration and wide Trend Lens board. */
