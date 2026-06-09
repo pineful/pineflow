@@ -908,6 +908,203 @@ function compactText(value = "", maxLength = 160) {
   return `${normalized.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
 }
 
+function extractCveIds(...values) {
+  const ids = new Set();
+  values.forEach((value) => {
+    const matches = String(value ?? "").match(/\bCVE-\d{4}-\d{4,}\b/gi) ?? [];
+    matches.forEach((match) => ids.add(match.toUpperCase()));
+  });
+  return [...ids];
+}
+
+function removeCveIds(value = "") {
+  return String(value).replace(/\bCVE-\d{4}-\d{4,}\b/gi, " ");
+}
+
+function isGenericCveDescriptor(value = "") {
+  const normalized = compactText(value, 90)
+    .toLowerCase()
+    .replace(/[^\w가-힣]+/g, "");
+  return (
+    !normalized ||
+    normalized.length < 3 ||
+    [
+      "cisa",
+      "kev",
+      "kisa",
+      "보안",
+      "공지",
+      "주의",
+      "긴급",
+      "취약점",
+      "보안공지",
+      "취약점정보",
+      "보안업데이트",
+      "보안업데이트권고",
+      "보안패치",
+      "보안패치권고",
+      "실제악용",
+      "실제악용확인"
+    ].includes(normalized)
+  );
+}
+
+function titleNeedsCveDescriptor(title = "") {
+  const cveIds = extractCveIds(title);
+  if (cveIds.length === 0) return false;
+
+  const remainingWords = removeCveIds(title)
+    .replace(/[\[\]{}()·:|/_.,\-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean);
+  if (remainingWords.length === 0) return true;
+
+  const genericWords = new Set([
+    "cisa",
+    "kev",
+    "kisa",
+    "alert",
+    "advisory",
+    "and",
+    "or",
+    "vulnerability",
+    "security",
+    "update",
+    "patch",
+    "multiple",
+    "긴급",
+    "주의",
+    "보안",
+    "공지",
+    "취약점",
+    "정보",
+    "업데이트",
+    "패치",
+    "권고",
+    "관련",
+    "및",
+    "외",
+    "실제",
+    "악용",
+    "확인"
+  ]);
+  return remainingWords.every((word) => genericWords.has(word));
+}
+
+function cleanCveDescriptor(value = "") {
+  const withoutCve = removeCveIds(decodeXmlText(value))
+    .replace(/\[[^\]]*(긴급|주의|공지|권고|보안)[^\]]*\]/g, " ")
+    .replace(/\((긴급|주의|공지|권고|보안|패치|업데이트)\)/g, " ")
+    .replace(/\b(CISA|KEV|KISA)\b/gi, " ")
+    .replace(/실제\s*악용\s*확인/g, " ")
+    .replace(/보안\s*(공지|업데이트|패치)\s*(권고)?/g, " ")
+    .replace(/취약점\s*정보/g, " ")
+    .replace(/^[-–—•·\s]+/, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (isGenericCveDescriptor(withoutCve)) return "";
+  return compactText(withoutCve, 72);
+}
+
+function descriptorFromCveSummary(summary = "") {
+  const cleaned = removeCveIds(decodeXmlText(summary))
+    .replace(/자세한\s*내용은[\s\S]*$/i, " ")
+    .replace(/상세\s*내용은[\s\S]*$/i, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const candidates = cleaned
+    .split(/(?:\.|。|!|\?|다\.|임\.|함\.)\s*/g)
+    .map(cleanCveDescriptor)
+    .filter((candidate) => candidate && !isGenericCveDescriptor(candidate));
+  return candidates[0] ?? "";
+}
+
+function kevWeaknessLabel(item) {
+  const text = [item?.vulnerabilityName, item?.shortDescription, item?.requiredAction, item?.notes]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const labels = [
+    [/remote code execution|\brce\b/, "원격 코드 실행"],
+    [/code execution/, "코드 실행"],
+    [/command injection|os command/, "명령 삽입"],
+    [/sql injection/, "SQL 삽입"],
+    [/cross-site scripting|\bxss\b/, "XSS"],
+    [/authentication bypass|auth bypass/, "인증 우회"],
+    [/privilege escalation|elevation of privilege/, "권한 상승"],
+    [/information disclosure|data disclosure|exposure/, "정보 노출"],
+    [/path traversal|directory traversal/, "경로 탐색"],
+    [/deserialization/, "역직렬화"],
+    [/use-after-free|use after free/, "Use-after-free"],
+    [/buffer overflow|heap overflow|stack overflow/, "버퍼 오버플로"],
+    [/server-side request forgery|\bssrf\b/, "SSRF"],
+    [/cross-site request forgery|\bcsrf\b/, "CSRF"],
+    [/denial of service|\bdos\b/, "서비스 거부"],
+    [/input validation/, "입력 검증 미흡"],
+    [/file upload/, "파일 업로드"]
+  ];
+  return labels.find(([pattern]) => pattern.test(text))?.[1] ?? "";
+}
+
+function kevProductLabel(item) {
+  const vendor = compactText(item?.vendorProject ?? "", 42);
+  const product = compactText(item?.product ?? "", 54);
+  const normalized = [vendor, product]
+    .filter((part) => part && !/^(unknown|n\/a|na|none)$/i.test(part))
+    .join(" ");
+  return compactText(normalized, 78);
+}
+
+function describeKevVulnerability(item) {
+  const product = kevProductLabel(item);
+  const weakness = kevWeaknessLabel(item);
+  if (product && weakness) return `${product} ${weakness} 취약점`;
+  if (product) return `${product} 취약점`;
+
+  const fromName = cleanCveDescriptor(String(item?.vulnerabilityName ?? "").replace(/ vulnerability$/i, " 취약점"));
+  return fromName || "취약점 정보";
+}
+
+function buildCveDescriptorMap(items) {
+  const descriptors = new Map();
+  items.forEach((item) => {
+    const cveIds = extractCveIds(item.title, item.summary, item.id);
+    if (cveIds.length === 0) return;
+    const titleDescriptor = cleanCveDescriptor(item.title);
+    const summaryDescriptor = descriptorFromCveSummary(item.summary);
+    const descriptor = titleDescriptor || summaryDescriptor;
+    if (!descriptor) return;
+    cveIds.forEach((id) => {
+      if (!descriptors.has(id)) descriptors.set(id, descriptor);
+    });
+  });
+  return descriptors;
+}
+
+function enrichCveTitle(item, descriptorMap) {
+  const cveIds = extractCveIds(item.title, item.summary, item.id);
+  if (cveIds.length === 0 || !titleNeedsCveDescriptor(item.title)) return item;
+
+  const descriptor =
+    cveIds.map((id) => descriptorMap.get(id)).find(Boolean) ||
+    descriptorFromCveSummary(item.summary) ||
+    cleanCveDescriptor(item.title) ||
+    "취약점 정보";
+  const cveLabel = cveIds.slice(0, 2).join(", ");
+  return {
+    ...item,
+    title: `${descriptor} · ${cveLabel}`
+  };
+}
+
+function enrichSecurityCveTitles(items) {
+  const descriptorMap = buildCveDescriptorMap(items);
+  return items.map((item) => enrichCveTitle(item, descriptorMap));
+}
+
 function compactTrendItem(item) {
   return {
     ...item,
@@ -1114,12 +1311,16 @@ async function collectCisaKev(now) {
     items: recent.map((item) => {
       const dateAdded = new Date(item.dateAdded);
       const ageHours = Math.max(0, (now.getTime() - dateAdded.getTime()) / 36e5);
+      const descriptor = describeKevVulnerability(item);
+      const summary = item.shortDescription
+        ? `${compactText(item.shortDescription, 220)} 한국 환경 영향 여부를 먼저 확인해야 합니다.`
+        : `${descriptor}이 CISA KEV에 등록되었습니다. 한국 환경 영향 여부를 먼저 확인해야 합니다.`;
       return {
         id: `cisa-kev-${item.cveID}`,
         category: "security",
         priority: ageHours <= 72 ? "urgent" : "high",
-        title: `${item.cveID} 실제 악용 확인`,
-        summary: `${item.vendorProject ?? "공급사 미상"} ${item.product ?? "제품"} 취약점이 CISA KEV에 등록되었습니다. 한국 환경 영향 여부를 먼저 확인해야 합니다.`,
+        title: `${descriptor} · ${item.cveID}`,
+        summary,
         sourceName: "CISA KEV",
         sourceUrl: "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
         publishedAt: item.dateAdded,
@@ -1326,7 +1527,7 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   });
   updates.push({
     ...trendSectionBase("security"),
-    items: dedupeItems(securityItems)
+    items: dedupeItems(enrichSecurityCveTitles(securityItems))
       .sort((left, right) => priorityWeight(right.priority) - priorityWeight(left.priority))
       .slice(0, 8)
   });

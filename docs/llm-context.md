@@ -172,6 +172,7 @@ Trend Lens v1 원칙:
 - 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
 - 만돌린, IT 콘텐츠, 교육 분야는 Google News RSS allowlist query로 최신 소식을 수집한다. Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스가 아니므로 source로 쓰지 않는다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존하고 UI에 게재일/등록일을 표시한다.
+- CVE 번호가 제목에 드러나는 보안 항목은 `짧은 취약점 설명 · CVE-...` 형태로 저장한다. CISA KEV의 vendor/product/취약점 설명과 KISA/CISA 교차 참조를 우선 사용하고, CVE별 외부 조회 API를 추가하려면 비용/timeout/source allowlist ADR이 먼저다.
 - 전체 refresh는 source를 병렬로 수집하고, source별 실패는 전체 API 실패가 아니라 `sourceStatuses`로 낮춰 기록한다.
 - Trend Lens UI는 분야 전체를 한 번에 늘어놓지 않는다. 오늘 브리프 lead/queue와 `보안`, `만돌린`, `IT 콘텐츠`, `교육` 탭으로 한 분야씩 보여준다.
 - 데스크톱 하단에서 `Trend Lens + 날씨`는 보조 레일로 묶을 수 있지만, `오늘의 흐름`과 `AWS 운영 사용량`은 오른쪽 보조 단에 끼워 넣지 않는다. 이 둘은 최근 기록 이후 1단 section으로 읽히게 두고, 특히 운영 사용량은 사용자가 일부러 확인하는 보조 정보이므로 최근 기록 목록 옆의 좁은 칼럼으로 압축하지 않는다.

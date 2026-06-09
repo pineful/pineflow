@@ -136,6 +136,7 @@ Trend Lens는 외부 정보를 수집하지만, 브라우저가 외부 source를
 - CISA KEV 공식 JSON은 실제 응답이 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout 예외를 둔다.
 - 전체 refresh는 allowlist source를 병렬로 호출하되, source별 실패는 전체 API 실패가 아니라 source status로 낮춰 처리한다.
 - Trend Lens snapshot은 저장 전에 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다.
+- CVE 제목 보강은 이미 가져온 KISA RSS와 CISA KEV payload의 단서만 사용한다. CVE별 외부 lookup API를 새로 붙이면 allowlist, timeout, API key, 비용 정책을 ADR로 먼저 검토한다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - Lambda 로그에는 source body나 기사 내용을 기록하지 않는다.
 - API key가 필요하면 SSM Parameter Store Standard `SecureString`을 우선하고, GitHub Secrets/Variables, Lambda 평문 env, DynamoDB에는 저장하지 않는다.

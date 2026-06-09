@@ -60,6 +60,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - 저장 전에는 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다. DynamoDB item size를 넘기지 않기 위해 원문 전문이나 긴 설명을 snapshot payload에 넣지 않는다.
 - 보안 source와 분야별 뉴스 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존한다. 보안 위험 신호의 판단에는 게재일/등록일이 중요하므로 UI에서도 반드시 표시한다.
+- CVE 번호가 제목의 핵심으로 노출되는 보안 항목은 저장 전에 `짧은 취약점 설명 · CVE-...` 형태로 보강한다. CISA KEV의 vendor/product/취약점 설명과 같은 refresh 안의 CVE 교차 참조를 우선 사용하고, 없으면 KISA RSS 요약의 첫 유효 문장을 짧게 사용한다. NVD 같은 CVE별 외부 조회를 항목마다 추가하려면 비용, timeout, source allowlist, 저장 payload 정책을 ADR로 먼저 검토한다.
 - 수동 refresh는 기본 cooldown을 두되, 사용자가 강제 refresh를 요청하면 짧은 연타 방지 cooldown만 적용한다.
 - redirect는 최대 1회만 허용하고 redirect 후에도 allowlist를 다시 검증한다.
 - DynamoDB TTL `expiresAt`을 켜서 캐시/가드 item이 자연스럽게 정리되게 한다.
@@ -78,6 +79,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - `캐시 다시 조회`는 `GET /api/trend-lens`로 저장된 snapshot만 다시 읽는다. 브라우저 리로드보다 먼저 시도할 수 있는 가벼운 확인 동작이다.
 - `전체 새로고침`은 `POST /api/trend-lens/refresh`로 외부 allowlist source를 다시 수집한다. 저장된 캐시가 없거나 오래됐을 때 사용하는 동작이며 단순 리로드와 혼동되지 않아야 한다.
 - source 상태가 아직 없거나 캐시 조회가 실패해도 `수집 상태와 저장 정책 보기`는 비어 있으면 안 된다. 최소한 `저장된 브리프 조회`, `전체 새로고침`, `저장 정책` fallback row를 보여준다.
+- `CVE-...`만 보이는 제목은 사용자가 바로 판단하기 어렵다. 보안 카드의 제목에는 CVE 앞에 제품/취약점 유형/영향을 짧게 붙이고, CVE 번호는 추적용 식별자로 뒤에 둔다.
 - 기사를 클릭해 읽으면 브라우저 `localStorage`에 읽음 상태를 저장한다. 오늘 읽은 항목은 그날 목록 위치를 유지하고 `오늘 읽음`으로 표시한다. 다음날 이후 같은 URL이 다시 나타나면 목록 아래로 보내고 흐리게 표시한다.
 - 읽음 상태는 개인별 UI 보조 정보이므로 v1에서는 서버/DynamoDB에 저장하지 않는다. 여러 기기 간 읽음 동기화가 필요해지면 사용자별 item 설계와 비용/마이그레이션 문서를 먼저 추가한다.
 - 비용 신호등과 보안 신호는 혼동하지 않는다. 비용은 운영 상태, 보안은 외부 인텔리전스다.

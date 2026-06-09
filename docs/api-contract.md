@@ -1,6 +1,6 @@
 # API 계약
 
-마지막 업데이트: 2026-06-04
+마지막 업데이트: 2026-06-09
 
 모든 API는 API Gateway HTTP API 뒤에 있으며, Cognito JWT authorizer를 통과해야 한다. 클라이언트는 `Authorization: Bearer <access_token>` 헤더를 보낸다.
 
@@ -307,7 +307,7 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
       "id": "kisa-security-notice-1",
       "category": "security",
       "priority": "urgent",
-      "title": "보안공지 제목",
+      "title": "Fortinet FortiOS 인증 우회 취약점 · CVE-2026-12345",
       "summary": "짧은 자체 요약",
       "sourceName": "KISA 보안공지",
       "sourceUrl": "https://www.boho.or.kr/...",

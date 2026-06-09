@@ -105,6 +105,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 최근 기록 요약을 상단 흐름 그래프 안으로 통합하고, 과거 기록은 날짜/키워드 검색 가능한 `기록 보관함` overlay에서 조회하도록 재배치.
 - Trend Lens를 하단 폭을 넓게 쓰는 지식 보드로 재배치하고, 넓은 화면에서는 분야별 카드를 동시에 볼 수 있게 보강.
 - 전체 시스템 아키텍처와 데이터 플로우를 `docs/diagrams/pineflow-architecture-infographic.svg` 인포그래픽으로 추가.
+- Trend Lens 보안 항목에서 CVE 번호만 제목처럼 보이지 않도록 CISA KEV vendor/product/취약점 설명과 KISA/CISA 교차 참조를 사용해 `짧은 취약점 설명 · CVE-...` 형식으로 저장하도록 보강.
 
 ## 검증됨
 
