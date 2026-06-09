@@ -323,6 +323,8 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
 }
 ```
 
+`sourceUrl`은 사용자가 새 탭에서 열 수 있는 표시/열기 URL이다. Google News RSS의 `news.google.com/rss/articles/...` 중간 URL은 브라우저에서 빈 화면처럼 보일 수 있으므로 저장하지 않고, RSS `<source url>`이 publisher 기사 상세 URL처럼 보일 때만 사용한다. 언론사 홈처럼 보이거나 원문 URL을 얻을 수 없으면 Google News 검색 fallback을 사용한다. 이 URL은 UI navigation 용도이며 Lambda가 임의 publisher URL을 추가 fetch하는 입력값이 아니다.
+
 `cacheStatus` 값:
 
 - `fresh`: 방금 수집된 캐시.

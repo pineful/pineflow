@@ -169,3 +169,10 @@
 - 로그인 직후 Trend Lens 초기 조회를 기록 상태 조회 이후로 늦춰, 낮은 API Gateway throttling 설정에서 주요 기록 조회가 보조 정보 호출과 충돌할 가능성을 줄였다.
 - `/api/state`의 DynamoDB 읽기를 병렬에서 순차로 바꿔 `1 RCU` 환경에서 settings, active session, recent sessions 조회가 동시에 몰리지 않게 했다.
 - 기록 수정의 시/분 입력을 브라우저 기본 number input에서 두 자리 numeric text input으로 바꿔, 사용자가 기존 값을 지우고 직접 새 시간을 입력할 수 있게 했다.
+
+## 2026-06-09
+
+- Trend Lens에서 Google News RSS의 `news.google.com/rss/articles/...` 중간 링크가 새 탭에서 빈 화면처럼 보일 수 있던 문제를 수정했다.
+- 새 수집 데이터는 RSS `<source url>`이 공개 HTTPS publisher 기사 상세 URL처럼 보일 때만 우선 사용하고, 언론사 홈처럼 보이거나 원문 URL을 얻을 수 없으면 제목/출처 기반 Google News 검색 URL을 fallback으로 저장한다.
+- 이미 캐시된 예전 Trend Lens 항목도 프론트엔드에서 Google News 검색 fallback으로 열리도록 보정했다.
+- 이 보정은 사용자 클릭 링크만 바꾸며, Lambda가 임의 publisher URL을 추가 fetch하지 않도록 Trend Lens 소스 정책과 API 계약 문서를 갱신했다.

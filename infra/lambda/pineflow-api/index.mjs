@@ -1246,6 +1246,14 @@ function rssTagValue(item, tag) {
   return decodeXmlText(match?.[1] ?? "");
 }
 
+function rssTagAttribute(item, tag, attribute) {
+  const match = item.match(new RegExp(`<${tag}\\b([^>]*)>`, "i"));
+  if (!match) return "";
+
+  const attrMatch = match[1].match(new RegExp(`${attribute}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, "i"));
+  return decodeXmlText(attrMatch?.[1] ?? attrMatch?.[2] ?? "");
+}
+
 function parseRssItems(xml, limit = 8) {
   if (xml.includes("<!ENTITY") || xml.includes("<!DOCTYPE")) {
     throw new Error("RSS entity declarations are not allowed.");
@@ -1259,7 +1267,8 @@ function parseRssItems(xml, limit = 8) {
       link: rssTagValue(item, "link"),
       description: rssTagValue(item, "description"),
       publishedAt: rssTagValue(item, "pubDate"),
-      sourceName: rssTagValue(item, "source")
+      sourceName: rssTagValue(item, "source"),
+      sourceUrl: rssTagAttribute(item, "source", "url")
     };
   });
 }
@@ -1360,8 +1369,70 @@ function cleanNewsTitle(title, sourceName) {
 }
 
 function isStaticKnowledgeNewsItem(item) {
-  const text = `${item.title} ${item.sourceName ?? ""} ${item.link}`.toLowerCase();
+  const text = `${item.title} ${item.sourceName ?? ""} ${item.link} ${item.sourceUrl ?? ""}`.toLowerCase();
   return /wikipedia|wikimedia|wikiwand|britannica|encyclopedia|fandom|dbpedia/.test(text);
+}
+
+function isPublicHttpsUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isGoogleNewsInterstitialUrl(value) {
+  try {
+    const url = new URL(value);
+    return (
+      url.hostname === trendLensSources.googleNews.host &&
+      (url.pathname.startsWith("/rss/articles/") ||
+        url.pathname.startsWith("/articles/") ||
+        url.pathname.startsWith("/read/"))
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isStaticKnowledgeUrl(value) {
+  try {
+    const url = new URL(value);
+    const text = `${url.hostname} ${url.pathname}`.toLowerCase();
+    return /wikipedia|wikimedia|wikiwand|britannica|encyclopedia|fandom|dbpedia/.test(text);
+  } catch {
+    return false;
+  }
+}
+
+function isDisplayableNewsUrl(value) {
+  if (!isPublicHttpsUrl(value)) return false;
+  if (isGoogleNewsInterstitialUrl(value)) return false;
+  if (isStaticKnowledgeUrl(value)) return false;
+
+  try {
+    const url = new URL(value);
+    const articlePath = url.pathname.replace(/\/+$/, "");
+    return url.hostname !== trendLensSources.googleNews.host && articlePath.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function googleNewsSearchFallbackUrl(feed, title, sourceName) {
+  const url = new URL("https://news.google.com/search");
+  url.searchParams.set("q", [title, sourceName].filter(Boolean).join(" "));
+  url.searchParams.set("hl", feed.hl);
+  url.searchParams.set("gl", feed.gl);
+  url.searchParams.set("ceid", feed.ceid);
+  return url.toString();
+}
+
+function newsSourceUrlFor(item, feed, title, sourceName) {
+  if (isDisplayableNewsUrl(item.sourceUrl)) return item.sourceUrl;
+  if (isDisplayableNewsUrl(item.link)) return item.link;
+  return googleNewsSearchFallbackUrl(feed, title, sourceName);
 }
 
 function isRecentEnough(published, now, maxAgeDays) {
@@ -1418,11 +1489,9 @@ async function collectNewsFeed(category, feed, now) {
       `${rssItems.length}개 최신 소식을 반영했습니다. 백과/위키 계열 정적 문서는 제외합니다.`
     ),
     items: rssItems.map((item) => {
-      const sourceUrl = isSafeSameHostLink(item.link, trendLensSources.googleNews)
-        ? item.link
-        : googleNewsUrl(feed);
       const sourceName = item.sourceName || source.label;
       const title = cleanNewsTitle(item.title, sourceName);
+      const sourceUrl = newsSourceUrlFor(item, feed, title, sourceName);
       return {
         id: `news-${feed.id}-${item.id}`.slice(0, 180),
         category,

@@ -552,6 +552,36 @@ function trendItemReadKey(item: TrendLensItem) {
   return item.sourceUrl || `${item.category}:${item.id}`;
 }
 
+function googleNewsSearchHref(item: TrendLensItem) {
+  const href = new URL("https://news.google.com/search");
+  href.searchParams.set("q", [item.title, item.sourceName].filter(Boolean).join(" "));
+
+  if (item.region === "korea" || item.language === "ko") {
+    href.searchParams.set("hl", "ko");
+    href.searchParams.set("gl", "KR");
+    href.searchParams.set("ceid", "KR:ko");
+  } else {
+    href.searchParams.set("hl", "en-US");
+    href.searchParams.set("gl", "US");
+    href.searchParams.set("ceid", "US:en");
+  }
+
+  return href.toString();
+}
+
+function trendArticleHref(item: TrendLensItem) {
+  try {
+    const href = new URL(item.sourceUrl);
+    if (href.hostname === "news.google.com" && !href.pathname.startsWith("/search")) {
+      return googleNewsSearchHref(item);
+    }
+  } catch {
+    return item.sourceUrl;
+  }
+
+  return item.sourceUrl;
+}
+
 function getStoredTrendReadState(): TrendReadState {
   if (typeof window === "undefined") return {};
 
@@ -651,7 +681,7 @@ function TrendLensItemCard({
   return (
     <a
       className={`trendItem ${trendPriorityClass(item.priority)} ${readStatus}`}
-      href={item.sourceUrl}
+      href={trendArticleHref(item)}
       target="_blank"
       rel="noreferrer"
       onAuxClick={(event) => {
@@ -754,7 +784,7 @@ function TrendLensPanel({
                 secondaryItems.map((item) => (
                   <a
                     className={trendReadStatus(item, readState)}
-                    href={item.sourceUrl}
+                    href={trendArticleHref(item)}
                     key={item.id}
                     rel="noreferrer"
                     target="_blank"
@@ -803,7 +833,7 @@ function TrendLensPanel({
                           <li className={`${trendPriorityClass(item.priority)} ${trendReadStatus(item, readState)}`} key={item.id}>
                             <b>{trendPriorityLabel(item.priority)}</b>
                             <a
-                              href={item.sourceUrl}
+                              href={trendArticleHref(item)}
                               target="_blank"
                               rel="noreferrer"
                               onAuxClick={(event) => {
@@ -855,7 +885,7 @@ function TrendLensPanel({
                       <li className={`${trendPriorityClass(item.priority)} ${trendReadStatus(item, readState)}`} key={item.id}>
                         <b>{trendPriorityLabel(item.priority)}</b>
                         <a
-                          href={item.sourceUrl}
+                          href={trendArticleHref(item)}
                           target="_blank"
                           rel="noreferrer"
                           onAuxClick={(event) => {

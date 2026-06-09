@@ -33,6 +33,8 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 
 Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 매일 볼 뉴스가 아니므로 Trend Lens 일일 브리프 source로 쓰지 않는다. Google News RSS 결과에서도 위키/백과 계열 문서는 필터링한다.
 
+Google News RSS가 제공하는 `news.google.com/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. RSS의 `<source url="...">`가 안전한 공개 HTTPS publisher 기사 상세 URL처럼 보이면 그것을 우선 사용하고, 언론사 홈처럼 보이거나 원문 URL을 얻을 수 없으면 기사 제목과 출처명으로 만든 Google News 검색 URL을 fallback으로 사용한다. Lambda는 이 publisher URL을 추가 fetch하지 않으며, 외부 조회 source allowlist는 계속 Google News RSS endpoint로 제한한다.
+
 Google Trends는 장기적으로 중요하지만, 공식 API가 alpha 성격이고 인증/사용 조건 검토가 필요하므로 v1에서는 소스 상태에 `후보`로 기록한다.
 
 API key가 필요해지는 소스는 기본 비활성화로 시작한다. 필요 시 GitHub Secrets, Lambda 평문 환경 변수, DynamoDB에는 저장하지 않고 SSM Parameter Store Standard `SecureString`을 우선한다. Secrets Manager는 secret당 월 비용이 생길 수 있으므로 기본 후보가 아니다.

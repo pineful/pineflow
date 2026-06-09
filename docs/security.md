@@ -132,6 +132,7 @@ Trend Lens는 외부 정보를 수집하지만, 브라우저가 외부 source를
 - Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스 source로 쓰지 않고 Google News RSS 결과에서도 제외한다.
 - redirect는 최대 1회만 허용하며 redirect 후에도 allowlist를 다시 검증한다.
 - RSS는 DTD/entity 선언을 거부하고 `item/title/link/pubDate/description`만 제한적으로 읽는다.
+- Google News RSS의 `news.google.com/rss/articles/...` 중간 URL은 사용자 클릭 링크로 사용하지 않는다. RSS `<source url>`이 공개 HTTPS publisher 기사 상세 URL처럼 보일 때만 화면에 노출하고, 언론사 홈처럼 보이면 Google News 검색 fallback을 사용한다. Lambda가 publisher URL을 추가 fetch하지는 않는다.
 - source별 응답 크기는 기본 512KB 이하, timeout은 기본 2.2초 이하.
 - CISA KEV 공식 JSON은 실제 응답이 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout 예외를 둔다.
 - 전체 refresh는 allowlist source를 병렬로 호출하되, source별 실패는 전체 API 실패가 아니라 source status로 낮춰 처리한다.

@@ -109,6 +109,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 현재 날씨 요약을 하단 별도 카드에서 상단 대시보드 시계 아래 weather deck으로 이동하고, 체감/습도/바람/5일 예보는 같은 덱을 펼쳤을 때 보이도록 재배치.
 - 날씨 상세를 펼쳐도 왼쪽 누적 시간 그래프 카드가 함께 늘어나지 않도록 그래프 카드를 상단 정렬로 고정하고 weather deck 내부 스크롤로 상세 예보를 제한.
 - Trend Lens에서 읽은 기사 상태가 `오늘 읽음` 텍스트만으로 약하게 보이지 않도록, 오늘 읽은 항목과 이전에 읽은 항목 모두 본문 흐림과 체크 아이콘으로 구분되게 보강.
+- Trend Lens Google News RSS 기사 링크가 `news.google.com/rss/articles/...` 중간 URL로 열려 빈 화면처럼 보일 수 있던 문제를 수정. 새 수집부터는 publisher URL 또는 Google News 검색 fallback을 저장하고, 기존 캐시도 프론트에서 검색 fallback으로 열리게 보정.
 
 ## 검증됨
 
