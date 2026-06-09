@@ -6305,10 +6305,12 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .briefQueue a {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 4px 8px;
   align-items: center;
+  padding-right: 38px;
 }
 
 .briefQueue b {
@@ -6341,10 +6343,11 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .trendItem {
+  position: relative;
   display: grid;
   gap: 8px;
   min-width: 0;
-  padding: 13px;
+  padding: 13px 42px 13px 13px;
   border: 1px solid rgba(91, 220, 255, 0.22);
   border-radius: var(--radius-card);
   color: inherit;
@@ -6364,7 +6367,8 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .trendItem.readToday,
 .briefQueue a.readToday,
-.trendFocusList li.readToday {
+.trendFocusList li.readToday,
+.trendCategoryCard li.readToday {
   border-color: rgba(126, 224, 177, 0.3);
   background:
     linear-gradient(145deg, rgba(20, 45, 42, 0.78), rgba(10, 20, 34, 0.88)),
@@ -6373,15 +6377,108 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .trendItem.readBefore,
 .briefQueue a.readBefore,
-.trendFocusList li.readBefore {
-  opacity: 0.48;
-  filter: saturate(0.58);
+.trendFocusList li.readBefore,
+.trendCategoryCard li.readBefore {
+  border-color: rgba(126, 224, 177, 0.18);
+  background:
+    linear-gradient(145deg, rgba(17, 29, 39, 0.72), rgba(9, 15, 24, 0.86)),
+    #101827;
+}
+
+.trendItem.readToday > *,
+.briefQueue a.readToday > *,
+.trendFocusList li.readToday > *,
+.trendCategoryCard li.readToday > * {
+  opacity: 0.64;
+}
+
+.trendItem.readBefore > *,
+.briefQueue a.readBefore > *,
+.trendFocusList li.readBefore > *,
+.trendCategoryCard li.readBefore > * {
+  opacity: 0.42;
 }
 
 .trendItem.readBefore:hover,
 .briefQueue a.readBefore:hover,
-.trendFocusList li.readBefore:hover {
-  opacity: 0.72;
+.trendFocusList li.readBefore:hover,
+.trendCategoryCard li.readBefore:hover {
+  border-color: rgba(126, 224, 177, 0.3);
+}
+
+.trendItem.readToday:hover > *,
+.briefQueue a.readToday:hover > *,
+.trendFocusList li.readToday:hover > *,
+.trendCategoryCard li.readToday:hover > * {
+  opacity: 0.82;
+}
+
+.trendItem.readBefore:hover > *,
+.briefQueue a.readBefore:hover > *,
+.trendFocusList li.readBefore:hover > *,
+.trendCategoryCard li.readBefore:hover > * {
+  opacity: 0.6;
+}
+
+.trendItem.readToday::before,
+.trendItem.readBefore::before,
+.briefQueue a.readToday::before,
+.briefQueue a.readBefore::before,
+.trendFocusList li.readToday::before,
+.trendFocusList li.readBefore::before,
+.trendCategoryCard li.readToday::before,
+.trendCategoryCard li.readBefore::before {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 19px;
+  height: 19px;
+  border: 1px solid rgba(126, 224, 177, 0.54);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(126, 224, 177, 0.92) 0 52%, transparent 54%),
+    rgba(126, 224, 177, 0.12);
+  box-shadow:
+    0 0 18px rgba(126, 224, 177, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  content: "";
+}
+
+.trendItem.readBefore::before,
+.briefQueue a.readBefore::before,
+.trendFocusList li.readBefore::before,
+.trendCategoryCard li.readBefore::before {
+  border-color: rgba(160, 187, 205, 0.34);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(160, 187, 205, 0.72) 0 52%, transparent 54%),
+    rgba(160, 187, 205, 0.08);
+  box-shadow: none;
+}
+
+.trendItem.readToday::after,
+.trendItem.readBefore::after,
+.briefQueue a.readToday::after,
+.briefQueue a.readBefore::after,
+.trendFocusList li.readToday::after,
+.trendFocusList li.readBefore::after,
+.trendCategoryCard li.readToday::after,
+.trendCategoryCard li.readBefore::after {
+  position: absolute;
+  top: 14px;
+  right: 17px;
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid #06131c;
+  border-bottom: 2px solid #06131c;
+  content: "";
+  transform: rotate(42deg);
+}
+
+.trendItem.readBefore::after,
+.briefQueue a.readBefore::after,
+.trendFocusList li.readBefore::after,
+.trendCategoryCard li.readBefore::after {
+  border-color: rgba(6, 19, 28, 0.72);
 }
 
 .trendItem > span {
@@ -6598,11 +6695,12 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .trendFocusList li {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 4px 8px;
   min-width: 0;
-  padding: 10px;
+  padding: 10px 36px 10px 10px;
   border: 1px solid rgba(91, 220, 255, 0.16);
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.045);
@@ -7267,18 +7365,15 @@ button.sessionEndpoint:hover:not(:disabled) {
 }
 
 .trendCategoryCard li {
+  position: relative;
   min-width: 0;
-  padding-left: 10px;
+  padding: 0 34px 0 10px;
   border-left: 3px solid rgba(91, 220, 255, 0.5);
 }
 
 .trendCategoryCard li.priorityUrgent,
 .trendCategoryCard li.priorityHigh {
   border-left-color: #ffca66;
-}
-
-.trendCategoryCard li.readBefore {
-  opacity: 0.56;
 }
 
 .trendCategoryCard span,
