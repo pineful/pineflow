@@ -13,17 +13,20 @@ Trend Lens는 사용자가 매일 확인할 만한 보안 신호, 만돌린 소�
 ## 결정
 
 - 보안 분야는 KISA 보안공지 RSS, KISA 취약점 정보 RSS, CISA KEV JSON을 유지한다.
+- 보안 분야에는 The Hacker News, BleepingComputer, SecurityWeek, Help Net Security RSS를 추가한다. 이들은 공식 advisory가 아니라 더 빠른 글로벌 전문 매체 신호로 취급한다.
 - 만돌린, IT 콘텐츠, 교육 분야는 코드에 고정된 Google News RSS allowlist query를 사용한다.
 - 한국 소식을 1순위로 보고, 한국에 영향을 줄 수 있는 영어권 글로벌 소식을 보조로 본다.
 - Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror 계열 문서는 일일 브리프 source로 사용하지 않는다.
 - Google News RSS 결과에서도 Wikipedia, Wikimedia, Wikiwand, Britannica, Encyclopedia, Fandom, DBpedia 계열 항목은 제외한다.
 - 보안 신호와 뉴스 item의 `publishedAt`은 가능한 한 보존하고 UI에 표시한다.
+- 전문 보안 매체 item은 `전문 매체`, `빠른 보안 뉴스` reason tag를 붙여 KISA/CISA 공식 신호와 구분한다.
 - Google Trends는 여전히 중요하지만 공식 API alpha, 인증, 비용, 이용 조건 검토가 필요하므로 자동 수집 source가 아니라 후보 source로 둔다.
 
 ## 보안 및 비용 영향
 
 - 사용자 입력 URL, host, keyword를 Lambda fetch에 사용하지 않는다.
 - Google News RSS query는 코드에 고정된 allowlist만 사용한다.
+- 전문 보안 매체 RSS도 코드에 고정된 allowlist만 사용하며, 사용자 입력 URL이나 검색어로 확장하지 않는다.
 - 브라우저는 외부 source를 직접 호출하지 않으므로 CloudFront CSP를 넓히지 않는다.
 - source별 응답 한도와 timeout은 기존 기본값인 512KB/2.2초를 유지한다.
 - API key가 필요한 source는 추가하지 않는다.

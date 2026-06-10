@@ -695,8 +695,8 @@ const trendLensSections = [
   {
     id: "security",
     title: "긴급 보안 신호",
-    subtitle: "한국 우선, 실제 악용과 공식 경보를 먼저 봅니다.",
-    focus: "KISA, CISA KEV 같은 공식 위험 신호를 우선합니다."
+    subtitle: "공식 경보와 전문 보안 매체의 빠른 신호를 함께 봅니다.",
+    focus: "KISA/CISA는 확인된 위험, 보안 전문 매체는 더 빠른 현장 신호로 구분합니다."
   },
   {
     id: "mandolin",
@@ -752,11 +752,62 @@ const trendLensSources = {
     pathPrefix: "/rss/",
     accept: "application/rss+xml, application/xml, text/xml"
   },
+  theHackerNews: {
+    id: "the-hacker-news",
+    label: "The Hacker News",
+    url: "https://feeds.feedburner.com/TheHackersNews",
+    host: "feeds.feedburner.com",
+    pathPrefix: "/TheHackersNews",
+    accept: "application/rss+xml, application/xml, text/xml",
+    region: "global",
+    language: "en",
+    maxAgeDays: 7
+  },
+  bleepingComputer: {
+    id: "bleeping-computer",
+    label: "BleepingComputer",
+    url: "https://www.bleepingcomputer.com/feed/",
+    host: "www.bleepingcomputer.com",
+    pathPrefix: "/feed/",
+    accept: "application/rss+xml, application/xml, text/xml",
+    region: "global",
+    language: "en",
+    maxAgeDays: 7
+  },
+  securityWeek: {
+    id: "security-week",
+    label: "SecurityWeek",
+    url: "https://www.securityweek.com/feed/",
+    host: "www.securityweek.com",
+    pathPrefix: "/feed/",
+    accept: "application/rss+xml, application/xml, text/xml",
+    region: "global",
+    language: "en",
+    maxAgeDays: 7
+  },
+  helpNetSecurity: {
+    id: "help-net-security",
+    label: "Help Net Security",
+    url: "https://www.helpnetsecurity.com/feed/",
+    host: "www.helpnetsecurity.com",
+    pathPrefix: "/feed/",
+    accept: "application/rss+xml, application/xml, text/xml",
+    region: "global",
+    language: "en",
+    maxAgeDays: 7
+  },
   googleTrendsPlanned: {
     id: "google-trends",
     label: "Google Trends"
   }
 };
+
+const securityNewsSources = [
+  trendLensSources.theHackerNews,
+  trendLensSources.bleepingComputer,
+  trendLensSources.securityWeek,
+  trendLensSources.helpNetSecurity
+];
 
 const topicNewsFeeds = {
   mandolin: [
@@ -1289,6 +1340,25 @@ function kisaPriority(title) {
   return "watch";
 }
 
+function securityNewsPriority(title, summary, published, now) {
+  const ageHours = Math.max(0, (now.getTime() - published.getTime()) / 36e5);
+  const text = `${title} ${summary}`.toLowerCase();
+
+  if (
+    /zero-day|0-day|active exploitation|exploited|ransomware|breach|data leak|malware|botnet|supply chain|critical|emergency|apt|backdoor|spyware|제로데이|악용|랜섬|침해|유출|악성코드|치명|긴급/.test(
+      text
+    )
+  ) {
+    return ageHours <= 96 ? "urgent" : "high";
+  }
+
+  if (/vulnerability|cve-\d{4}-|patch|advisory|exploit|phishing|trojan|취약점|패치|권고|공격|피싱/.test(text)) {
+    return ageHours <= 120 ? "high" : "watch";
+  }
+
+  return ageHours <= 72 ? "watch" : "note";
+}
+
 async function collectKisaRss(source, now) {
   const checkedAt = now.toISOString();
   const text = await fetchTrendLensSource(source);
@@ -1310,6 +1380,47 @@ async function collectKisaRss(source, now) {
         region: "korea",
         language: "ko",
         reasonTags: ["한국 우선", "공식", "보안 신호"]
+      };
+    })
+  };
+}
+
+async function collectSecurityNewsRss(source, now) {
+  const checkedAt = now.toISOString();
+  const text = await fetchTrendLensSource(source);
+  const rssItems = parseRssItems(text, 10)
+    .filter((item) => item.title && item.link && item.publishedAt)
+    .filter((item) => !isStaticKnowledgeNewsItem(item))
+    .map((item) => ({
+      ...item,
+      published: new Date(item.publishedAt)
+    }))
+    .filter((item) => isRecentEnough(item.published, now, source.maxAgeDays))
+    .slice(0, 3);
+
+  return {
+    status: sourceStatus(
+      source,
+      rssItems.length > 0 ? "ready" : "partial",
+      checkedAt,
+      `${rssItems.length}개 전문 보안 뉴스를 반영했습니다. 공식 공지가 아니라 빠른 현장 신호로 봅니다.`
+    ),
+    items: rssItems.map((item) => {
+      const title = cleanNewsTitle(item.title, source.label);
+      const summary = compactText(item.description, 190) || "전문 보안 매체에서 확인한 빠른 보안 뉴스입니다.";
+      const sourceUrl = isDisplayableNewsUrl(item.link) ? item.link : source.url;
+      return {
+        id: `security-news-${source.id}-${item.id}`.slice(0, 180),
+        category: "security",
+        priority: securityNewsPriority(title, summary, item.published, now),
+        title,
+        summary,
+        sourceName: source.label,
+        sourceUrl,
+        publishedAt: item.published.toISOString(),
+        region: source.region,
+        language: source.language,
+        reasonTags: ["전문 매체", "빠른 보안 뉴스", source.label]
       };
     })
   };
@@ -1591,9 +1702,15 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   const securityResults = await Promise.allSettled([
     collectKisaRss(trendLensSources.kisaSecurityNotice, now),
     collectKisaRss(trendLensSources.kisaVulnerability, now),
-    collectCisaKev(now)
+    collectCisaKev(now),
+    ...securityNewsSources.map((source) => collectSecurityNewsRss(source, now))
   ]);
-  const securitySources = [trendLensSources.kisaSecurityNotice, trendLensSources.kisaVulnerability, trendLensSources.cisaKev];
+  const securitySources = [
+    trendLensSources.kisaSecurityNotice,
+    trendLensSources.kisaVulnerability,
+    trendLensSources.cisaKev,
+    ...securityNewsSources
+  ];
   const securityItems = securityResults.flatMap((result, index) => {
     if (result.status === "fulfilled") {
       statuses.push(result.value.status);
@@ -1684,6 +1801,9 @@ function trendLensPlaceholderSnapshot() {
       sourceStatus(trendLensSources.kisaSecurityNotice, "unavailable", now.toISOString(), "첫 보안 RSS 수집 전입니다."),
       sourceStatus(trendLensSources.kisaVulnerability, "unavailable", now.toISOString(), "첫 취약점 RSS 수집 전입니다."),
       sourceStatus(trendLensSources.cisaKev, "unavailable", now.toISOString(), "첫 CISA KEV 수집 전입니다."),
+      ...securityNewsSources.map((source) =>
+        sourceStatus(source, "unavailable", now.toISOString(), `첫 ${source.label} 수집 전입니다.`)
+      ),
       sourceStatus(trendLensSources.googleNews, "unavailable", now.toISOString(), "첫 Google News RSS 수집 전입니다."),
       plannedSourceStatus(trendLensSources.googleTrendsPlanned, now.toISOString(), "아직 자동 수집하지 않습니다. 공식 API 비용, 키 관리, 이용 조건을 확인한 뒤 연결할 후보 소스입니다.")
     ],

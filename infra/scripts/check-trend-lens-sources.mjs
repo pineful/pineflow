@@ -39,6 +39,34 @@ const sources = [
     parser: (text) => `${[...text.matchAll(/<item\b[\s\S]*?<\/item>/gi)].length} rss items`
   },
   {
+    id: "the-hacker-news",
+    label: "The Hacker News RSS",
+    url: "https://feeds.feedburner.com/TheHackersNews",
+    maxBytes: 512 * 1024,
+    parser: (text) => `${rssItemCount(text)} rss items`
+  },
+  {
+    id: "bleeping-computer",
+    label: "BleepingComputer RSS",
+    url: "https://www.bleepingcomputer.com/feed/",
+    maxBytes: 512 * 1024,
+    parser: (text) => `${rssItemCount(text)} rss items`
+  },
+  {
+    id: "security-week",
+    label: "SecurityWeek RSS",
+    url: "https://www.securityweek.com/feed/",
+    maxBytes: 512 * 1024,
+    parser: (text) => `${rssItemCount(text)} rss items`
+  },
+  {
+    id: "help-net-security",
+    label: "Help Net Security RSS",
+    url: "https://www.helpnetsecurity.com/feed/",
+    maxBytes: 512 * 1024,
+    parser: (text) => `${rssItemCount(text)} rss items`
+  },
+  {
     id: "google-news-mandolin",
     label: "Google News mandolin RSS",
     url: googleNewsUrl('만돌린 OR mandolin OR mandolinist OR "Avi Avital" OR "classical mandolin"', {

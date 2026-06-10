@@ -79,7 +79,7 @@ Pineflow는 개인용 서비스지만 인터넷에 노출될 수 있으므로 pr
 - 브라우저 `localStorage`: 비용 사용량 당일 캐시, Trend Lens 읽음 상태, 효과음 설정처럼 secret이 아닌 UI 보조 상태만 저장한다.
 - PostgreSQL: `server/`와 Docker Compose에 남아 있는 EC2 PoC 전용 저장소다. 운영 본선 기능은 이 경로를 확장하지 않는다.
 
-현재 외부 API key가 필요한 운영 source는 없다. 날씨는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 호출하고, Trend Lens는 Lambda allowlist에 고정된 공개 RSS/JSON만 수집한다. 향후 API key가 필요한 source를 추가한다면 기본 비활성화로 시작하고, key는 SSM Parameter Store Standard `SecureString`에 저장한다. GitHub Secrets/Variables, Lambda 평문 환경 변수, DynamoDB, 프론트엔드 번들에는 API key를 넣지 않는다.
+현재 외부 API key가 필요한 운영 source는 없다. 날씨는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 호출하고, Trend Lens는 Lambda allowlist에 고정된 공개 RSS/JSON만 수집한다. 보안 전문 매체 RSS도 공개 feed만 사용하며 API key를 요구하지 않는다. 향후 API key가 필요한 source를 추가한다면 기본 비활성화로 시작하고, key는 SSM Parameter Store Standard `SecureString`에 저장한다. GitHub Secrets/Variables, Lambda 평문 환경 변수, DynamoDB, 프론트엔드 번들에는 API key를 넣지 않는다.
 
 점검 중 보완한 사항:
 
@@ -128,6 +128,7 @@ Trend Lens는 외부 정보를 수집하지만, 브라우저가 외부 source를
 - `POST /api/trend-lens/refresh`는 `scope=all|security` enum만 받는다.
 - 사용자가 입력한 URL, host, query, keyword로 Lambda가 fetch하지 않는다.
 - Lambda source allowlist는 exact host와 path prefix로 제한한다.
+- 보안 섹션은 KISA/CISA 공식 source와 The Hacker News, BleepingComputer, SecurityWeek, Help Net Security 같은 전문 보안 매체 RSS allowlist를 함께 사용한다. 전문 매체는 빠른 현장 신호이며 공식 advisory와 구분해 표시한다.
 - 만돌린, IT 콘텐츠, 교육 분야는 코드에 고정된 Google News RSS query만 사용한다. 사용자가 입력한 검색어나 외부 URL을 RSS query에 섞지 않는다.
 - Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스 source로 쓰지 않고 Google News RSS 결과에서도 제외한다.
 - redirect는 최대 1회만 허용하며 redirect 후에도 allowlist를 다시 검증한다.

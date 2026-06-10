@@ -168,11 +168,12 @@ Pineflow의 제품 성격은 `작업사령탑` 화면 제목에 맞게 `하루 �
 Trend Lens v1 원칙:
 
 - 하루 1회 전체 브리프 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 직접 호출한다.
-- 공식 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 `security` scope만 갱신한다.
+- 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 `security` scope만 갱신한다. KISA/CISA는 확인된 공식 신호, The Hacker News/BleepingComputer/SecurityWeek/Help Net Security는 더 빠른 글로벌 전문 매체 신호로 구분한다.
 - 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 `all` 또는 `security`만 요청할 수 있다.
 - `GET /api/trend-lens`는 DynamoDB 캐시만 읽고 외부 source를 호출하지 않는다.
 - 모든 API route는 JWT authorizer가 필요하다. EventBridge 내부 이벤트는 public route가 아니다.
 - 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
+- 보안 섹션은 KISA/CISA 공식 source와 전문 보안 매체 RSS allowlist를 함께 사용한다. 전문 매체 기사는 `전문 매체`, `빠른 보안 뉴스` reason tag로 공식 경보와 구분한다.
 - 만돌린, IT 콘텐츠, 교육 분야는 Google News RSS allowlist query로 최신 소식을 수집한다. Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스가 아니므로 source로 쓰지 않는다.
 - Google News RSS의 `/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. RSS `<source url>`이 공개 HTTPS publisher 기사 상세 URL처럼 보일 때만 우선 사용하고, 언론사 홈처럼 보이거나 원문 URL을 얻을 수 없으면 제목/출처 기반 Google News 검색 URL을 fallback으로 쓴다. Lambda는 publisher URL을 추가 fetch하지 않으며 fetch allowlist는 그대로 유지한다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존하고 UI에 게재일/등록일을 표시한다.

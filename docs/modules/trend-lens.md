@@ -1,6 +1,6 @@
 # Trend Lens 모듈
 
-마지막 업데이트: 2026-06-09
+마지막 업데이트: 2026-06-10
 
 ## 목적
 
@@ -9,7 +9,7 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 ## v1 범위
 
 - 하루 1회 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 호출한다.
-- 공식 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 보안 섹션만 갱신한다.
+- 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 보안 섹션만 갱신한다. KISA/CISA는 확인된 공식 신호로, 전문 보안 매체 RSS는 더 빠른 현장 신호로 구분한다.
 - 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 전체 또는 보안 신호를 다시 갱신할 수 있다.
 - 첫 화면 표시: 최대 5개 `오늘 브리프`, 긴급 보안 신호 1개, 분야별 상세는 탭 영역.
 - 저장 데이터: 제목, 링크, 출처, 발행 시각, 짧은 요약, 우선순위 근거 태그만 저장한다.
@@ -29,6 +29,7 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 - KISA 보안공지 RSS: 한국 우선 보안 신호.
 - KISA 취약점 정보 RSS: 한국 우선 취약점 신호.
 - CISA KEV JSON: 글로벌 보조, 실제 악용 신호.
+- The Hacker News, BleepingComputer, SecurityWeek, Help Net Security RSS: 공식 advisory보다 빠르게 움직이는 글로벌 전문 보안 뉴스. `전문 매체`, `빠른 보안 뉴스` 태그로 표시해 공식 공지와 구분한다.
 - Google News RSS: 만돌린, IT 콘텐츠, 교육 분야의 최신 소식. 한국 소스를 우선하고, 한국에 영향을 줄 수 있는 영어권 글로벌 소스를 보조로 본다.
 
 Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 매일 볼 뉴스가 아니므로 Trend Lens 일일 브리프 source로 쓰지 않는다. Google News RSS 결과에서도 위키/백과 계열 문서는 필터링한다.
@@ -60,7 +61,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - source별 fetch timeout은 2.2초, 응답 크기는 512KB 이하로 제한한다.
 - 예외적으로 CISA KEV 공식 JSON은 현재 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout을 둔다. 다른 source의 기본 한도는 계속 512KB/2.2초다.
 - 저장 전에는 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다. DynamoDB item size를 넘기지 않기 위해 원문 전문이나 긴 설명을 snapshot payload에 넣지 않는다.
-- 보안 source와 분야별 뉴스 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다.
+- 보안 source와 분야별 뉴스 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다. 보안 전문 매체 RSS는 모두 512KB/2.2초 기본 한도를 적용하며, 응답이 느리거나 실패하면 해당 source status만 `unavailable`로 낮춘다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존한다. 보안 위험 신호의 판단에는 게재일/등록일이 중요하므로 UI에서도 반드시 표시한다.
 - CVE 번호가 제목의 핵심으로 노출되는 보안 항목은 저장 전에 `짧은 취약점 설명 · CVE-...` 형태로 보강한다. CISA KEV의 vendor/product/취약점 설명과 같은 refresh 안의 CVE 교차 참조를 우선 사용하고, 없으면 KISA RSS 요약의 첫 유효 문장을 짧게 사용한다. NVD 같은 CVE별 외부 조회를 항목마다 추가하려면 비용, timeout, source allowlist, 저장 payload 정책을 ADR로 먼저 검토한다.
 - 수동 refresh는 기본 cooldown을 두되, 사용자가 강제 refresh를 요청하면 짧은 연타 방지 cooldown만 적용한다.
@@ -81,6 +82,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - `캐시 다시 조회`는 `GET /api/trend-lens`로 저장된 snapshot만 다시 읽는다. 브라우저 리로드보다 먼저 시도할 수 있는 가벼운 확인 동작이다.
 - `전체 새로고침`은 `POST /api/trend-lens/refresh`로 외부 allowlist source를 다시 수집한다. 저장된 캐시가 없거나 오래됐을 때 사용하는 동작이며 단순 리로드와 혼동되지 않아야 한다.
 - source 상태가 아직 없거나 캐시 조회가 실패해도 `수집 상태와 저장 정책 보기`는 비어 있으면 안 된다. 최소한 `저장된 브리프 조회`, `전체 새로고침`, `저장 정책` fallback row를 보여준다.
+- 보안 섹션은 공식 확인 신호와 빠른 전문 매체 신호를 함께 보여준다. 전문 매체 기사는 속도가 빠른 대신 공식 확인이 아닐 수 있으므로 reason tag에 `전문 매체`를 표시한다.
 - `CVE-...`만 보이는 제목은 사용자가 바로 판단하기 어렵다. 보안 카드의 제목에는 CVE 앞에 제품/취약점 유형/영향을 짧게 붙이고, CVE 번호는 추적용 식별자로 뒤에 둔다.
 - 기사를 클릭해 읽으면 브라우저 `localStorage`에 읽음 상태를 저장한다. 오늘 읽은 항목은 그날 목록 위치를 유지하고 `오늘 읽음`으로 표시한다. 다음날 이후 같은 URL이 다시 나타나면 목록 아래로 보내고 흐리게 표시한다.
 - 읽음 상태는 메타 텍스트만으로 표시하지 않는다. 오늘 읽은 항목도 카드/리스트 본문을 살짝 흐리게 하고 체크 아이콘을 붙여, 다시 열었을 때 이미 본 글인지 즉시 구분되어야 한다. 다음날 이후의 읽은 항목은 더 흐리게 유지한다.
