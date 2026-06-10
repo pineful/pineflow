@@ -110,6 +110,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 날씨 상세를 펼쳐도 왼쪽 누적 시간 그래프 카드가 함께 늘어나지 않도록 그래프 카드를 상단 정렬로 고정하고 weather deck 내부 스크롤로 상세 예보를 제한.
 - Trend Lens에서 읽은 기사 상태가 `오늘 읽음` 텍스트만으로 약하게 보이지 않도록, 오늘 읽은 항목과 이전에 읽은 항목 모두 본문 흐림과 체크 아이콘으로 구분되게 보강.
 - Trend Lens Google News RSS 기사 링크가 `news.google.com/rss/articles/...` 중간 URL로 열려 빈 화면처럼 보일 수 있던 문제를 수정. 새 수집부터는 Google News article/decode endpoint를 제한 조회해 publisher 원문 URL을 우선 저장하고, decode 실패 항목만 Google News 검색 fallback으로 열리게 보정.
+- Trend Lens `완전 새로 받기`를 추가해 잘못된 기존 브리프 cache를 삭제하고 새 수집 정책으로 다시 받을 수 있게 보강.
 - 긴급 보안 신호에 The Hacker News, BleepingComputer, SecurityWeek, Help Net Security RSS를 추가해 KISA/CISA 공식 경보보다 빠른 전문 매체 신호도 함께 볼 수 있게 보강. 전문 매체 항목은 `전문 매체`, `빠른 보안 뉴스` 태그로 공식 경보와 구분한다.
 - 화면 서비스 제목을 `작업사령탑`으로 바꾸고, Pineflow는 로고/브랜드명으로 유지하도록 정리.
 - 상단 대시보드에서 최근 세션 dock을 왼쪽 흐름 그래프 바로 아래에 고정하고, 오른쪽 커맨드 영역의 긴 설명 문구를 짧은 운영 라벨로 압축.

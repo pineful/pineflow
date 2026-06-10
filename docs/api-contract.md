@@ -344,7 +344,8 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
 ```json
 {
   "scope": "all",
-  "force": true
+  "force": true,
+  "reset": false
 }
 ```
 
@@ -359,6 +360,7 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
 - `all` 수동 갱신은 기본 30분 cooldown을 둔다.
 - `security` 수동 갱신은 기본 5분 cooldown을 둔다.
 - `force=true`이면 사용자가 명시적으로 강제한 요청으로 보고 `all` 5분, `security` 1분의 짧은 연타 방지 cooldown만 적용한다.
+- `reset=true`이면 `SYSTEM#TREND_LENS` partition의 `LATEST`와 날짜 snapshot을 먼저 삭제한 뒤 이전 snapshot 없이 다시 수집한다. 출퇴근 기록과 사용자 설정은 삭제하지 않는다. 연타 방지를 위해 reset 전용 1분 guard를 둔다.
 - cooldown 중이면 `429`와 함께 `nextManualRefreshAllowedAt`을 반환한다. 프론트엔드는 이 상황을 서버 장애가 아니라 방금 갱신한 상태로 안내한다.
 - 자동 수집은 public endpoint가 아니라 EventBridge가 Lambda 내부 이벤트를 호출한다.
 

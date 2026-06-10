@@ -671,6 +671,7 @@ async function loadUsageSnapshot(pk) {
 const trendLensPk = "SYSTEM#TREND_LENS";
 const trendLensLatestSk = "TREND_LENS#LATEST";
 const trendLensManualPrefix = "TREND_LENS#MANUAL#";
+const trendLensResetPrefix = "TREND_LENS#RESET#";
 const trendLensDefaultResponseLimitBytes = 512 * 1024;
 const trendLensSourceTimeoutMs = 2200;
 const trendLensLargeSourceTimeoutMs = 4500;
@@ -694,6 +695,7 @@ const trendLensForcedCooldownMs = {
   all: 5 * 60 * 1000,
   security: 60 * 1000
 };
+const trendLensResetCooldownMs = 60 * 1000;
 
 const trendLensSections = [
   {
@@ -894,6 +896,10 @@ function trendLensSnapshotKey(date) {
 
 function trendManualKey(scope) {
   return `${trendLensManualPrefix}${scope}`;
+}
+
+function trendResetKey(scope) {
+  return `${trendLensResetPrefix}${scope}`;
 }
 
 function plusDays(date, days) {
@@ -2030,11 +2036,95 @@ async function saveTrendManualGuard(scope, now) {
   );
 }
 
+async function loadTrendResetGuard(scope) {
+  const result = await dynamodb.send(
+    new GetItemCommand({
+      TableName: tableName,
+      Key: objectToItem({ pk: trendLensPk, sk: trendResetKey(scope) })
+    })
+  );
+  return itemToObject(result.Item);
+}
+
+async function saveTrendResetGuard(scope, now) {
+  await dynamodb.send(
+    new PutItemCommand({
+      TableName: tableName,
+      Item: objectToItem({
+        pk: trendLensPk,
+        sk: trendResetKey(scope),
+        entityType: "TREND_LENS_RESET_GUARD",
+        scope,
+        lastResetRefreshAt: now.toISOString(),
+        expiresAt: ttlEpochSeconds(now, 1)
+      })
+    })
+  );
+}
+
+async function clearTrendLensCache() {
+  const items = [];
+  let ExclusiveStartKey;
+
+  do {
+    const result = await dynamodb.send(
+      new QueryCommand({
+        TableName: tableName,
+        KeyConditionExpression: "pk = :pk",
+        ProjectionExpression: "pk, sk",
+        ExpressionAttributeValues: {
+          ":pk": { S: trendLensPk }
+        },
+        ExclusiveStartKey
+      })
+    );
+
+    items.push(
+      ...(result.Items ?? [])
+        .map(itemToObject)
+        .filter((item) => item?.pk && (item.sk === trendLensLatestSk || item.sk?.startsWith("TREND_LENS#SNAPSHOT#")))
+    );
+    ExclusiveStartKey = result.LastEvaluatedKey;
+  } while (ExclusiveStartKey);
+
+  for (let index = 0; index < items.length; index += 25) {
+    const chunk = items.slice(index, index + 25);
+    if (chunk.length === 0) continue;
+
+    await dynamodb.send(
+      new TransactWriteItemsCommand({
+        TransactItems: chunk.map((item) => ({
+          Delete: {
+            TableName: tableName,
+            Key: objectToItem({ pk: item.pk, sk: item.sk })
+          }
+        }))
+      })
+    );
+  }
+
+  return items.length;
+}
+
 async function refreshTrendLensSnapshot(scope = "all", source = "manual", options = {}) {
   const normalizedScope = scope === "security" ? "security" : "all";
   const now = new Date();
+  let clearedCacheItems = 0;
 
-  if (source === "manual") {
+  if (source === "manual" && options.reset) {
+    const resetGuard = await loadTrendResetGuard(normalizedScope);
+    const lastResetAt = resetGuard?.lastResetRefreshAt ? new Date(resetGuard.lastResetRefreshAt).getTime() : 0;
+    const nextResetAllowedAt = lastResetAt + trendLensResetCooldownMs;
+    if (lastResetAt && nextResetAllowedAt > now.getTime()) {
+      return json(429, {
+        error: "Trend Lens를 방금 완전히 새로 받았습니다. 잠시 후 다시 시도해주세요.",
+        nextManualRefreshAllowedAt: new Date(nextResetAllowedAt).toISOString()
+      });
+    }
+    clearedCacheItems = await clearTrendLensCache();
+  }
+
+  if (source === "manual" && !options.reset) {
     const guard = await loadTrendManualGuard(normalizedScope);
     const lastManualAt = guard?.lastManualRefreshAt ? new Date(guard.lastManualRefreshAt).getTime() : 0;
     const cooldown = options.force ? trendLensForcedCooldownMs[normalizedScope] : trendLensManualCooldownMs[normalizedScope];
@@ -2047,12 +2137,18 @@ async function refreshTrendLensSnapshot(scope = "all", source = "manual", option
     }
   }
 
-  const previousSnapshot = await loadTrendLensSnapshot();
+  const previousSnapshot = options.reset ? null : await loadTrendLensSnapshot();
   const snapshot = await buildTrendLensSnapshot(normalizedScope, previousSnapshot);
+  if (options.reset) {
+    snapshot.note = `${snapshot.note} 기존 Trend Lens 캐시 ${clearedCacheItems}개를 비우고 다시 수집했습니다.`;
+  }
   await saveTrendLensSnapshot(snapshot);
 
   if (source === "manual") {
     await saveTrendManualGuard(normalizedScope, now);
+    if (options.reset) {
+      await saveTrendResetGuard(normalizedScope, now);
+    }
   }
 
   return json(200, snapshot);
@@ -2579,7 +2675,10 @@ export async function handler(event) {
     if (method === "POST" && path === "/api/check-out") return checkOut(pk);
     if (method === "POST" && path === "/api/trend-lens/refresh") {
       const scope = body.value.scope === "security" ? "security" : "all";
-      return refreshTrendLensSnapshot(scope, "manual", { force: Boolean(body.value.force) });
+      return refreshTrendLensSnapshot(scope, "manual", {
+        force: Boolean(body.value.force),
+        reset: Boolean(body.value.reset)
+      });
     }
     if (method === "PATCH" && path.startsWith("/api/records/")) {
       const recordId = recordIdFromPath(path);

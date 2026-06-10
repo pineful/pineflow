@@ -181,3 +181,4 @@
 - 이미 캐시된 예전 Trend Lens 항목도 프론트엔드에서 Google News 검색 fallback으로 열리도록 보정했다.
 - 이 보정은 사용자 클릭 링크만 바꾸며, Lambda가 임의 publisher URL을 추가 fetch하지 않도록 Trend Lens 소스 정책과 API 계약 문서를 갱신했다.
 - 만돌린, IT 콘텐츠, 교육 기사 클릭이 검색 페이지로만 이동하지 않도록 Google News RSS 중간 URL에서 원문 링크를 해독하는 수집 단계를 추가했다.
+- Trend Lens에 `완전 새로 받기` 동작을 추가해 기존 snapshot만 삭제한 뒤 새 링크 해독 정책으로 다시 수집할 수 있게 했다.

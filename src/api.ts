@@ -104,6 +104,13 @@ export function refreshTrendLens(scope: "all" | "security" = "all") {
   });
 }
 
+export function resetTrendLens(scope: "all" | "security" = "all") {
+  return requestJson<TrendLensSnapshot>("/api/trend-lens/refresh", {
+    method: "POST",
+    body: JSON.stringify({ scope, force: true, reset: true }),
+  });
+}
+
 export function createCheckIn(mode: WorkMode, note: string) {
   return requestState("/api/check-in", {
     method: "POST",

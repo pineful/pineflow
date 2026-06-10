@@ -10,7 +10,7 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 
 - 하루 1회 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 호출한다.
 - 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 보안 섹션만 갱신한다. KISA/CISA는 확인된 공식 신호로, 전문 보안 매체 RSS는 더 빠른 현장 신호로 구분한다.
-- 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 전체 또는 보안 신호를 다시 갱신할 수 있다.
+- 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 전체 또는 보안 신호를 다시 갱신할 수 있다. `reset=true`이면 Trend Lens 전용 캐시를 삭제하고 이전 snapshot 없이 다시 수집한다.
 - 첫 화면 표시: 최대 5개 `오늘 브리프`, 긴급 보안 신호 1개, 분야별 상세는 탭 영역.
 - 저장 데이터: 제목, 링크, 출처, 발행 시각, 짧은 요약, 우선순위 근거 태그만 저장한다.
 
@@ -49,8 +49,11 @@ DynamoDB single-table 원칙을 유지한다.
 - `sk = TREND_LENS#SNAPSHOT#YYYY-MM-DD`
 - `sk = TREND_LENS#MANUAL#all`
 - `sk = TREND_LENS#MANUAL#security`
+- `sk = TREND_LENS#RESET#all`
 
 Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한다. 사용자별 주제 설정이 생기면 `USER#<sub>` 아래 별도 item으로 분리하되 GSI와 Scan은 추가하지 않는다.
+
+`완전 새로 받기`는 위 `SYSTEM#TREND_LENS` partition 안의 `LATEST`와 날짜 snapshot만 삭제한다. 출퇴근 기록, 사용자 설정, 운영 사용량 cache는 대상이 아니다. 실수 연타를 막기 위해 reset guard는 삭제하지 않고 1분 cooldown을 적용한다.
 
 ## 비용/보안 가드레일
 
@@ -82,6 +85,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - `loading`, `refreshing`, `수집 전`, `캐시 조회 실패`, `이전 캐시`는 서로 다른 문구와 tone으로 구분한다. `캐시 대기`처럼 사용자가 기다려야 하는지 끝난 상태인지 알기 어려운 표현은 쓰지 않는다.
 - `캐시 다시 조회`는 `GET /api/trend-lens`로 저장된 snapshot만 다시 읽는다. 브라우저 리로드보다 먼저 시도할 수 있는 가벼운 확인 동작이다.
 - `전체 새로고침`은 `POST /api/trend-lens/refresh`로 외부 allowlist source를 다시 수집한다. 저장된 캐시가 없거나 오래됐을 때 사용하는 동작이며 단순 리로드와 혼동되지 않아야 한다.
+- `완전 새로 받기`는 기존 Trend Lens snapshot을 삭제한 뒤 `scope=all`로 다시 수집한다. 링크 해독 정책이 바뀌었거나 잘못된 cache가 남아 있을 때 쓰는 정리 동작이다.
 - source 상태가 아직 없거나 캐시 조회가 실패해도 `수집 상태와 저장 정책 보기`는 비어 있으면 안 된다. 최소한 `저장된 브리프 조회`, `전체 새로고침`, `저장 정책` fallback row를 보여준다.
 - 보안 섹션은 공식 확인 신호와 빠른 전문 매체 신호를 함께 보여준다. 전문 매체 기사는 속도가 빠른 대신 공식 확인이 아닐 수 있으므로 reason tag에 `전문 매체`를 표시한다.
 - `CVE-...`만 보이는 제목은 사용자가 바로 판단하기 어렵다. 보안 카드의 제목에는 CVE 앞에 제품/취약점 유형/영향을 짧게 붙이고, CVE 번호는 추적용 식별자로 뒤에 둔다.

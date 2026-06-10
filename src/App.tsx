@@ -18,6 +18,7 @@ import {
   isApiRequestError,
   isSessionExpiredError,
   refreshTrendLens,
+  resetTrendLens,
   saveDailyGoal,
   updateRecord
 } from "./api";
@@ -708,7 +709,8 @@ function TrendLensPanel({
   onMarkRead,
   onReloadCache,
   onRefreshAll,
-  onRefreshSecurity
+  onRefreshSecurity,
+  onResetAll
 }: {
   snapshot: TrendLensSnapshot | null;
   status: TrendLensStatus;
@@ -718,6 +720,7 @@ function TrendLensPanel({
   onReloadCache: () => void;
   onRefreshAll: () => void;
   onRefreshSecurity: () => void;
+  onResetAll: () => void;
 }) {
   const [activeCategory, setActiveCategory] = useState<TrendLensCategoryId>("security");
   const isBusy = status === "loading" || status === "refreshing";
@@ -762,6 +765,9 @@ function TrendLensPanel({
             </button>
             <button type="button" disabled={isBusy} onClick={onRefreshAll}>
               전체 새로고침
+            </button>
+            <button type="button" disabled={isBusy} onClick={onResetAll}>
+              완전 새로 받기
             </button>
           </div>
         </div>
@@ -2823,6 +2829,33 @@ function App() {
     }
   }
 
+  async function resetAndRefreshTrendLens() {
+    setTrendLensStatus("refreshing");
+    setTrendLensErrorMessage("");
+
+    try {
+      const snapshot = await resetTrendLens("all");
+      setTrendLens(snapshot);
+      setTrendLensStatus("ready");
+      playFeedback("success");
+      flashToast("기존 브리프를 비우고 새로 받았어요");
+    } catch (error) {
+      if (isSessionExpiredError(error)) {
+        expireSession();
+        return;
+      }
+
+      const message = error instanceof Error ? error.message.trim() : "";
+      setTrendLensStatus(trendLens ? "ready" : "unavailable");
+      setTrendLensErrorMessage(
+        !message || message === "Request failed." || message === "Unexpected server error."
+          ? "Trend Lens 캐시를 비우고 다시 받지 못했습니다."
+          : message
+      );
+      flashToast("Trend Lens 새 수집을 다시 확인해주세요");
+    }
+  }
+
   function signOut() {
     clearSession();
     requestInFlightRef.current = false;
@@ -3532,6 +3565,7 @@ function App() {
             onReloadCache={reloadTrendLensCache}
             onRefreshAll={() => updateTrendLens("all")}
             onRefreshSecurity={() => updateTrendLens("security")}
+            onResetAll={resetAndRefreshTrendLens}
           />
         </aside>
       </div>

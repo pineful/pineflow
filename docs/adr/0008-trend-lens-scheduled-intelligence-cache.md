@@ -23,6 +23,7 @@ Trend Lens는 다음 구조로 구현한다.
 - 캐시 정리를 위해 DynamoDB TTL `expiresAt`을 활성화한다.
 - 전체 refresh는 allowlist source를 병렬로 수집한다. 한 source 실패가 전체 브리프 실패로 번지지 않게 `sourceStatuses`에 실패를 기록하고 가능한 section만 갱신한다.
 - 사용자가 `force=true`로 수동 갱신하면 일반 cooldown보다 짧은 연타 방지 cooldown만 적용한다.
+- 사용자가 `reset=true`로 수동 갱신하면 `SYSTEM#TREND_LENS` partition의 `LATEST`와 날짜 snapshot만 삭제하고 이전 snapshot 없이 다시 수집한다. 출퇴근 기록, 사용자 설정, 운영 사용량 cache는 삭제 대상이 아니다. reset 전용 guard는 남겨 1분 연타 방지를 적용한다.
 
 ## 비용 판단
 
