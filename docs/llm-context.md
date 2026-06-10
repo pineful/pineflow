@@ -175,7 +175,7 @@ Trend Lens v1 원칙:
 - 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
 - 보안 섹션은 KISA/CISA 공식 source와 전문 보안 매체 RSS allowlist를 함께 사용한다. 전문 매체 기사는 `전문 매체`, `빠른 보안 뉴스` reason tag로 공식 경보와 구분한다.
 - 만돌린, IT 콘텐츠, 교육 분야는 Google News RSS allowlist query로 최신 소식을 수집한다. Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스가 아니므로 source로 쓰지 않는다.
-- Google News RSS의 `/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. RSS `<source url>`이 공개 HTTPS publisher 기사 상세 URL처럼 보일 때만 우선 사용하고, 언론사 홈처럼 보이거나 원문 URL을 얻을 수 없으면 제목/출처 기반 Google News 검색 URL을 fallback으로 쓴다. Lambda는 publisher URL을 추가 fetch하지 않으며 fetch allowlist는 그대로 유지한다.
+- Google News RSS의 `/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. Lambda는 Google News article/decode endpoint만 제한적으로 조회해 publisher 원문 URL을 우선 저장한다. publisher URL은 사용자가 클릭할 표시 URL일 뿐 Lambda가 추가 fetch하지 않는다. decode가 실패한 항목만 제목/출처 기반 Google News 검색 URL을 fallback으로 쓴다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존하고 UI에 게재일/등록일을 표시한다.
 - CVE 번호가 제목에 드러나는 보안 항목은 `짧은 취약점 설명 · CVE-...` 형태로 저장한다. CISA KEV의 vendor/product/취약점 설명과 KISA/CISA 교차 참조를 우선 사용하고, CVE별 외부 조회 API를 추가하려면 비용/timeout/source allowlist ADR이 먼저다.
 - 전체 refresh는 source를 병렬로 수집하고, source별 실패는 전체 API 실패가 아니라 `sourceStatuses`로 낮춰 기록한다.

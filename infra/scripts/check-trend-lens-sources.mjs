@@ -13,6 +13,136 @@ function rssItemCount(text) {
   return [...text.matchAll(/<item\b[\s\S]*?<\/item>/gi)].length;
 }
 
+function decodeXmlText(value = "") {
+  return value
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+function rssTagValue(item, tag) {
+  const match = item.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  return decodeXmlText(match?.[1] ?? "");
+}
+
+function firstRssItem(text) {
+  return text.match(/<item\b[\s\S]*?<\/item>/i)?.[0] ?? "";
+}
+
+function googleNewsArticleId(value) {
+  try {
+    const url = new URL(value);
+    if (url.hostname !== "news.google.com") return "";
+    const match = url.pathname.match(/\/(?:rss\/)?articles\/([^/?#]+)/i) || url.pathname.match(/\/read\/([^/?#]+)/i);
+    return decodeURIComponent(match?.[1] ?? "");
+  } catch {
+    return "";
+  }
+}
+
+function googleNewsArticlePageUrl(articleId, source) {
+  const url = new URL(`https://news.google.com/articles/${encodeURIComponent(articleId)}`);
+  url.searchParams.set("hl", source.hl);
+  url.searchParams.set("gl", source.gl);
+  url.searchParams.set("ceid", source.ceid);
+  return url.toString();
+}
+
+async function fetchLimitedText(url, maxBytes, options = {}) {
+  const response = await fetch(url, {
+    method: options.method ?? "GET",
+    signal: AbortSignal.timeout(options.timeoutMs ?? sourceTimeoutMs),
+    headers: {
+      accept: options.accept ?? "application/json, application/rss+xml, application/xml, text/xml",
+      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+      "user-agent": "PineflowTrendLensSourceCheck/0.1"
+    },
+    body: options.body
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  return readLimitedText(response, maxBytes);
+}
+
+function googleNewsDecodeParamsFromHtml(html) {
+  const timestamp = decodeXmlText(html.match(/data-n-a-ts="([^"]+)"/i)?.[1] ?? "");
+  const signature = decodeXmlText(html.match(/data-n-a-sg="([^"]+)"/i)?.[1] ?? "");
+  const articleId = decodeXmlText(html.match(/data-n-a-id="([^"]+)"/i)?.[1] ?? "");
+  if (!timestamp || !signature) return null;
+  return { articleId, timestamp, signature };
+}
+
+function googleNewsDecodeRequestBody(articleId, params, source) {
+  const request = [
+    "garturlreq",
+    [
+      [source.hl, source.gl, ["FINANCE_TOP_INDICES"], null, null, 1, 1, source.ceid, null, 180, null, null, null, null, null, 0],
+      source.hl,
+      source.gl,
+      1,
+      [2, 3, 4, 8],
+      1,
+      0,
+      "655000234",
+      0,
+      0,
+      null,
+      0
+    ],
+    articleId,
+    Number(params.timestamp),
+    params.signature
+  ];
+  return new URLSearchParams({
+    "f.req": JSON.stringify([[["Fbv4je", JSON.stringify(request), null, "generic"]]])
+  }).toString();
+}
+
+function directUrlFromGoogleNewsBatch(text) {
+  const parsed = JSON.parse(text.replace(/^\)\]\}'\s*/, "").trim());
+  const row = parsed.find((entry) => Array.isArray(entry) && entry[0] === "wrb.fr" && entry[1] === "Fbv4je");
+  const payload = row && typeof row[2] === "string" ? JSON.parse(row[2]) : null;
+  return Array.isArray(payload) && payload[0] === "garturlres" ? payload[1] : "";
+}
+
+async function firstGoogleNewsDirectHost(text, source) {
+  const item = firstRssItem(text);
+  const link = rssTagValue(item, "link");
+  const articleId = googleNewsArticleId(link);
+  if (!articleId) return "no direct id";
+
+  const { text: html } = await fetchLimitedText(googleNewsArticlePageUrl(articleId, source), 1536 * 1024, {
+    accept: "text/html, application/xhtml+xml, */*"
+  });
+  const params = googleNewsDecodeParamsFromHtml(html);
+  if (!params) return "no decode params";
+
+  const decodeArticleId = params.articleId || articleId;
+  const decodeUrl = new URL("https://news.google.com/_/DotsSplashUi/data/batchexecute");
+  decodeUrl.searchParams.set("rpcids", "Fbv4je");
+  const { text: decoded } = await fetchLimitedText(decodeUrl.toString(), 64 * 1024, {
+    method: "POST",
+    accept: "*/*",
+    body: googleNewsDecodeRequestBody(decodeArticleId, params, source)
+  });
+  const directUrl = directUrlFromGoogleNewsBatch(decoded);
+  return directUrl ? `first direct host ${new URL(directUrl).hostname}` : "no direct url";
+}
+
+async function googleNewsParser(text, source) {
+  const count = rssItemCount(text);
+  const direct = count > 0 ? await firstGoogleNewsDirectHost(text, source) : "empty feed";
+  return `${count} rss items, ${direct}`;
+}
+
 const sources = [
   {
     id: "cisa-kev",
@@ -69,6 +199,9 @@ const sources = [
   {
     id: "google-news-mandolin",
     label: "Google News mandolin RSS",
+    hl: "ko",
+    gl: "KR",
+    ceid: "KR:ko",
     url: googleNewsUrl('만돌린 OR mandolin OR mandolinist OR "Avi Avital" OR "classical mandolin"', {
       hl: "ko",
       gl: "KR",
@@ -76,11 +209,14 @@ const sources = [
       maxAgeDays: 60
     }),
     maxBytes: 512 * 1024,
-    parser: (text) => `${rssItemCount(text)} rss items`
+    parser: googleNewsParser
   },
   {
     id: "google-news-it-content",
     label: "Google News IT content RSS",
+    hl: "ko",
+    gl: "KR",
+    ceid: "KR:ko",
     url: googleNewsUrl("IT 콘텐츠 OR 기술 트렌드 OR 생성형 AI OR 사이버보안 콘텐츠 OR 개발자 콘텐츠 OR 테크 콘텐츠", {
       hl: "ko",
       gl: "KR",
@@ -88,11 +224,14 @@ const sources = [
       maxAgeDays: 14
     }),
     maxBytes: 512 * 1024,
-    parser: (text) => `${rssItemCount(text)} rss items`
+    parser: googleNewsParser
   },
   {
     id: "google-news-education",
     label: "Google News education trend RSS",
+    hl: "ko",
+    gl: "KR",
+    ceid: "KR:ko",
     url: googleNewsUrl("교육 트렌드 OR 에듀테크 OR AI 교육 OR 디지털 교육 OR 교육부 AI", {
       hl: "ko",
       gl: "KR",
@@ -100,7 +239,7 @@ const sources = [
       maxAgeDays: 14
     }),
     maxBytes: 512 * 1024,
-    parser: (text) => `${rssItemCount(text)} rss items`
+    parser: googleNewsParser
   }
 ];
 
@@ -146,7 +285,7 @@ const results = await Promise.allSettled(
       id: source.id,
       label: source.label,
       bytes,
-      detail: source.parser(text)
+      detail: await source.parser(text, source)
     };
   })
 );

@@ -674,6 +674,10 @@ const trendLensManualPrefix = "TREND_LENS#MANUAL#";
 const trendLensDefaultResponseLimitBytes = 512 * 1024;
 const trendLensSourceTimeoutMs = 2200;
 const trendLensLargeSourceTimeoutMs = 4500;
+const googleNewsDecodePageLimitBytes = 1536 * 1024;
+const googleNewsDecodeResponseLimitBytes = 64 * 1024;
+const googleNewsDecodeTimeoutMs = 1800;
+const trendLensNewsItemsPerFeed = 3;
 const trendLensSnapshotTtlDays = 30;
 const trendLensTextLimits = {
   title: 180,
@@ -1517,6 +1521,153 @@ function isGoogleNewsInterstitialUrl(value) {
   }
 }
 
+function googleNewsArticleId(value) {
+  try {
+    const url = new URL(value);
+    if (url.hostname !== trendLensSources.googleNews.host) return "";
+    const match = url.pathname.match(/\/(?:rss\/)?articles\/([^/?#]+)/i) || url.pathname.match(/\/read\/([^/?#]+)/i);
+    return decodeURIComponent(match?.[1] ?? "");
+  } catch {
+    return "";
+  }
+}
+
+function googleNewsArticlePageUrl(articleId, feed) {
+  const url = new URL(`https://news.google.com/articles/${encodeURIComponent(articleId)}`);
+  url.searchParams.set("hl", feed.hl);
+  url.searchParams.set("gl", feed.gl);
+  url.searchParams.set("ceid", feed.ceid);
+  return url.toString();
+}
+
+function isAllowedGoogleNewsDecodeUrl(value) {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      url.hostname === trendLensSources.googleNews.host &&
+      (url.pathname.startsWith("/articles/") || url.pathname === "/_/DotsSplashUi/data/batchexecute")
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function fetchGoogleNewsDecodeText(url, options = {}) {
+  if (!isAllowedGoogleNewsDecodeUrl(url)) {
+    throw new Error("Google News decode URL is not allowlisted.");
+  }
+
+  const timeoutMs = options.timeoutMs ?? googleNewsDecodeTimeoutMs;
+  const maxBytes = options.maxBytes ?? googleNewsDecodeResponseLimitBytes;
+  let currentUrl = url;
+
+  for (let redirectCount = 0; redirectCount < 2; redirectCount += 1) {
+    const response = await fetch(currentUrl, {
+      method: options.method ?? "GET",
+      redirect: "manual",
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: {
+        accept: options.accept ?? "text/html, application/xhtml+xml, */*",
+        "content-type": options.contentType ?? "application/x-www-form-urlencoded;charset=UTF-8",
+        "user-agent": "PineflowTrendLens/0.1"
+      },
+      body: options.body
+    });
+
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get("location");
+      if (!location) throw new Error("Google News decode redirected without location.");
+      const redirected = new URL(location, currentUrl).toString();
+      if (!isAllowedGoogleNewsDecodeUrl(redirected)) {
+        throw new Error("Google News decode redirected outside allowlist.");
+      }
+      currentUrl = redirected;
+      continue;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Google News decode returned ${response.status}.`);
+    }
+
+    return readLimitedText(response, maxBytes);
+  }
+
+  throw new Error("Google News decode redirected too many times.");
+}
+
+function googleNewsDecodeParamsFromHtml(html) {
+  const timestamp = decodeXmlText(html.match(/data-n-a-ts="([^"]+)"/i)?.[1] ?? "");
+  const signature = decodeXmlText(html.match(/data-n-a-sg="([^"]+)"/i)?.[1] ?? "");
+  const articleId = decodeXmlText(html.match(/data-n-a-id="([^"]+)"/i)?.[1] ?? "");
+  if (!timestamp || !signature) return null;
+  return { articleId, timestamp, signature };
+}
+
+function googleNewsDecodeRequestBody(articleId, params, feed) {
+  const request = [
+    "garturlreq",
+    [
+      [feed.hl, feed.gl, ["FINANCE_TOP_INDICES"], null, null, 1, 1, feed.ceid, null, 180, null, null, null, null, null, 0],
+      feed.hl,
+      feed.gl,
+      1,
+      [2, 3, 4, 8],
+      1,
+      0,
+      "655000234",
+      0,
+      0,
+      null,
+      0
+    ],
+    articleId,
+    Number(params.timestamp),
+    params.signature
+  ];
+  return new URLSearchParams({
+    "f.req": JSON.stringify([[["Fbv4je", JSON.stringify(request), null, "generic"]]])
+  }).toString();
+}
+
+function googleNewsDirectUrlFromBatchResponse(text) {
+  const jsonText = text.replace(/^\)\]\}'\s*/, "").trim();
+  const rows = safeParseJson(jsonText);
+  if (!Array.isArray(rows)) return "";
+
+  const responseRow = rows.find((row) => Array.isArray(row) && row[0] === "wrb.fr" && row[1] === "Fbv4je");
+  if (!responseRow || typeof responseRow[2] !== "string") return "";
+
+  const payload = safeParseJson(responseRow[2]);
+  const directUrl = Array.isArray(payload) && payload[0] === "garturlres" ? payload[1] : "";
+  return isDisplayableNewsUrl(directUrl) ? directUrl : "";
+}
+
+async function resolveGoogleNewsDirectUrl(value, feed) {
+  const articleId = googleNewsArticleId(value);
+  if (!articleId) return "";
+
+  const html = await fetchGoogleNewsDecodeText(googleNewsArticlePageUrl(articleId, feed), {
+    maxBytes: googleNewsDecodePageLimitBytes,
+    timeoutMs: googleNewsDecodeTimeoutMs
+  });
+  const params = googleNewsDecodeParamsFromHtml(html);
+  if (!params) return "";
+
+  const decodeArticleId = params.articleId || articleId;
+  const url = new URL("https://news.google.com/_/DotsSplashUi/data/batchexecute");
+  url.searchParams.set("rpcids", "Fbv4je");
+  const response = await fetchGoogleNewsDecodeText(url.toString(), {
+    method: "POST",
+    accept: "*/*",
+    body: googleNewsDecodeRequestBody(decodeArticleId, params, feed),
+    maxBytes: googleNewsDecodeResponseLimitBytes,
+    timeoutMs: googleNewsDecodeTimeoutMs
+  });
+
+  return googleNewsDirectUrlFromBatchResponse(response);
+}
+
 function isStaticKnowledgeUrl(value) {
   try {
     const url = new URL(value);
@@ -1554,6 +1705,20 @@ function newsSourceUrlFor(item, feed, title, sourceName) {
   if (isDisplayableNewsUrl(item.sourceUrl)) return item.sourceUrl;
   if (isDisplayableNewsUrl(item.link)) return item.link;
   return googleNewsSearchFallbackUrl(feed, title, sourceName);
+}
+
+async function directNewsSourceUrlFor(item, feed, title, sourceName) {
+  const fallbackUrl = newsSourceUrlFor(item, feed, title, sourceName);
+  if (isDisplayableNewsUrl(fallbackUrl)) return fallbackUrl;
+
+  try {
+    const directUrl = await resolveGoogleNewsDirectUrl(item.link, feed);
+    if (directUrl) return directUrl;
+  } catch {
+    return fallbackUrl;
+  }
+
+  return fallbackUrl;
 }
 
 function isRecentEnough(published, now, maxAgeDays) {
@@ -1600,7 +1765,7 @@ async function collectNewsFeed(category, feed, now) {
       published: new Date(item.publishedAt)
     }))
     .filter((item) => isRecentEnough(item.published, now, feed.maxAgeDays))
-    .slice(0, 5);
+    .slice(0, trendLensNewsItemsPerFeed);
 
   return {
     status: sourceStatus(
@@ -1609,10 +1774,10 @@ async function collectNewsFeed(category, feed, now) {
       checkedAt,
       `${rssItems.length}개 최신 소식을 반영했습니다. 백과/위키 계열 정적 문서는 제외합니다.`
     ),
-    items: rssItems.map((item) => {
+    items: await Promise.all(rssItems.map(async (item) => {
       const sourceName = item.sourceName || source.label;
       const title = cleanNewsTitle(item.title, sourceName);
-      const sourceUrl = newsSourceUrlFor(item, feed, title, sourceName);
+      const sourceUrl = await directNewsSourceUrlFor(item, feed, title, sourceName);
       return {
         id: `news-${feed.id}-${item.id}`.slice(0, 180),
         category,
@@ -1630,7 +1795,7 @@ async function collectNewsFeed(category, feed, now) {
           "최신 소식"
         ]
       };
-    })
+    }))
   };
 }
 

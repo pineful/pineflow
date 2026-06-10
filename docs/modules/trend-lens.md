@@ -34,7 +34,7 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 
 Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 매일 볼 뉴스가 아니므로 Trend Lens 일일 브리프 source로 쓰지 않는다. Google News RSS 결과에서도 위키/백과 계열 문서는 필터링한다.
 
-Google News RSS가 제공하는 `news.google.com/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. RSS의 `<source url="...">`가 안전한 공개 HTTPS publisher 기사 상세 URL처럼 보이면 그것을 우선 사용하고, 언론사 홈처럼 보이거나 원문 URL을 얻을 수 없으면 기사 제목과 출처명으로 만든 Google News 검색 URL을 fallback으로 사용한다. Lambda는 이 publisher URL을 추가 fetch하지 않으며, 외부 조회 source allowlist는 계속 Google News RSS endpoint로 제한한다.
+Google News RSS가 제공하는 `news.google.com/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. Lambda는 Google News article page와 `DotsSplashUi` decode endpoint만 allowlist로 제한 조회해 publisher 원문 URL을 우선 추출한다. 이 publisher URL은 사용자가 클릭할 표시 URL로만 저장하며, Lambda가 publisher URL을 추가 fetch하지 않는다. decode가 실패한 항목에만 기사 제목과 출처명으로 만든 Google News 검색 URL을 fallback으로 사용한다.
 
 Google Trends는 장기적으로 중요하지만, 공식 API가 alpha 성격이고 인증/사용 조건 검토가 필요하므로 v1에서는 소스 상태에 `후보`로 기록한다.
 
@@ -60,6 +60,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - Lambda timeout은 외부 fetch를 고려해 8초로 제한한다.
 - source별 fetch timeout은 2.2초, 응답 크기는 512KB 이하로 제한한다.
 - 예외적으로 CISA KEV 공식 JSON은 현재 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout을 둔다. 다른 source의 기본 한도는 계속 512KB/2.2초다.
+- Google News 원문 링크 decode는 feed당 상위 3개 후보에만 적용하고, article page는 1.5MB/1.8초, decode 응답은 64KB/1.8초로 제한한다. 실패하면 해당 항목만 검색 fallback으로 내려가며 전체 브리프 수집은 실패하지 않는다.
 - 저장 전에는 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다. DynamoDB item size를 넘기지 않기 위해 원문 전문이나 긴 설명을 snapshot payload에 넣지 않는다.
 - 보안 source와 분야별 뉴스 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다. 보안 전문 매체 RSS는 모두 512KB/2.2초 기본 한도를 적용하며, 응답이 느리거나 실패하면 해당 source status만 `unavailable`로 낮춘다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존한다. 보안 위험 신호의 판단에는 게재일/등록일이 중요하므로 UI에서도 반드시 표시한다.
