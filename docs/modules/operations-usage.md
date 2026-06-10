@@ -12,6 +12,7 @@
 - 사용량 지표가 없거나 조회 권한/런타임 패키지 문제로 실패하면 패널만 `unavailable` 상태로 처리한다.
 - 실제 청구액은 Cost Explorer를 붙이지 않는 한 계산하지 않는다. 현재 패널은 CloudWatch 기초 운영량과 Free Tier 기준선 비교 결과만 추정으로 보여준다.
 - 같은 날짜의 사용량 스냅샷은 프론트엔드 `localStorage`와 DynamoDB `USAGE#YYYY-MM-DD` item에 캐시한다. 같은 날 다시 열면 비용 확인을 위해 CloudWatch를 반복 호출하지 않는다.
+- 첫 화면에서는 `/api/state`가 `ready`가 된 뒤에만 사용량 패널 조회를 시작한다. 비용 패널이 기록 상태 조회와 경쟁해 API Gateway throttling이나 Lambda concurrency 제한을 유발하면 안 된다.
 - 화면은 결론과 추이 그래프를 먼저 보여주고, 서비스별 상세 기준은 사용자가 펼칠 때만 보여준다.
 - 로그인 후 첫 화면에는 같은 스냅샷을 요약한 비용 신호등을 표시한다. 이 신호등은 하단 패널까지 내려가지 않아도 비용 위험이 안정/주의/확인 필요 중 어디에 가까운지 알려주는 요약 장치이며, 별도의 AWS 조회를 만들지 않는다.
 - 시각 스타일은 `Obsidian Command Glass`의 하단 telemetry panel로 유지한다. 운영 사용량은 기능상 보조 정보지만, 밝은 일반 카드나 녹색 카드로 남아 있으면 첫 화면의 새 스타일과 분리되어 보이므로 graphite shell과 cyan/amber 상세 데이터 슬롯 대비를 사용한다.

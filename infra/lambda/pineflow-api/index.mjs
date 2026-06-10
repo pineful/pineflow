@@ -17,6 +17,7 @@ const dynamodb = new DynamoDBClient({});
 let cloudwatchSdkPromise;
 const allowedModes = new Set(["focus", "remote", "study", "project"]);
 const defaultDailyGoalMinutes = 480;
+const stateRecentSessionLimit = 12;
 const maxBodyBytes = 4096;
 const frontendBucketName = process.env.FRONTEND_BUCKET_NAME ?? "";
 const cloudFrontDistributionId = process.env.CLOUDFRONT_DISTRIBUTION_ID ?? "";
@@ -100,6 +101,15 @@ function updateExpressionFor(attributes) {
 
 function isConditionalFailure(error) {
   return error?.name === "ConditionalCheckFailedException" || error?.name === "TransactionCanceledException";
+}
+
+function isThroughputLimited(error) {
+  return [
+    "ProvisionedThroughputExceededException",
+    "RequestLimitExceeded",
+    "ThrottlingException",
+    "TooManyRequestsException"
+  ].includes(error?.name);
 }
 
 function toRecords(session) {
@@ -1831,25 +1841,44 @@ async function loadState(pk) {
   const settingsResult = await dynamodb.send(
     new GetItemCommand({
       TableName: tableName,
-      Key: objectToItem({ pk, sk: "SETTINGS" })
+      Key: objectToItem({ pk, sk: "SETTINGS" }),
+      ProjectionExpression: "#dailyGoalMinutes",
+      ExpressionAttributeNames: {
+        "#dailyGoalMinutes": "dailyGoalMinutes"
+      }
     })
   );
   const activeResult = await dynamodb.send(
     new GetItemCommand({
       TableName: tableName,
-      Key: objectToItem({ pk, sk: "ACTIVE_SESSION" })
+      Key: objectToItem({ pk, sk: "ACTIVE_SESSION" }),
+      ProjectionExpression: "#sessionId, #checkInAt, #mode, #note",
+      ExpressionAttributeNames: {
+        "#sessionId": "sessionId",
+        "#checkInAt": "checkInAt",
+        "#mode": "mode",
+        "#note": "note"
+      }
     })
   );
   const sessionsResult = await dynamodb.send(
     new QueryCommand({
       TableName: tableName,
       KeyConditionExpression: "pk = :pk and begins_with(sk, :sessionPrefix)",
+      ProjectionExpression: "#sessionId, #checkInAt, #checkOutAt, #mode, #note",
+      ExpressionAttributeNames: {
+        "#sessionId": "sessionId",
+        "#checkInAt": "checkInAt",
+        "#checkOutAt": "checkOutAt",
+        "#mode": "mode",
+        "#note": "note"
+      },
       ExpressionAttributeValues: {
         ":pk": { S: pk },
         ":sessionPrefix": { S: "SESSION#" }
       },
       ScanIndexForward: false,
-      Limit: 80
+      Limit: stateRecentSessionLimit
     })
   );
 
@@ -2281,6 +2310,11 @@ export async function handler(event) {
 
     return json(404, { error: "Not found." });
   } catch (error) {
+    if (isThroughputLimited(error)) {
+      console.warn("Pineflow API capacity guardrail limited a request", { name: error?.name });
+      return json(429, { error: "요청이 잠시 몰려 기록 데이터를 바로 읽지 못했습니다. 잠시 후 다시 시도해주세요." });
+    }
+
     console.error("Unhandled Pineflow API error", { name: error?.name, message: error?.message });
     return json(500, { error: "Unexpected server error." });
   }

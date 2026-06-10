@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-06-09
+마지막 업데이트: 2026-06-10
 
 ## 현재 상태 요약
 
@@ -112,6 +112,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - Trend Lens Google News RSS 기사 링크가 `news.google.com/rss/articles/...` 중간 URL로 열려 빈 화면처럼 보일 수 있던 문제를 수정. 새 수집부터는 publisher URL 또는 Google News 검색 fallback을 저장하고, 기존 캐시도 프론트에서 검색 fallback으로 열리게 보정.
 - 화면 서비스 제목을 `작업사령탑`으로 바꾸고, Pineflow는 로고/브랜드명으로 유지하도록 정리.
 - 상단 대시보드에서 최근 세션 dock을 왼쪽 흐름 그래프 바로 아래에 고정하고, 오른쪽 커맨드 영역의 긴 설명 문구를 짧은 운영 라벨로 압축.
+- 첫 화면 진입 시 기록 데이터를 불러오지 못하는 증상을 줄이기 위해 초기 `/api/state` 조회를 중복 실행하지 않도록 잠금 처리하고, Trend Lens/운영 사용량 보조 호출은 기록 상태가 `ready`가 된 뒤에만 지연 실행하도록 수정.
+- DynamoDB `1 RCU` 가드레일에 맞춰 `/api/state`가 최근 세션 12개와 필요한 projection만 읽도록 줄이고, throughput 제한은 500 대신 429로 응답하도록 분리.
 
 ## 검증됨
 

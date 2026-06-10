@@ -1,6 +1,6 @@
 # API 계약
 
-마지막 업데이트: 2026-06-09
+마지막 업데이트: 2026-06-10
 
 모든 API는 API Gateway HTTP API 뒤에 있으며, Cognito JWT authorizer를 통과해야 한다. 클라이언트는 `Authorization: Bearer <access_token>` 헤더를 보낸다.
 
@@ -22,6 +22,7 @@
 - `401`: JWT가 없거나 authorizer를 통과하지 못함.
 - `404`: 정의되지 않은 route.
 - `409`: 현재 상태와 충돌.
+- `429`: API Gateway 또는 DynamoDB 비용 가드레일 때문에 요청이 너무 빠르거나 잠시 몰림.
 - `500`: 예상하지 못한 서버 오류. 내부 세부 정보는 노출하지 않는다.
 
 ## GET /api/health
@@ -74,6 +75,7 @@
 
 - `records`는 세션 시작 시각이 아니라 각 출근/퇴근 이벤트의 실제 `timestamp` 기준 최신순으로 반환한다.
 - 자정을 넘긴 세션이나 퇴근 시각만 보정된 세션도 이벤트 시각 기준 위치에 보여야 한다.
+- 첫 화면 안정성을 위해 `/api/state`는 최근 세션 창만 반환한다. 현재 구현은 최근 `SESSION#` item 12개를 projection으로 가볍게 읽고, 그 안에서 펼친 출근/퇴근 이벤트를 반환한다. 전체 과거 기록 검색/페이지네이션이 필요하면 별도 archive API를 설계한다.
 
 ## GET /api/usage
 

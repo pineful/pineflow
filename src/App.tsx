@@ -2078,12 +2078,14 @@ function App() {
   );
   const [soundEnabled, setSoundEnabled] = useState(getStoredSoundEnabled);
   const requestInFlightRef = useRef(false);
+  const stateLoadInFlightRef = useRef(false);
   const actionCooldownTimerRef = useRef<number | undefined>(undefined);
   const toastTimerRef = useRef<number | undefined>(undefined);
 
   function expireSession(message = "로그인 시간이 만료되었습니다. 다시 로그인해주세요.") {
     clearSession();
     requestInFlightRef.current = false;
+    stateLoadInFlightRef.current = false;
     if (actionCooldownTimerRef.current) {
       window.clearTimeout(actionCooldownTimerRef.current);
     }
@@ -2160,8 +2162,9 @@ function App() {
   }
 
   async function reloadCommuteState() {
-    if (!isAuthenticated || recordDataStatus === "loading") return;
+    if (!isAuthenticated || stateLoadInFlightRef.current) return;
 
+    stateLoadInFlightRef.current = true;
     setIsLoading(true);
     setRecordDataStatus("loading");
     setErrorMessage("");
@@ -2174,6 +2177,7 @@ function App() {
     } catch (error) {
       handleCommuteStateLoadError(error);
     } finally {
+      stateLoadInFlightRef.current = false;
       setIsLoading(false);
     }
   }
@@ -2254,6 +2258,10 @@ function App() {
       return;
     }
 
+    if (recordDataStatus !== "ready") {
+      return;
+    }
+
     const cachedUsage = getStoredUsageSnapshot();
     if (cachedUsage) {
       setUsage(cachedUsage);
@@ -2281,7 +2289,7 @@ function App() {
     }, usageLoadDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, recordDataStatus]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -2291,7 +2299,7 @@ function App() {
       return;
     }
 
-    if (recordDataStatus === "idle" || recordDataStatus === "loading") {
+    if (recordDataStatus !== "ready") {
       return;
     }
 

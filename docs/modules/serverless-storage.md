@@ -59,6 +59,8 @@ Trend Lens는 기존 DynamoDB single-table 안에서 global cache로 시작한�
 
 ## 낮은 RCU에서의 상태 조회
 
-Pineflow는 DynamoDB를 `1 RCU / 1 WCU`로 시작하므로, 사용자의 첫 화면 상태 조회에서 여러 읽기를 동시에 실행하면 작은 병렬 호출만으로도 throttling처럼 보일 수 있다. `/api/state`는 `SETTINGS`, `ACTIVE_SESSION`, 최근 `SESSION#` query를 순차로 읽어 낮은 capacity에서 생기는 순간 부하를 줄인다.
+Pineflow는 DynamoDB를 `1 RCU / 1 WCU`로 시작하므로, 사용자의 첫 화면 상태 조회에서 여러 읽기를 동시에 실행하거나 긴 기록 목록을 한 번에 읽으면 작은 개인 사용량에서도 throttling처럼 보일 수 있다. `/api/state`는 `SETTINGS`, `ACTIVE_SESSION`, 최근 `SESSION#` query를 순차로 읽어 낮은 capacity에서 생기는 순간 부하를 줄인다.
 
-프론트엔드도 `/api/state`를 가장 먼저 확인하고, Trend Lens나 운영 사용량 같은 보조 조회는 기록 상태가 성공/실패로 정리된 뒤 지연 호출한다. 기록 상태 조회가 실패한 초기 빈 배열은 실제 빈 기록으로 해석하지 않는다.
+첫 화면용 `/api/state`는 전체 보관함 조회가 아니라 dashboard bootstrap 조회다. 현재 구현은 최근 `SESSION#` item 12개만 projection으로 읽고, `sessionId`, `checkInAt`, `checkOutAt`, `mode`, `note`처럼 화면에 필요한 필드만 가져온다. 더 많은 과거 기록, 날짜 검색, 키워드 검색은 `/api/state`의 limit를 다시 키우는 방식이 아니라 별도 archive 조회 API로 설계해야 한다.
+
+프론트엔드도 `/api/state`를 가장 먼저 확인하고, Trend Lens나 운영 사용량 같은 보조 조회는 기록 상태가 `ready`가 된 뒤 지연 호출한다. 기록 상태 조회가 실패한 초기 빈 배열은 실제 빈 기록으로 해석하지 않는다.
