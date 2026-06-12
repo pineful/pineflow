@@ -1192,13 +1192,6 @@ h1 {
   content: "";
 }
 
-.summaryGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.metricCard,
 .timelineItem,
 .weatherBand,
 .weatherMain,
@@ -1211,24 +1204,12 @@ h1 {
   box-shadow: var(--shadow-card-soft);
 }
 
-.metricCard {
-  display: grid;
-  gap: 6px;
-  padding: 14px;
-  box-shadow: var(--shadow-card-soft);
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.metricCard:hover,
 .weatherSlot:hover,
 .timelineItem:hover {
   border-color: rgba(47, 107, 79, 0.22);
   box-shadow: 0 10px 24px rgba(24, 48, 36, 0.09);
 }
 
-.metricCard span,
 .goalReadout span,
 .goalReadout small,
 .goalEditorHeader span,
@@ -1240,10 +1221,6 @@ h1 {
 .weatherFallback {
   color: #66746a;
   font-size: 0.82rem;
-}
-
-.metricCard strong {
-  font-size: 1.25rem;
 }
 
 .weatherBand {
@@ -1349,15 +1326,6 @@ h1 {
 
 .usageBand {
   grid-column: 1 / -1;
-}
-
-.summaryBand {
-  grid-column: 1 / -1;
-}
-
-.summaryBand .workdayLens {
-  margin-top: 12px;
-  margin-bottom: 0;
 }
 
 .usagePanel {
@@ -1885,8 +1853,7 @@ h1 {
 }
 
 .weatherSlot:active,
-.timelineItem:active,
-.metricCard:active {
+.timelineItem:active {
   transform: translateY(1px);
 }
 
@@ -2570,7 +2537,6 @@ h1 {
   }
 
   .accountMenu summary,
-  .metricCard,
   .timelineItem,
   .weatherSlot {
     transition: none;
@@ -3615,14 +3581,6 @@ h1 {
     align-items: start;
   }
 
-  .summaryBand {
-    grid-column: 1 / -1;
-  }
-
-  .summaryBand .summaryGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .weatherGrid {
     grid-template-columns: 1fr;
   }
@@ -3944,7 +3902,6 @@ button.delete:focus-visible,
 .recordSetup,
 .heroFlow,
 .timeFlowGraph,
-.metricCard,
 .timelineItem,
 .weatherBand,
 .usagePanel,
@@ -4429,7 +4386,6 @@ button.delete {
 }
 
 .timelineItem,
-.metricCard,
 .weatherSlot,
 .usageModule,
 .costEstimateItem {
@@ -5734,6 +5690,112 @@ button.sessionEndpoint:hover:not(:disabled) {
   border-radius: inherit;
   background: linear-gradient(90deg, #5bdcff, #ffb44d);
   content: "";
+}
+
+.dashboardGoalBlock {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(184, 243, 211, 0.14);
+}
+
+.heroFlow .dashboardGoalReadout {
+  margin-top: 0;
+  padding: 10px 11px;
+  color: var(--telemetry-ink);
+  border: 1px solid rgba(91, 220, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(91, 220, 255, 0.08), rgba(10, 18, 30, 0.48)),
+    rgba(8, 17, 28, 0.58);
+}
+
+.heroFlow .dashboardGoalReadout span,
+.heroFlow .dashboardGoalReadout small {
+  color: rgba(232, 255, 239, 0.68);
+}
+
+.heroFlow .dashboardGoalReadout strong {
+  color: #dff8ff;
+}
+
+.heroFlow .dashboardGoalReadout button {
+  border-color: rgba(91, 220, 255, 0.36);
+  color: #effaff;
+  background: linear-gradient(135deg, rgba(11, 38, 60, 0.96), rgba(15, 29, 44, 0.96));
+  box-shadow: none;
+}
+
+.heroFlow .dashboardGoalReadout button:hover:not(:disabled) {
+  border-color: rgba(124, 235, 255, 0.72);
+  background: linear-gradient(135deg, rgba(20, 58, 88, 0.96), rgba(15, 29, 44, 0.96));
+}
+
+.heroFlow .dashboardGoalEditor {
+  margin-top: 0;
+  color: var(--telemetry-ink);
+  border-color: rgba(91, 220, 255, 0.22);
+  background:
+    linear-gradient(135deg, rgba(16, 25, 39, 0.94), rgba(9, 15, 25, 0.88)),
+    rgba(10, 18, 30, 0.72);
+}
+
+.heroFlow .dashboardGoalEditor .goalEditorHeader span {
+  color: rgba(232, 255, 239, 0.66);
+}
+
+.heroFlow .dashboardGoalEditor .goalEditorHeader strong {
+  color: #dff8ff;
+}
+
+.heroFlow .workdayLens.compact {
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border-color: rgba(91, 220, 255, 0.22);
+  background:
+    linear-gradient(135deg, rgba(16, 25, 39, 0.72), rgba(9, 15, 25, 0.62)),
+    rgba(10, 18, 30, 0.58);
+  box-shadow: none;
+}
+
+.heroFlow .workdayLens.compact .workdayLensHeader strong {
+  font-size: 0.9rem;
+}
+
+.heroFlow .workdayLens.compact .workdayLensHeader em {
+  padding: 3px 7px;
+  font-size: 0.62rem;
+}
+
+.heroFlow .workdayLens.compact .workdayLensRail {
+  gap: 4px;
+}
+
+.heroFlow .workdayLens.compact .workdayTile {
+  min-height: 56px;
+  padding: 7px 6px 12px;
+}
+
+.heroFlow .workdayLens.compact .workdayTile strong {
+  font-size: 0.96rem;
+}
+
+.heroFlow .workdayLens.compact .workdayTile small,
+.heroFlow .workdayLens.compact .workdayTile b {
+  font-size: 0.55rem;
+}
+
+.heroFlow .workdayLens.compact .workdayTile em {
+  top: 5px;
+  right: 5px;
+  font-size: 0.62rem;
+}
+
+.heroFlow .workdayLens.compact .workdayTile i {
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+  height: 3px;
 }
 
 .sessionItem {

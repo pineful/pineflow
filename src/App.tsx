@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent, type SyntheticEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type ReactNode,
+  type SyntheticEvent
+} from "react";
 import {
   clearSession,
   completeNewPassword,
@@ -1619,6 +1628,8 @@ function TimeFlowGraph({
   modeLabel,
   greeting,
   recordDataStatus,
+  goalControls,
+  weekContext,
   className = ""
 }: {
   minutes: number;
@@ -1635,6 +1646,8 @@ function TimeFlowGraph({
   modeLabel: string;
   greeting: string;
   recordDataStatus: RecordDataStatus;
+  goalControls?: ReactNode;
+  weekContext?: ReactNode;
   className?: string;
 }) {
   const hasKnownFlowData =
@@ -1758,6 +1771,74 @@ function TimeFlowGraph({
           <span>마지막 퇴근</span>
           <strong>{hasKnownFlowData ? displayLastMarker : "--"}</strong>
         </div>
+      </div>
+      {goalControls}
+      {weekContext}
+    </div>
+  );
+}
+
+function WorkdayLens({
+  days,
+  totalMinutes,
+  sessionCount,
+  recordDataStatus,
+  compact = false
+}: {
+  days: WorkdayLensDay[];
+  totalMinutes: number;
+  sessionCount: number;
+  recordDataStatus: RecordDataStatus;
+  compact?: boolean;
+}) {
+  return (
+    <div className={compact ? "workdayLens compact" : "workdayLens"} aria-label="이번 주 작업 리듬">
+      <div className="workdayLensHeader">
+        <div>
+          <span>이번 주 리듬</span>
+          <strong>{formatDuration(totalMinutes)}</strong>
+        </div>
+        <em>
+          {recordDataStatus === "unavailable"
+            ? "다시 조회 필요"
+            : sessionCount > 0
+              ? `${sessionCount}개 세션`
+              : "기록 대기"}
+        </em>
+      </div>
+      <div className="workdayLensRail">
+        {days.map((day) => (
+          <div
+            className={[
+              "workdayTile",
+              day.isToday ? "today" : "",
+              day.isOpen ? "open" : "",
+              day.holidayLabel ? "holiday" : "",
+              day.isWeekend ? "weekend" : ""
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            key={day.key}
+            style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
+          >
+            <span>{day.weekday}</span>
+            <strong>{day.dayNumber}</strong>
+            <i aria-hidden="true" />
+            <small>
+              {day.isOpen
+                ? "진행"
+                : day.totalMinutes > 0
+                  ? formatDuration(day.totalMinutes)
+                  : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
+            </small>
+            {day.topMode && (
+              <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
+                {modeIcons[day.topMode]}
+              </em>
+            )}
+            {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -2904,6 +2985,63 @@ function App() {
     setErrorMessage("");
   }
 
+  const dashboardGoalControls = (
+    <div className="dashboardGoalBlock">
+      <div className="goalReadout dashboardGoalReadout">
+        <div>
+          <span>하루 목표</span>
+          <strong>{formatDuration(state.dailyGoalMinutes)}</strong>
+          <small>목표 대비 {progress}%</small>
+        </div>
+        <button type="button" disabled={isSaving} onClick={openGoalEditor}>
+          목표 수정
+        </button>
+      </div>
+      {isGoalEditing && (
+        <div className="goalEditor dashboardGoalEditor">
+          <div className="goalEditorHeader">
+            <span>새 목표</span>
+            <strong>{formatDuration(draftGoalMinutes)}</strong>
+          </div>
+          <input
+            aria-label="하루 목표 시간"
+            type="range"
+            min={120}
+            max={720}
+            step={30}
+            value={draftGoalMinutes}
+            onChange={(event) => setDraftGoalMinutes(Number(event.target.value))}
+          />
+          <div className="goalEditorActions">
+            <button type="button" disabled={isSaving} onClick={() => updateGoal(draftGoalMinutes)}>
+              저장
+            </button>
+            <button
+              type="button"
+              disabled={isSaving}
+              onClick={() => {
+                setIsGoalEditing(false);
+                setDraftGoalMinutes(state.dailyGoalMinutes);
+              }}
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const dashboardWeekContext = (
+    <WorkdayLens
+      compact
+      days={workdayLens}
+      totalMinutes={workdayTotalMinutes}
+      sessionCount={workdaySessionCount}
+      recordDataStatus={recordDataStatus}
+    />
+  );
+
   if (!isAuthenticated) {
     return (
       <main className="appShell">
@@ -3044,6 +3182,8 @@ function App() {
           modeLabel={modeLabels[mode]}
           greeting={dashboardGreeting(now)}
           recordDataStatus={recordDataStatus}
+          goalControls={dashboardGoalControls}
+          weekContext={dashboardWeekContext}
         />
 
         <section className="heroHistoryDock" aria-label="최근 작업 흐름">
@@ -3637,114 +3777,6 @@ function App() {
           />
         </aside>
       </div>
-
-      <section className="sectionBand summaryBand">
-        <div className="sectionTitle">
-          <h2>오늘의 흐름</h2>
-          <span>{formatDuration(today.totalMinutes)}</span>
-        </div>
-        <div className="summaryGrid">
-          <div className="metricCard">
-            <span>첫 출근</span>
-            <strong>{formatFlowBoundary(today.firstCheckIn, now)}</strong>
-          </div>
-          <div className="metricCard">
-            <span>마지막 퇴근</span>
-            <strong>{formatFlowBoundary(today.lastCheckOut, now)}</strong>
-          </div>
-        </div>
-        <div className="goalReadout">
-          <div>
-            <span>하루 목표</span>
-            <strong>{formatDuration(state.dailyGoalMinutes)}</strong>
-            <small>목표 대비 {progress}%</small>
-          </div>
-          <button type="button" disabled={isSaving} onClick={openGoalEditor}>
-            목표 수정
-          </button>
-        </div>
-        {isGoalEditing && (
-          <div className="goalEditor">
-            <div className="goalEditorHeader">
-              <span>새 목표</span>
-              <strong>{formatDuration(draftGoalMinutes)}</strong>
-            </div>
-            <input
-              aria-label="하루 목표 시간"
-              type="range"
-              min={120}
-              max={720}
-              step={30}
-              value={draftGoalMinutes}
-              onChange={(event) => setDraftGoalMinutes(Number(event.target.value))}
-            />
-            <div className="goalEditorActions">
-              <button type="button" disabled={isSaving} onClick={() => updateGoal(draftGoalMinutes)}>
-                저장
-              </button>
-              <button
-                type="button"
-                disabled={isSaving}
-                onClick={() => {
-                  setIsGoalEditing(false);
-                  setDraftGoalMinutes(state.dailyGoalMinutes);
-                }}
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        )}
-        <div className="workdayLens" aria-label="이번 주 근무일 흐름">
-          <div className="workdayLensHeader">
-            <div>
-              <span>이번 주 워크데이</span>
-              <strong>{formatDuration(workdayTotalMinutes)}</strong>
-            </div>
-            <em>
-              {recordDataStatus === "unavailable"
-                ? "다시 조회 필요"
-                : workdaySessionCount > 0
-                  ? `${workdaySessionCount}개 세션`
-                  : "기록 대기"}
-            </em>
-          </div>
-          <div className="workdayLensRail">
-            {workdayLens.map((day) => (
-              <div
-                className={[
-                  "workdayTile",
-                  day.isToday ? "today" : "",
-                  day.isOpen ? "open" : "",
-                  day.holidayLabel ? "holiday" : "",
-                  day.isWeekend ? "weekend" : ""
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                key={day.key}
-                style={{ "--day-progress": `${day.progress}%` } as CSSProperties}
-              >
-                <span>{day.weekday}</span>
-                <strong>{day.dayNumber}</strong>
-                <i aria-hidden="true" />
-                <small>
-                  {day.isOpen
-                    ? "진행"
-                    : day.totalMinutes > 0
-                      ? formatDuration(day.totalMinutes)
-                      : day.holidayLabel ?? (day.isWeekend ? "휴식" : "빈 날")}
-                </small>
-                {day.topMode && (
-                  <em aria-label={modeLabels[day.topMode]} title={modeLabels[day.topMode]}>
-                    {modeIcons[day.topMode]}
-                  </em>
-                )}
-                {day.holidayLabel && <b title={day.holidayLabel}>{day.holidayLabel}</b>}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <section className="sectionBand usageBand">
         <div className="sectionTitle">

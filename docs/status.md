@@ -92,7 +92,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 최근 기록이 공간을 과하게 차지하고 출근/퇴근 세트가 잘 보이지 않는 문제를 반영해 세션 단위 `Session Strip`으로 재설계. 같은 session id의 출근/퇴근을 한 카드 안의 `IN -> OUT` rail로 묶고 총 시간, 상태, 업무 유형, 메모를 요약.
 - 최근 기록 `Session Strip`을 요약 우선 구조로 보강. 기본 목록에서는 날짜, 시간 범위, 총 시간, 업무 유형, 메모 미리보기만 보이고, `IN/OUT` 수정과 세션 삭제는 사용자가 세션을 펼쳤을 때만 노출.
 - 상단 대시보드 오른쪽의 현재 시각, 세션 커맨드, 출근/퇴근 CTA를 하나의 `dashboardCommandStack`으로 묶어 desktop/tablet에서 불필요한 빈 공간이 생기지 않도록 수정.
-- 최근 기록 위에 `Workday Lens`를 추가해 월요일 시작 7일 기준의 working day 흐름, 진행 중인 날, 공휴일/명절, 주말, 빈 날을 작은 tile로 요약.
+- `Workday Lens`를 상단 흐름 그래프 안의 보조 스트립으로 두어 월요일 시작 7일 기준의 working day 흐름, 진행 중인 날, 공휴일/명절, 주말, 빈 날을 작은 tile로 요약.
 - 최근 기록 요약을 `IN -> OUT` endpoint data pill과 작은 진행 레일 중심으로 압축해 출근/퇴근 세트와 누적 시간을 더 직관적으로 표시.
 - 날씨 영역의 밝은 하위 카드를 graphite `Forecast Ribbon` data tile로 정리하고 현재 날씨 glyph, 기초 지표, 예보 그래프/슬롯이 같은 시간축 안에서 읽히도록 보강.
 - Google Calendar 일정 연동은 OAuth와 개인 일정 데이터 취급이 필요하므로 구현하지 않고, 향후 ADR 대상과 UI 기반만 문서화.
@@ -112,6 +112,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - Trend Lens Google News RSS 기사 링크가 `news.google.com/rss/articles/...` 중간 URL로 열려 빈 화면처럼 보일 수 있던 문제를 수정. 새 수집부터는 Google News article/decode endpoint를 제한 조회해 publisher 원문 URL을 우선 저장하고, decode 실패 항목만 Google News 검색 fallback으로 열리게 보정.
 - Trend Lens `완전 새로 받기`를 추가해 잘못된 기존 브리프 cache를 삭제하고 새 수집 정책으로 다시 받을 수 있게 보강.
 - 전날 퇴근하지 않은 활성 세션을 날짜 변경만으로 자동 마감하지 않고, 다음날 사용자가 `새 출근 시작`을 선택할 때만 이전 세션을 `퇴근 미기록`으로 남기도록 기록 흐름을 보강.
+- 상단 대시보드와 중복되던 별도 `오늘의 흐름` section을 제거하고, 목표 수정과 `Workday Lens` 주간 리듬만 상단 흐름 그래프 안의 보조 정보로 통합.
 - 긴급 보안 신호에 The Hacker News, BleepingComputer, SecurityWeek, Help Net Security RSS를 추가해 KISA/CISA 공식 경보보다 빠른 전문 매체 신호도 함께 볼 수 있게 보강. 전문 매체 항목은 `전문 매체`, `빠른 보안 뉴스` 태그로 공식 경보와 구분한다.
 - 화면 서비스 제목을 `작업사령탑`으로 바꾸고, Pineflow는 로고/브랜드명으로 유지하도록 정리.
 - 상단 대시보드에서 최근 세션 dock을 왼쪽 흐름 그래프 바로 아래에 고정하고, 오른쪽 커맨드 영역의 긴 설명 문구를 짧은 운영 라벨로 압축.
@@ -158,7 +159,7 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - 기록 데이터 조회 상태를 `loading/ready/unavailable`로 분리했다. `/api/state` 조회 실패 시 초기 빈 배열을 실제 빈 기록으로 표시하지 않고, 상단 시간 그래프와 최근 기록 영역에는 `확인 필요/기록 다시 조회`를 제공하며 출근/퇴근 실행을 잠근다.
 - 기록 수정 시/분 입력은 `type="number"`를 쓰지 않고 직접 편집 가능한 numeric text input으로 바꿨다. 기존 값 삭제 중에도 빈 입력 상태를 유지해 `12 -> 6` 같은 직접 수정을 막지 않는다.
 - 최근 기록 기본 표시 범위를 진행 중 세션 날짜 또는 가장 최근 세션 날짜 하나로 줄이고, 과거 기록은 `지난 1주 더 보기`로 1주 단위씩 펼치도록 변경했다.
-- `Workday Lens`를 최근 기록 위에서 `오늘의 흐름` 영역 안으로 옮겨, 최근 기록 목록은 세션 이력만 담당하고 주간 흐름은 별도 보조 요약으로 읽히게 했다.
+- `Workday Lens`를 별도 `오늘의 흐름` 영역이 아니라 상단 흐름 그래프 안의 보조 스트립으로 옮겨, 오늘 누적 정보 반복 없이 주간 리듬만 보이게 했다.
 - 로그인 직후 기록 조회를 먼저 수행하고 Trend Lens 초기 조회는 지연시켜 낮은 API Gateway throttling 설정과 충돌하지 않게 했다.
 - `/api/state` Lambda 내부 DynamoDB 조회도 `Promise.all` 병렬 읽기에서 순차 읽기로 바꿔 `1 RCU` 환경에서 순간 read spike가 생기지 않게 했다.
 - CISA KEV 공식 JSON이 512KB를 넘는 실제 응답을 반환하는 것을 확인하고, `cisa-kev`에만 2MB/4.5초 source 한도 예외를 적용했다.
