@@ -111,6 +111,7 @@ type RecentSession = {
   latestAt: string;
   durationMinutes?: number;
   isOpen: boolean;
+  isMissingCheckOut: boolean;
   spansDays: boolean;
 };
 
@@ -1194,11 +1195,12 @@ function buildRecentSessions(records: CommuteRecord[], now: Date): RecentSession
     const latestAt = session.checkOut?.timestamp ?? session.checkIn?.timestamp ?? primaryRecord.timestamp;
     const mode = session.checkIn?.mode ?? session.checkOut?.mode ?? primaryRecord.mode;
     const note = session.checkIn?.note ?? session.checkOut?.note ?? "";
-    const isOpen = Boolean(session.checkIn && !session.checkOut);
+    const isOpen = session.checkIn?.sessionStatus === "active";
+    const isMissingCheckOut = Boolean(session.checkIn && !session.checkOut && !isOpen);
     const durationMinutes =
       session.checkIn && session.checkOut
         ? minutesBetween(session.checkIn.timestamp, session.checkOut.timestamp)
-        : session.checkIn
+        : session.checkIn && isOpen
           ? minutesBetween(session.checkIn.timestamp, now.toISOString())
           : undefined;
 
@@ -1213,7 +1215,12 @@ function buildRecentSessions(records: CommuteRecord[], now: Date): RecentSession
       latestAt,
       durationMinutes,
       isOpen,
-      spansDays: Boolean(session.checkIn && session.checkOut && !isSameDay(session.checkIn.timestamp, session.checkOut.timestamp))
+      isMissingCheckOut,
+      spansDays: Boolean(
+        session.checkIn &&
+          ((session.checkOut && !isSameDay(session.checkIn.timestamp, session.checkOut.timestamp)) ||
+            (isOpen && !isSameDay(session.checkIn.timestamp, now)))
+      )
     });
   });
 
@@ -1221,8 +1228,15 @@ function buildRecentSessions(records: CommuteRecord[], now: Date): RecentSession
 }
 
 function sessionDurationLabel(session: RecentSession) {
+  if (session.isMissingCheckOut) return "퇴근 미기록";
   if (session.durationMinutes === undefined) return "시간 확인 필요";
   return session.isOpen ? `진행 ${formatDuration(session.durationMinutes)}` : formatDuration(session.durationMinutes);
+}
+
+function sessionStatusLabel(session: RecentSession) {
+  if (session.isOpen) return "진행 중";
+  if (session.isMissingCheckOut) return "퇴근 미기록";
+  return "완료";
 }
 
 function sessionProgressPercent(session: RecentSession, goalMinutes: number) {
@@ -1244,7 +1258,7 @@ function sessionSearchText(session: RecentSession) {
     session.checkIn ? formatTime(session.checkIn.timestamp) : "",
     session.checkOut ? formatDate(session.checkOut.timestamp) : "",
     session.checkOut ? formatTime(session.checkOut.timestamp) : "",
-    session.isOpen ? "진행 중" : "완료",
+    sessionStatusLabel(session),
     session.spansDays ? "날짜를 넘어 이어진 세션" : "",
     modeLabels[session.mode],
     session.note
@@ -2513,6 +2527,11 @@ function App() {
   const activeIntent = state.activeSession?.note || note;
   const activeCheckInAt = state.activeSession ? new Date(state.activeSession.checkInAt) : null;
   const activeCheckInTime = activeCheckInAt?.getTime();
+  const activeStartedOnPreviousDay = Boolean(
+    activeCheckInAt &&
+      Number.isFinite(activeCheckInAt.getTime()) &&
+      localDateKey(activeCheckInAt) < localDateKey(now)
+  );
   const currentSessionMinutes =
     activeCheckInTime !== undefined && Number.isFinite(activeCheckInTime)
       ? Math.max(0, Math.round((now.getTime() - activeCheckInTime) / 60000))
@@ -2607,7 +2626,7 @@ function App() {
     }
   }
 
-  async function checkIn() {
+  async function checkIn(options?: { resolveActiveSession?: "mark-missing-check-out" }) {
     if (requestInFlightRef.current || isActionCoolingDown) return;
 
     requestInFlightRef.current = true;
@@ -2615,7 +2634,7 @@ function App() {
     setErrorMessage("");
 
     try {
-      const serverState = await createCheckIn(mode, note);
+      const serverState = await createCheckIn(mode, note, options);
       applyCommuteState(serverState);
       setMode(serverState.activeSession?.mode ?? mode);
       setNote(serverState.activeSession?.note ?? note);
@@ -2623,7 +2642,7 @@ function App() {
       setConfirmingDeleteRecordId("");
       setExpandedSessionId("");
       playFeedback("start");
-      flashToast("출근 기록이 저장됐어요");
+      flashToast(options?.resolveActiveSession ? "전날은 퇴근 미기록으로 남기고 새 출근을 시작했어요" : "출근 기록이 저장됐어요");
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "출근 기록에 실패했습니다.");
@@ -3056,7 +3075,14 @@ function App() {
             <div className="heroSessionGrid">
               {dashboardRecentSessions.length > 0 ? (
                 dashboardRecentSessions.map((session) => (
-                  <article className={session.isOpen ? "heroSessionCard open" : "heroSessionCard"} key={session.id}>
+                  <article
+                    className={[
+                      "heroSessionCard",
+                      session.isOpen ? "open" : "",
+                      session.isMissingCheckOut ? "missing" : ""
+                    ].filter(Boolean).join(" ")}
+                    key={session.id}
+                  >
                     <div className="heroSessionMeta">
                       <span className="timelineMode">
                         <span aria-hidden="true">{modeIcons[session.mode]}</span>
@@ -3074,8 +3100,14 @@ function App() {
                       </span>
                       <i aria-hidden="true" />
                       <span>
-                        <small>{session.isOpen ? "NOW" : "OUT"}</small>
-                        <strong>{session.checkOut ? formatTime(session.checkOut.timestamp) : session.isOpen ? "진행 중" : "--:--"}</strong>
+                        <small>{session.isOpen ? "NOW" : session.isMissingCheckOut ? "미기록" : "OUT"}</small>
+                        <strong>
+                          {session.checkOut
+                            ? formatTime(session.checkOut.timestamp)
+                            : session.isOpen
+                              ? "진행 중"
+                              : "미기록"}
+                        </strong>
                       </span>
                     </div>
                     <div className="heroSessionFooter">
@@ -3182,7 +3214,7 @@ function App() {
               className="primaryAction"
               type="button"
               disabled={isRecordActionDisabled}
-              onClick={isActive ? checkOut : checkIn}
+              onClick={isActive ? checkOut : () => checkIn()}
             >
               <span>{isActive ? "퇴근 기록" : "출근 기록"}</span>
               <small>
@@ -3197,6 +3229,17 @@ function App() {
                       : `${modeLabels[mode]} 시작`}
               </small>
             </button>
+            {isActive && activeStartedOnPreviousDay && (
+              <button
+                className="secondaryAction overnightAction"
+                type="button"
+                disabled={isRecordActionDisabled}
+                onClick={() => checkIn({ resolveActiveSession: "mark-missing-check-out" })}
+              >
+                <span>새 출근 시작</span>
+                <small>전날은 퇴근 미기록</small>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -3314,8 +3357,14 @@ function App() {
                       <span className="sessionSummary">
                         <span className="sessionTitleLine">
                           <strong>{formatDate(session.anchorAt)}</strong>
-                          <span className={session.isOpen ? "sessionStatus open" : "sessionStatus"}>
-                            {session.isOpen ? "진행 중" : "완료"}
+                          <span
+                            className={[
+                              "sessionStatus",
+                              session.isOpen ? "open" : "",
+                              session.isMissingCheckOut ? "missing" : ""
+                            ].filter(Boolean).join(" ")}
+                          >
+                            {sessionStatusLabel(session)}
                           </span>
                         </span>
                         <span className="sessionMeta">
@@ -3333,8 +3382,14 @@ function App() {
                             <span className="sessionRail" aria-hidden="true">
                               <i />
                             </span>
-                            <span className={session.isOpen ? "sessionFlowMark out open" : "sessionFlowMark out"}>
-                              <small>{session.isOpen ? "NOW" : "OUT"}</small>
+                            <span
+                              className={[
+                                "sessionFlowMark out",
+                                session.isOpen ? "open" : "",
+                                session.isMissingCheckOut ? "missing" : ""
+                              ].filter(Boolean).join(" ")}
+                            >
+                              <small>{session.isOpen ? "NOW" : session.isMissingCheckOut ? "미기록" : "OUT"}</small>
                             </span>
                           </span>
                           {session.spansDays && <small>날짜를 넘어 이어진 세션</small>}
@@ -3356,8 +3411,14 @@ function App() {
                       <div className="sessionDetailHeader">
                         <div className="sessionDetailTitle">
                           <strong>{formatDate(session.anchorAt)}</strong>
-                          <span className={session.isOpen ? "sessionStatus open" : "sessionStatus"}>
-                            {session.isOpen ? "진행 중" : "완료"}
+                          <span
+                            className={[
+                              "sessionStatus",
+                              session.isOpen ? "open" : "",
+                              session.isMissingCheckOut ? "missing" : ""
+                            ].filter(Boolean).join(" ")}
+                          >
+                            {sessionStatusLabel(session)}
                           </span>
                         </div>
                         <div className="sessionDetailMeta">
@@ -3405,7 +3466,14 @@ function App() {
                             <small>출근 없음</small>
                           </div>
                         )}
-                        <div className={session.isOpen ? "sessionConnector open" : "sessionConnector"} aria-hidden="true">
+                        <div
+                          className={[
+                            "sessionConnector",
+                            session.isOpen ? "open" : "",
+                            session.isMissingCheckOut ? "missing" : ""
+                          ].filter(Boolean).join(" ")}
+                          aria-hidden="true"
+                        >
                           <span />
                         </div>
                         {session.checkOut ? (
@@ -3423,7 +3491,7 @@ function App() {
                         ) : (
                           <div className="sessionEndpoint missing">
                             <span>OUT</span>
-                            <strong>진행 중</strong>
+                            <strong>{session.isOpen ? "진행 중" : "미기록"}</strong>
                             <small>퇴근 미기록</small>
                           </div>
                         )}

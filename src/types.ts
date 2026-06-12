@@ -6,6 +6,7 @@ export type CommuteRecord = {
   timestamp: string;
   mode: WorkMode;
   note: string;
+  sessionStatus?: "active" | "completed" | "missing-check-out";
 };
 
 export type ActiveSession = {

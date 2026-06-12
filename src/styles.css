@@ -972,6 +972,7 @@ h1 {
 
 .actionPanel {
   display: grid;
+  gap: 8px;
 }
 
 .accessForm {
@@ -1079,6 +1080,47 @@ h1 {
 .primaryAction small {
   color: rgba(23, 49, 38, 0.78);
   font-weight: 700;
+}
+
+.secondaryAction {
+  display: grid;
+  gap: 4px;
+  min-height: 56px;
+  justify-items: start;
+  padding: 12px 16px;
+  color: #f8fbff;
+  border: 1px solid rgba(255, 208, 106, 0.42);
+  background:
+    linear-gradient(135deg, rgba(255, 180, 77, 0.16), rgba(13, 22, 34, 0.78)),
+    rgba(9, 16, 26, 0.9);
+  box-shadow:
+    inset 4px 0 0 rgba(255, 180, 77, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  clip-path: var(--clip-command);
+}
+
+.secondaryAction:hover:not(:disabled) {
+  border-color: rgba(255, 208, 106, 0.74);
+  background:
+    linear-gradient(135deg, rgba(255, 180, 77, 0.23), rgba(17, 29, 46, 0.88)),
+    rgba(9, 16, 26, 0.96);
+}
+
+.secondaryAction:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.secondaryAction span {
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.secondaryAction small {
+  color: #ffdc9c;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .sectionBand {
@@ -4970,6 +5012,12 @@ button.delete {
   background: #5bdcff;
 }
 
+.sessionStatus.missing {
+  color: #271a04;
+  border-color: rgba(255, 208, 106, 0.82);
+  background: #ffdc9c;
+}
+
 .sessionMeta {
   display: flex;
   flex-wrap: wrap;
@@ -5131,6 +5179,14 @@ button.sessionEndpoint:hover:not(:disabled) {
   border-color: rgba(91, 220, 255, 0.42);
 }
 
+.sessionConnector.missing span {
+  background: linear-gradient(90deg, #5bdcff 0, #5bdcff 34%, rgba(255, 180, 77, 0.28) 34%, rgba(255, 180, 77, 0.28) 100%);
+}
+
+.sessionConnector.missing::after {
+  border-color: rgba(255, 180, 77, 0.42);
+}
+
 .sessionNote {
   margin-top: 8px;
   padding: 7px 8px;
@@ -5261,6 +5317,12 @@ button.sessionEndpoint:hover:not(:disabled) {
   color: #a8f3ff;
   border-color: rgba(91, 220, 255, 0.42);
   background: rgba(91, 220, 255, 0.13);
+}
+
+.sessionStatus.missing {
+  color: #ffdc9c;
+  border-color: rgba(255, 208, 106, 0.46);
+  background: rgba(255, 180, 77, 0.15);
 }
 
 .sessionMeta {
@@ -5736,6 +5798,11 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .sessionFlowMark.open {
   border-left-color: #b7f3cc;
+}
+
+.sessionFlowMark.missing {
+  border-left-color: #ffdc9c;
+  border-style: dashed;
 }
 
 .sessionFlowMark small {
@@ -7162,6 +7229,10 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .heroSessionCard.open {
   border-left-color: #ffd06a;
+}
+
+.heroSessionCard.missing {
+  border-left-color: #ffdc9c;
 }
 
 .heroSessionMeta {

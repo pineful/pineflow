@@ -112,13 +112,19 @@ function isThroughputLimited(error) {
   ].includes(error?.name);
 }
 
-function toRecords(session) {
+function toRecords(session, activeSessionId) {
+  const sessionStatus = session.checkOutAt
+    ? "completed"
+    : session.sessionId === activeSessionId
+      ? "active"
+      : "missing-check-out";
   const checkIn = {
     id: `${session.sessionId}:in`,
     type: "check-in",
     timestamp: session.checkInAt,
     mode: session.mode,
-    note: session.note
+    note: session.note,
+    sessionStatus
   };
 
   if (!session.checkOutAt) return [checkIn];
@@ -129,7 +135,8 @@ function toRecords(session) {
       type: "check-out",
       timestamp: session.checkOutAt,
       mode: session.mode,
-      note: session.note
+      note: session.note,
+      sessionStatus
     },
     checkIn
   ];
@@ -2233,9 +2240,10 @@ async function loadState(pk) {
     new GetItemCommand({
       TableName: tableName,
       Key: objectToItem({ pk, sk: "ACTIVE_SESSION" }),
-      ProjectionExpression: "#sessionId, #checkInAt, #mode, #note",
+      ProjectionExpression: "#sessionId, #sessionSk, #checkInAt, #mode, #note",
       ExpressionAttributeNames: {
         "#sessionId": "sessionId",
+        "#sessionSk": "sessionSk",
         "#checkInAt": "checkInAt",
         "#mode": "mode",
         "#note": "note"
@@ -2266,9 +2274,31 @@ async function loadState(pk) {
   const active = itemToObject(activeResult.Item);
   const settings = itemToObject(settingsResult.Item);
   const sessions = (sessionsResult.Items ?? []).map(itemToObject);
+  const hasActiveSessionItem = active?.sessionId && sessions.some((session) => session?.sessionId === active.sessionId);
+
+  if (active?.sessionSk && !hasActiveSessionItem) {
+    const activeSessionResult = await dynamodb.send(
+      new GetItemCommand({
+        TableName: tableName,
+        Key: objectToItem({ pk, sk: active.sessionSk }),
+        ProjectionExpression: "#sessionId, #checkInAt, #checkOutAt, #mode, #note",
+        ExpressionAttributeNames: {
+          "#sessionId": "sessionId",
+          "#checkInAt": "checkInAt",
+          "#checkOutAt": "checkOutAt",
+          "#mode": "mode",
+          "#note": "note"
+        }
+      })
+    );
+    const activeSession = itemToObject(activeSessionResult.Item);
+    if (activeSession) {
+      sessions.push(activeSession);
+    }
+  }
 
   return {
-    records: sortRecordsByTimestampDesc(sessions.flatMap(toRecords)),
+    records: sortRecordsByTimestampDesc(sessions.flatMap((session) => toRecords(session, active?.sessionId))),
     activeSession: active
       ? {
           id: active.sessionId,
@@ -2512,11 +2542,24 @@ async function checkIn(pk, body) {
     })
   );
 
-  if (active.Item) {
+  const activeItem = itemToObject(active.Item);
+  const shouldMarkPreviousMissing = body.resolveActiveSession === "mark-missing-check-out";
+  if (activeItem && !shouldMarkPreviousMissing) {
     return json(409, { error: "An active session already exists." });
   }
 
   const now = new Date().toISOString();
+  if (activeItem && shouldMarkPreviousMissing) {
+    const activeCheckInAt = activeItem.checkInAt ? new Date(activeItem.checkInAt) : null;
+    if (!activeItem.sessionSk || !activeItem.sessionId || !activeCheckInAt || Number.isNaN(activeCheckInAt.getTime())) {
+      return json(409, { error: "The previous active session could not be resolved." });
+    }
+
+    if (cacheDateFor(activeCheckInAt) === cacheDateFor(new Date(now))) {
+      return json(409, { error: "The active session must be checked out before starting a new session today." });
+    }
+  }
+
   const sessionId = randomUUID();
   const sessionSk = `SESSION#${now}#${sessionId}`;
   const note = String(body.note ?? "").slice(0, 300);
@@ -2533,31 +2576,71 @@ async function checkIn(pk, body) {
   };
 
   try {
-    await dynamodb.send(
-      new TransactWriteItemsCommand({
-        TransactItems: [
-          {
-            Put: {
-              TableName: tableName,
-              Item: objectToItem(sessionItem),
-              ConditionExpression: "attribute_not_exists(pk)"
-            }
-          },
-          {
-            Put: {
-              TableName: tableName,
-              Item: objectToItem({
-                ...sessionItem,
-                sk: "ACTIVE_SESSION",
-                sessionSk,
-                entityType: "ACTIVE_SESSION"
-              }),
-              ConditionExpression: "attribute_not_exists(pk)"
-            }
+    const transactItems = [];
+
+    if (activeItem && shouldMarkPreviousMissing) {
+      transactItems.push({
+        Update: {
+          TableName: tableName,
+          Key: objectToItem({ pk, sk: activeItem.sessionSk }),
+          UpdateExpression: "set missedCheckOutAt = :now, sessionStatus = :missing, updatedAt = :now",
+          ConditionExpression: "attribute_exists(pk) and attribute_not_exists(checkOutAt)",
+          ExpressionAttributeValues: {
+            ":now": { S: now },
+            ":missing": { S: "missing-check-out" }
           }
-        ]
-      })
-    );
+        }
+      });
+    }
+
+    transactItems.push({
+      Put: {
+        TableName: tableName,
+        Item: objectToItem(sessionItem),
+        ConditionExpression: "attribute_not_exists(pk)"
+      }
+    });
+
+    if (activeItem && shouldMarkPreviousMissing) {
+      transactItems.push({
+        Update: {
+          TableName: tableName,
+          Key: objectToItem({ pk, sk: "ACTIVE_SESSION" }),
+          UpdateExpression:
+            "set sessionId = :sessionId, sessionSk = :sessionSk, entityType = :entityType, #mode = :mode, note = :note, checkInAt = :checkInAt, createdAt = :createdAt, updatedAt = :updatedAt",
+          ConditionExpression: "attribute_exists(pk) and sessionId = :previousSessionId",
+          ExpressionAttributeNames: {
+            "#mode": "mode"
+          },
+          ExpressionAttributeValues: {
+            ":sessionId": { S: sessionId },
+            ":sessionSk": { S: sessionSk },
+            ":entityType": { S: "ACTIVE_SESSION" },
+            ":mode": { S: mode },
+            ":note": { S: note },
+            ":checkInAt": { S: now },
+            ":createdAt": { S: now },
+            ":updatedAt": { S: now },
+            ":previousSessionId": { S: activeItem.sessionId }
+          }
+        }
+      });
+    } else {
+      transactItems.push({
+        Put: {
+          TableName: tableName,
+          Item: objectToItem({
+            ...sessionItem,
+            sk: "ACTIVE_SESSION",
+            sessionSk,
+            entityType: "ACTIVE_SESSION"
+          }),
+          ConditionExpression: "attribute_not_exists(pk)"
+        }
+      });
+    }
+
+    await dynamodb.send(new TransactWriteItemsCommand({ TransactItems: transactItems }));
   } catch (error) {
     if (isConditionalFailure(error)) {
       return json(409, { error: "An active session already exists." });

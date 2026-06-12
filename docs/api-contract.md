@@ -1,6 +1,6 @@
 # API 계약
 
-마지막 업데이트: 2026-06-10
+마지막 업데이트: 2026-06-12
 
 모든 API는 API Gateway HTTP API 뒤에 있으며, Cognito JWT authorizer를 통과해야 한다. 클라이언트는 `Authorization: Bearer <access_token>` 헤더를 보낸다.
 
@@ -58,7 +58,8 @@
       "type": "check-in",
       "timestamp": "2026-05-20T09:00:00.000Z",
       "mode": "focus",
-      "note": "오전 집중"
+      "note": "오전 집중",
+      "sessionStatus": "active"
     }
   ],
   "activeSession": {
@@ -76,6 +77,8 @@
 - `records`는 세션 시작 시각이 아니라 각 출근/퇴근 이벤트의 실제 `timestamp` 기준 최신순으로 반환한다.
 - 자정을 넘긴 세션이나 퇴근 시각만 보정된 세션도 이벤트 시각 기준 위치에 보여야 한다.
 - 첫 화면 안정성을 위해 `/api/state`는 최근 세션 창만 반환한다. 현재 구현은 최근 `SESSION#` item 12개를 projection으로 가볍게 읽고, 그 안에서 펼친 출근/퇴근 이벤트를 반환한다. 전체 과거 기록 검색/페이지네이션이 필요하면 별도 archive API를 설계한다.
+- 활성 세션은 최근 세션 창 밖으로 밀려도 응답에 반드시 포함한다. 사용자가 밤샘 작업을 이어갈 수 있어야 하므로 날짜가 바뀌었다는 이유만으로 `ACTIVE_SESSION`을 자동 마감하거나 삭제하지 않는다.
+- `records[].sessionStatus`는 `active`, `completed`, `missing-check-out` 중 하나다. `missing-check-out`은 사용자가 전날 활성 세션을 퇴근하지 않은 기록으로 남기고 새 출근을 시작했을 때 표시한다.
 
 ## GET /api/usage
 
@@ -172,7 +175,8 @@
 ```json
 {
   "mode": "focus",
-  "note": "오전 집중"
+  "note": "오전 집중",
+  "resolveActiveSession": "mark-missing-check-out"
 }
 ```
 
@@ -189,6 +193,8 @@
 - body 최대 크기는 4KB다.
 - `note`는 서버에서 300자로 자른다.
 - 이미 활성 세션이 있으면 `409`.
+- 단, 활성 세션의 출근일이 현재 한국 날짜보다 이전이고 `resolveActiveSession`이 `mark-missing-check-out`이면 이전 활성 세션을 `missing-check-out`으로 표시한 뒤 새 출근 세션을 시작한다.
+- 같은 날짜의 활성 세션은 새 출근으로 덮지 않는다. 이 경우 먼저 퇴근하거나 기존 세션을 수정/삭제해야 한다.
 
 응답: `GET /api/state`와 같은 형태.
 
