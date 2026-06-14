@@ -6,6 +6,7 @@
 - `src/styles.css`를 레거시 진입 스타일시트로 명시하고, 새 날짜별 override pass를 추가하지 않는 기준을 문서화했습니다.
 - `scripts/check-css-guardrails.mjs`와 `npm run verify:css`를 추가하고, `npm run build`가 CSS guardrail을 먼저 실행하도록 연결했습니다.
 - 브라우저 활동 기반 자동 퇴근 보정 로직을 `App.tsx`에서 `src/clientActivity.ts`로 분리해 localStorage parsing, 활동 스냅샷 생성, 보정 후보 계산의 책임 위치를 명확히 했습니다.
+- 큰 범위 리팩토링 전 기준선으로 `docs/test-baseline-2026-06-14.md`를 추가했습니다. 빌드, audit, secret 스캔, infra guardrail, 로컬 로그인 화면 스모크 테스트 통과 여부와 인증 후 E2E 미실행 범위를 기록했습니다.
 
 ## 2026-06-09
 
