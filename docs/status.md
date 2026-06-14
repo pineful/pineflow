@@ -78,6 +78,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 같은 날짜의 운영 사용량 스냅샷을 프론트엔드와 DynamoDB에 캐시해 CloudWatch 반복 호출을 줄임.
 - S3 frontend bucket의 `assets/` 객체를 30일 뒤 Intelligent-Tiering으로 전환하고, 미완료 multipart upload를 1일 뒤 정리하는 lifecycle rule을 추가.
 - `Request failed.` 같은 일반 오류 문구를 상태 코드별 사용자 문구로 바꾸고, 초기 상태 조회 직후 기록 버튼이 API Gateway throttling에 걸릴 가능성을 줄이도록 짧은 쿨다운과 지연 사용량 조회를 적용.
+- 기록 수정 화면을 compact command editor로 재배치해 업무 유형, 날짜, 시간, 빠른 보정, 메모, 저장/취소가 넓은 화면에서 불필요하게 벌어지지 않도록 정리.
 - 로그인 후 첫 화면에 Free Tier 기준 비용 신호등을 추가해 하단 운영 사용량 패널까지 내려가지 않아도 안정/주의/확인 필요 상태를 볼 수 있게 함.
 - 보안 리뷰 후 레거시 PoC compose의 DB 포트/비밀번호 기본값을 정리하고, Serverless API의 wildcard CORS 응답과 malformed record id 500 응답 가능성을 제거.
 - `docs/security.md`를 Cognito/JWT/GitHub OIDC 기반 Serverless 본선 보안 모델로 갱신하고, PoC access key 모델을 레거시 주의사항으로 분리.

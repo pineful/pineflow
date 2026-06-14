@@ -2056,7 +2056,7 @@ function RecordTimeEditor({
   return (
     <div className="timeEditor" aria-label={`${recordType === "check-in" ? "출근" : "퇴근"} 시간 수정`}>
       <div className="timeEditorHeader">
-        <span>기록 수정</span>
+        <span>{recordType === "check-in" ? "출근 기록 수정" : "퇴근 기록 수정"}</span>
         <strong>
           {editorMonthFormatter.format(date)} · {weekdayLabel(date, "long")}
         </strong>
@@ -2069,136 +2069,152 @@ function RecordTimeEditor({
           </button>
         </div>
       )}
-      <span className="editorGroupLabel">업무 유형 선택</span>
-      <div className="recordEditModes" aria-label="업무 유형 선택">
-        {workModes.map((workMode) => (
-          <button
-            key={workMode}
-            className={mode === workMode ? "selected" : ""}
-            type="button"
-            disabled={disabled}
-            aria-pressed={mode === workMode}
-            onClick={() => onModeChange(workMode)}
-          >
-            {modeLabels[workMode]}
-          </button>
-        ))}
-      </div>
-      <span className="editorGroupLabel">날짜</span>
-      <div className="dateRail" role="listbox" aria-label="수정할 날짜">
-        {days.map((day) => {
-          const key = localDateKey(day);
-          const isSelected = key === selectedKey;
-          return (
-            <button
-              key={key}
-              className={isSelected ? "selected" : ""}
-              type="button"
-              role="option"
-              disabled={disabled}
-              aria-selected={isSelected}
-              onClick={() => onChange(setEditorDatePart(value, key))}
-            >
-              <span>{weekdayLabel(day)}</span>
-              <strong>{day.getDate()}</strong>
-              <small>{day.getMonth() + 1}월</small>
+      <div className="timeEditorGrid">
+        <section className="editorBlock editorBlockMode" aria-labelledby="record-editor-mode-label">
+          <div className="editorBlockHeader">
+            <span id="record-editor-mode-label" className="editorGroupLabel">업무 유형</span>
+            <small>기록의 성격</small>
+          </div>
+          <div className="recordEditModes" aria-label="업무 유형 선택">
+            {workModes.map((workMode) => (
+              <button
+                key={workMode}
+                className={mode === workMode ? "selected" : ""}
+                type="button"
+                disabled={disabled}
+                aria-pressed={mode === workMode}
+                onClick={() => onModeChange(workMode)}
+              >
+                {modeLabels[workMode]}
+              </button>
+            ))}
+          </div>
+        </section>
+        <section className="editorBlock editorBlockDate" aria-labelledby="record-editor-date-label">
+          <div className="editorBlockHeader">
+            <span id="record-editor-date-label" className="editorGroupLabel">날짜</span>
+            <small>가운데 날짜가 저장 대상</small>
+          </div>
+          <div className="dateRail" role="listbox" aria-label="수정할 날짜">
+            {days.map((day) => {
+              const key = localDateKey(day);
+              const isSelected = key === selectedKey;
+              return (
+                <button
+                  key={key}
+                  className={isSelected ? "selected" : ""}
+                  type="button"
+                  role="option"
+                  disabled={disabled}
+                  aria-selected={isSelected}
+                  onClick={() => onChange(setEditorDatePart(value, key))}
+                >
+                  <span>{weekdayLabel(day)}</span>
+                  <strong>{day.getDate()}</strong>
+                  <small>{day.getMonth() + 1}월</small>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+        <section className="editorBlock editorBlockTime" aria-labelledby="record-editor-time-label">
+          <div className="editorBlockHeader">
+            <span id="record-editor-time-label" className="editorGroupLabel">시간</span>
+            <small>직접 입력 또는 빠른 보정</small>
+          </div>
+          <div className="timeEditorControls">
+            <div className="periodControl" aria-label="오전 오후 선택">
+              <button
+                className={period === "am" ? "selected" : ""}
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange(setEditorPeriod(value, "am"))}
+              >
+                오전
+              </button>
+              <button
+                className={period === "pm" ? "selected" : ""}
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange(setEditorPeriod(value, "pm"))}
+              >
+                오후
+              </button>
+            </div>
+            <label className="timeNumberField">
+              <span>시</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={2}
+                autoComplete="off"
+                value={hourInput}
+                disabled={disabled}
+                aria-label="시 직접 입력"
+                aria-invalid={Boolean(hourInput) && !(Number(hourInput) >= 1 && Number(hourInput) <= 12)}
+                onFocus={(event) => focusTimeInput(event, "hour")}
+                onMouseUp={(event) => event.preventDefault()}
+                onBlur={finishHourInput}
+                onChange={(event) => changeHourInput(event.target.value)}
+              />
+            </label>
+            <label className="timeNumberField">
+              <span>분</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={2}
+                autoComplete="off"
+                value={minuteInput}
+                disabled={disabled}
+                aria-label="분 직접 입력"
+                aria-invalid={Boolean(minuteInput) && !(Number(minuteInput) >= 0 && Number(minuteInput) <= 59)}
+                onFocus={(event) => focusTimeInput(event, "minute")}
+                onMouseUp={(event) => event.preventDefault()}
+                onBlur={finishMinuteInput}
+                onChange={(event) => changeMinuteInput(event.target.value)}
+              />
+            </label>
+          </div>
+          <div className="timeNudges" aria-label="시간 빠른 보정">
+            {[-15, -5].map((minutes) => (
+              <button
+                key={minutes}
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange(shiftEditorMinutes(value, minutes))}
+              >
+                {minutes}분
+              </button>
+            ))}
+            <button type="button" disabled={disabled} onClick={() => onChange(formatLocalDateTimeValue(new Date()))}>
+              현재
             </button>
-          );
-        })}
-      </div>
-      <span className="editorGroupLabel timeLabel">시간</span>
-      <div className="timeEditorControls">
-        <div className="periodControl" aria-label="오전 오후 선택">
-          <button
-            className={period === "am" ? "selected" : ""}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(setEditorPeriod(value, "am"))}
-          >
-            오전
-          </button>
-          <button
-            className={period === "pm" ? "selected" : ""}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(setEditorPeriod(value, "pm"))}
-          >
-            오후
-          </button>
-        </div>
-        <label className="timeNumberField">
-          <span>시</span>
+            {[5, 15].map((minutes) => (
+              <button
+                key={minutes}
+                type="button"
+                disabled={disabled}
+                onClick={() => onChange(shiftEditorMinutes(value, minutes))}
+              >
+                +{minutes}분
+              </button>
+            ))}
+          </div>
+        </section>
+        <label className="recordEditNote editorBlock editorBlockNote">
+          <span>메모</span>
           <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={2}
-            autoComplete="off"
-            value={hourInput}
+            value={note}
             disabled={disabled}
-            aria-label="시 직접 입력"
-            aria-invalid={Boolean(hourInput) && !(Number(hourInput) >= 1 && Number(hourInput) <= 12)}
-            onFocus={(event) => focusTimeInput(event, "hour")}
-            onMouseUp={(event) => event.preventDefault()}
-            onBlur={finishHourInput}
-            onChange={(event) => changeHourInput(event.target.value)}
-          />
-        </label>
-        <label className="timeNumberField">
-          <span>분</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={2}
-            autoComplete="off"
-            value={minuteInput}
-            disabled={disabled}
-            aria-label="분 직접 입력"
-            aria-invalid={Boolean(minuteInput) && !(Number(minuteInput) >= 0 && Number(minuteInput) <= 59)}
-            onFocus={(event) => focusTimeInput(event, "minute")}
-            onMouseUp={(event) => event.preventDefault()}
-            onBlur={finishMinuteInput}
-            onChange={(event) => changeMinuteInput(event.target.value)}
+            maxLength={300}
+            onChange={(event) => onNoteChange(event.target.value)}
+            placeholder="예: 강의 듣기, 화면 정리"
           />
         </label>
       </div>
-      <span className="editorGroupLabel nudgeLabel">빠른 시간 보정</span>
-      <div className="timeNudges" aria-label="시간 빠른 보정">
-        {[-15, -5].map((minutes) => (
-          <button
-            key={minutes}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(shiftEditorMinutes(value, minutes))}
-          >
-            {minutes}분
-          </button>
-        ))}
-        <button type="button" disabled={disabled} onClick={() => onChange(formatLocalDateTimeValue(new Date()))}>
-          현재
-        </button>
-        {[5, 15].map((minutes) => (
-          <button
-            key={minutes}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(shiftEditorMinutes(value, minutes))}
-          >
-            +{minutes}분
-          </button>
-        ))}
-      </div>
-      <label className="recordEditNote">
-        <span>메모</span>
-        <input
-          value={note}
-          disabled={disabled}
-          maxLength={300}
-          onChange={(event) => onNoteChange(event.target.value)}
-          placeholder="예: 강의 듣기, 화면 정리"
-        />
-      </label>
     </div>
   );
 }

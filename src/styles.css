@@ -7785,3 +7785,319 @@ button.sessionEndpoint:hover:not(:disabled) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* 2026-06-14 compact record editor pass.
+   Editing a record is a correction task, so the editor must read as a dense
+   command panel instead of a large form spread across the whole session card. */
+.sessionDetails .timeEditor {
+  gap: 10px;
+  margin-top: 8px;
+  padding: 12px;
+  border-color: rgba(91, 220, 255, 0.28);
+  background:
+    linear-gradient(135deg, rgba(18, 27, 42, 0.96), rgba(8, 13, 23, 0.94)),
+    #0d1421;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 26px rgba(0, 0, 0, 0.2);
+}
+
+.sessionDetails .timeEditor::after {
+  inset: 6px;
+  border-color: rgba(91, 220, 255, 0.11);
+}
+
+.timeEditorGrid {
+  display: grid;
+  grid-template-columns: minmax(184px, 0.62fr) minmax(320px, 1fr) minmax(320px, 1fr);
+  grid-template-areas:
+    "mode date time"
+    "note note note";
+  gap: 10px;
+  min-width: 0;
+}
+
+.editorBlock {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(91, 220, 255, 0.18);
+  background:
+    linear-gradient(180deg, rgba(13, 20, 32, 0.88), rgba(8, 13, 22, 0.82)),
+    rgba(8, 13, 22, 0.78);
+  clip-path: var(--clip-compact-command);
+}
+
+.editorBlockMode {
+  grid-area: mode;
+}
+
+.editorBlockDate {
+  grid-area: date;
+}
+
+.editorBlockTime {
+  grid-area: time;
+}
+
+.editorBlockNote {
+  grid-area: note;
+}
+
+.editorBlockHeader {
+  display: flex;
+  min-width: 0;
+  min-height: 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.editorBlockHeader small {
+  min-width: 0;
+  overflow: hidden;
+  color: #8fa8c2;
+  font-size: 0.6rem;
+  font-weight: 850;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeEditor .editorGroupLabel {
+  min-height: 22px;
+  margin: 0;
+  padding: 2px 7px;
+  font-size: 0.66rem;
+}
+
+.sessionDetails .timeEditorHeader {
+  min-height: 30px;
+  padding: 0 2px 8px;
+  border-color: rgba(126, 158, 200, 0.16);
+}
+
+.sessionDetails .timeEditorHeader span {
+  color: #b8c7d9;
+  font-size: 0.68rem;
+}
+
+.sessionDetails .timeEditorHeader strong {
+  color: #f4f8ff;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.timeEditor .editorDateNotice {
+  grid-column: 1 / -1;
+  min-height: 36px;
+  padding: 8px 10px;
+  color: #ffe2a8;
+  border-color: rgba(255, 180, 77, 0.36);
+  background: rgba(255, 180, 77, 0.08);
+  font-size: 0.68rem;
+  clip-path: var(--clip-compact-command);
+}
+
+.timeEditor .editorDateNotice button {
+  min-height: 28px;
+  padding-inline: 10px;
+  color: #07101a;
+  font-size: 0.64rem;
+}
+
+.timeEditor .recordEditModes {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.timeEditor .recordEditModes button {
+  min-height: 38px;
+  padding: 7px 8px 7px 14px;
+  font-size: 0.68rem;
+  line-height: 1.15;
+}
+
+.timeEditor .recordEditModes button::before,
+.timeEditor .dateRail button::before,
+.timeEditor .timeNudges button::before {
+  top: 7px;
+  left: 6px;
+  width: 3px;
+  height: calc(100% - 14px);
+}
+
+.timeEditor .recordEditModes button.selected {
+  color: #06111d;
+  background:
+    linear-gradient(135deg, #78e9ff 0%, #67d2df 58%, #9dd8c4 100%),
+    #78e9ff;
+  box-shadow:
+    0 8px 20px rgba(91, 220, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.timeEditor .dateRail {
+  grid-template-columns: repeat(7, minmax(34px, 1fr));
+  gap: 5px;
+}
+
+.timeEditor .dateRail button {
+  min-height: 50px;
+  padding: 5px 3px;
+}
+
+.timeEditor .dateRail button span {
+  font-size: 0.58rem;
+}
+
+.timeEditor .dateRail button strong {
+  font-size: 0.92rem;
+}
+
+.timeEditor .dateRail button small {
+  font-size: 0.56rem;
+}
+
+.timeEditor .dateRail button.selected {
+  color: #06111d;
+  background:
+    linear-gradient(135deg, #78e9ff 0%, #5bdcff 56%, #ffcf6a 100%),
+    #78e9ff;
+  box-shadow:
+    0 8px 20px rgba(91, 220, 255, 0.18),
+    inset 0 -3px 0 rgba(255, 180, 77, 0.82);
+}
+
+.timeEditor .dateRail button.selected span,
+.timeEditor .dateRail button.selected small {
+  color: rgba(6, 17, 29, 0.78);
+}
+
+.timeEditor .timeEditorControls {
+  grid-template-columns: minmax(100px, 0.78fr) minmax(74px, 1fr) minmax(74px, 1fr);
+  gap: 6px;
+  align-items: end;
+}
+
+.timeEditor .periodControl {
+  min-height: 40px;
+  padding: 3px;
+  border-color: rgba(91, 220, 255, 0.26);
+  background:
+    linear-gradient(180deg, rgba(11, 17, 27, 0.96), rgba(16, 24, 37, 0.9)),
+    #0b111b;
+}
+
+.timeEditor .periodControl button {
+  min-height: 32px;
+  padding-inline: 8px;
+  color: #c8d8e8;
+  font-size: 0.68rem;
+}
+
+.timeEditor .periodControl button.selected {
+  color: #06111d;
+  background:
+    linear-gradient(135deg, #78e9ff, #9dd8c4),
+    #78e9ff;
+}
+
+.timeEditor .timeNumberField {
+  gap: 4px;
+}
+
+.timeEditor .timeNumberField span,
+.timeEditor .recordEditNote span {
+  min-height: 20px;
+  padding: 2px 7px;
+  font-size: 0.62rem;
+}
+
+.timeEditor .timeNumberField input {
+  min-height: 40px;
+  padding-inline: 10px;
+  font-size: 0.86rem;
+}
+
+.timeEditor .timeNudges {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.timeEditor .timeNudges button {
+  min-height: 30px;
+  padding: 5px 6px 5px 11px;
+  font-size: 0.62rem;
+  line-height: 1.05;
+}
+
+.timeEditor .recordEditNote {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  padding: 10px;
+}
+
+.timeEditor .recordEditNote input {
+  min-height: 38px;
+  font-size: 0.78rem;
+}
+
+.sessionDetails .timelineEditFooter {
+  gap: 8px;
+  margin-top: 2px;
+  padding-top: 10px;
+  border-color: rgba(126, 158, 200, 0.16);
+}
+
+.sessionDetails .timelineEditFooter button {
+  min-height: 36px;
+  min-width: 78px;
+  padding-inline: 13px;
+  font-size: 0.72rem;
+}
+
+@media (max-width: 1180px) {
+  .timeEditorGrid {
+    grid-template-columns: minmax(190px, 0.62fr) minmax(0, 1fr);
+    grid-template-areas:
+      "mode date"
+      "time time"
+      "note note";
+  }
+}
+
+@media (max-width: 720px) {
+  .timeEditorGrid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "mode"
+      "date"
+      "time"
+      "note";
+  }
+
+  .timeEditor .recordEditModes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .timeEditor .recordEditNote {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .sessionDetails .timeEditor {
+    padding: 10px;
+  }
+
+  .timeEditor .dateRail {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .timeEditor .timeEditorControls,
+  .timeEditor .timeNudges {
+    grid-template-columns: 1fr;
+  }
+}
