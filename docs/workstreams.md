@@ -32,7 +32,7 @@
 | 비용/보안 가드레일 | Free Tier 지향 설정, throttling, concurrency, CSP, IAM 최소화 | `infra/lib/pineflow-serverless-stack.ts`, `infra/scripts/verify-template.mjs`, `infra/bootstrap/*.yaml` | `docs/cost-guardrails.md`, `docs/security.md`, `docs/aws-serverless-deployment-checklist.md`, `docs/adr/0004-cost-first-guardrails.md` |
 | 운영 사용량 표시 | CloudWatch 기반 API/Lambda/DynamoDB/S3/CloudFront 기초 사용량 표시 | `src/App.tsx`, `src/api.ts`, `src/types.ts`, `infra/lambda/pineflow-api/index.mjs`, `infra/lib/pineflow-serverless-stack.ts` | `docs/api-contract.md`, `docs/cost-guardrails.md`, `docs/serverless-implementation.md` |
 | CI/CD와 배포 | GitHub Actions, OIDC, CDK deploy, S3/CloudFront 반영 | `.github/workflows/serverless.yml`, `.github/workflows/deploy.yml`, `infra/` | `docs/cicd.md`, `docs/aws-iam-oidc.md`, `docs/aws-serverless-deployment-checklist.md`, `docs/adr/0005-github-oidc-no-long-term-keys.md` |
-| 날씨 | 현재 위치 기반 날씨, 위치명 fallback, 외부 공개 API | `src/App.tsx`, `src/styles.css`, `infra/lib/pineflow-serverless-stack.ts` | `docs/modules/weather.md` |
+| 날씨 | 현재 위치 기반 날씨, 위치명 fallback, 외부 공개 API | `src/App.tsx`, `src/weather.ts`, `src/styles.css`, `infra/lib/pineflow-serverless-stack.ts` | `docs/modules/weather.md` |
 | 마이크로인터랙션 | 효과음, 버튼 피드백, toast, 모션 제한 | `src/App.tsx`, `src/styles.css` | `docs/modules/microinteractions.md` |
 | EC2/PostgreSQL PoC | 과거 PoC 보존과 수동 참고 | `server/`, `Dockerfile`, `compose*.yml`, `scripts/*ec2*` | `docs/architecture.md`, `docs/deployment-aws.md`, `docs/cicd.md` |
 

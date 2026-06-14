@@ -20,6 +20,7 @@
 - 시간대별 변화는 온도 선 그래프, 강수 가능성 막대, 날씨 상태 아이콘을 함께 사용해 숫자를 읽기 전에 흐름이 먼저 보이게 한다.
 - 예보 그래프와 시간대별 카드는 같은 가로 스크롤 레일 안에 둔다. 사용자가 옆으로 넘기면 카드만 움직이는 것이 아니라 온도/강수 그래프도 같은 시간 축으로 함께 움직여야 한다.
 - 펼친 날씨 상세는 상단 대시보드의 오른쪽 command stack 안에서만 자체적으로 커지거나 스크롤되어야 한다. 날씨 상세가 열렸다는 이유로 왼쪽 누적 시간 그래프 카드가 같이 늘어나면 안 된다.
+- Open-Meteo weather code 변환, 시간대별 예보 슬롯 생성, 한국어 위치 표시 fallback은 `src/weather.ts`에 둔다. `App.tsx`는 위치 권한 요청과 fetch 흐름, weather deck 렌더링을 맡는다.
 
 ## 사용자 경험 원칙
 
@@ -53,3 +54,5 @@
 CloudFront CSP의 `connect-src`에는 Open-Meteo와 BigDataCloud 도메인만 추가한다. 다른 외부 API를 추가해야 한다면 먼저 이 문서를 갱신하고, 왜 필요한지 ADR 또는 변경 기록에 남긴다.
 
 위치 좌표는 Pineflow 서버로 보내지 않는다. 브라우저가 공개 날씨/지오코딩 API에 직접 요청하며, Pineflow의 기록 데이터에는 저장하지 않는다.
+
+`src/weather.ts`는 표시 helper 경계이며, 새 외부 endpoint를 추가하는 위치가 아니다. 날씨 제공자, reverse geocoding 제공자, CSP connect-src가 바뀌면 `infra/lib/pineflow-serverless-stack.ts`, `docs/modules/weather.md`, 변경 기록을 함께 갱신한다.

@@ -64,6 +64,18 @@ import {
   type RecentSession,
   type WorkdayLensDay
 } from "./recordSessions";
+import {
+  buildHourlyWeather,
+  locationLabelFromGeocode,
+  seoulCoordinates,
+  weatherCondition,
+  weatherForecastDays,
+  weatherForecastSlotWidth,
+  weatherTone,
+  type HourlyWeather,
+  type ReverseGeocodeResult,
+  type WeatherState
+} from "./weather";
 import type {
   CommuteRecord,
   CommuteState,
@@ -90,27 +102,6 @@ const soundStorageKey = "pineflow.sound-enabled";
 const usageCacheStorageKey = "pineflow.usage-cache.v1";
 const sessionRefreshIntervalMs = 30 * 60 * 1000;
 
-type WeatherState = {
-  status: "loading" | "ready" | "unavailable";
-  locationLabel: string;
-  temperature?: number;
-  apparentTemperature?: number;
-  humidity?: number;
-  windSpeed?: number;
-  precipitationProbability?: number;
-  condition?: string;
-  hourly?: HourlyWeather[];
-  message?: string;
-};
-
-type HourlyWeather = {
-  time: string;
-  label: string;
-  temperature: number;
-  precipitationProbability: number;
-  condition: string;
-};
-
 type FeedbackSound = "tap" | "open" | "start" | "finish" | "success";
 type RecordDataStatus = "idle" | "loading" | "ready" | "unavailable";
 type UsageStatus = "idle" | "loading" | "ready" | "unavailable";
@@ -132,92 +123,8 @@ type RecordEditSnapshot = {
   note: string;
 };
 
-type ReverseGeocodeResult = {
-  localityName?: string;
-  locality?: string;
-  city?: string;
-  principalSubdivision?: string;
-  localityInfo?: {
-    administrative?: Array<{
-      name?: string;
-      description?: string;
-      order?: number;
-    }>;
-  };
-};
-
-const seoulCoordinates = {
-  latitude: 37.5665,
-  longitude: 126.978,
-  label: "서울 중구 기준"
-};
-const weatherForecastDays = 5;
-const weatherForecastSlotWidth = 106;
 const usageLoadDelayMs = 4000;
 const trendLensInitialLoadDelayMs = 1400;
-
-function weatherCondition(code: number) {
-  if (code === 0) return "맑음";
-  if ([1, 2, 3].includes(code)) return "구름 조금";
-  if ([45, 48].includes(code)) return "안개";
-  if ([51, 53, 55, 56, 57].includes(code)) return "이슬비";
-  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "비";
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return "눈";
-  if ([95, 96, 99].includes(code)) return "뇌우";
-  return "변화 있음";
-}
-
-function weatherTone(condition: string) {
-  if (condition.includes("비") || condition.includes("이슬비") || condition.includes("뇌우")) return "rain";
-  if (condition.includes("눈")) return "snow";
-  if (condition.includes("구름") || condition.includes("안개")) return "cloud";
-  return "sun";
-}
-
-function weatherHourLabel(value: string) {
-  const date = new Date(value);
-  const today = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(today.getDate() + 1);
-
-  const isSameDate = (left: Date, right: Date) =>
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate();
-
-  const hour = `${date.getHours()}`.padStart(2, "0");
-  if (isSameDate(date, today)) return `오늘 ${hour}시`;
-  if (isSameDate(date, tomorrow)) return `내일 ${hour}시`;
-  return `${date.getMonth() + 1}/${date.getDate()} ${hour}시`;
-}
-
-function buildHourlyWeather(hourly: {
-  time?: string[];
-  temperature_2m?: number[];
-  precipitation_probability?: number[];
-  weather_code?: number[];
-}) {
-  const times = hourly.time ?? [];
-  const startIndex = Math.max(
-    times.findIndex((time) => new Date(time).getTime() >= Date.now() - 60 * 60 * 1000),
-    0
-  );
-
-  return times
-    .map((time, index) => ({ time, index }))
-    .slice(startIndex)
-    .filter((_, index) => index % 3 === 0)
-    .slice(0, weatherForecastDays * 8)
-    .map(({ time, index }) => {
-      return {
-        time,
-        label: weatherHourLabel(time),
-        temperature: Math.round(hourly.temperature_2m?.[index] ?? 0),
-        precipitationProbability: hourly.precipitation_probability?.[index] ?? 0,
-        condition: weatherCondition(hourly.weather_code?.[index] ?? -1)
-      };
-    });
-}
 
 function formatUsageMetric(metric: UsageMetric) {
   if (metric.unit === "bytes") {
@@ -837,35 +744,6 @@ function TrendLensPanel({
       </div>
     </section>
   );
-}
-
-function uniqueFilled(values: Array<string | undefined>) {
-  return [...new Set(values.map((value) => value?.trim()).filter(Boolean))] as string[];
-}
-
-function hasKoreanText(value?: string) {
-  return Boolean(value && /[가-힣]/.test(value));
-}
-
-function locationLabelFromGeocode(data: ReverseGeocodeResult, fallback: string) {
-  const localityNames = uniqueFilled([data.localityName, data.locality]).filter(hasKoreanText);
-  if (localityNames.length === 0) return fallback;
-
-  const broaderAdministrativeNames = data.localityInfo?.administrative
-    ?.filter((item) => item.name && item.order && item.order >= 4 && item.order <= 7 && hasKoreanText(item.name))
-    .sort((left, right) => (right.order ?? 0) - (left.order ?? 0))
-    .map((item) => item.name);
-
-  const parts = uniqueFilled([
-    ...localityNames,
-    ...(broaderAdministrativeNames ?? []),
-    data.city,
-    data.principalSubdivision
-  ])
-    .filter(hasKoreanText)
-    .slice(0, 3);
-
-  return parts.length > 0 ? `${parts.join(" · ")} 기준` : fallback;
 }
 
 async function resolveLocationLabel(latitude: number, longitude: number, fallback: string) {

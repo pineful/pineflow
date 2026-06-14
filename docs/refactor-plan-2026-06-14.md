@@ -152,3 +152,29 @@ Pineflow를 기능 추가가 계속 가능한 구조로 정리하되, 기존 서
 
 - 3차는 `App.tsx`의 날씨 helper와 weather deck component 경계를 검토한다.
 - 날씨는 외부 API와 CSP/도메인 정책이 걸려 있으므로, 순수 표시 helper와 fetch 흐름을 분리하되 URL/권한/인프라 변경은 별도 ADR 없이 진행하지 않는다.
+
+### 2026-06-14 / 3차 날씨 표시 helper 분리
+
+적용:
+
+- `WeatherState`, `HourlyWeather`, `ReverseGeocodeResult`, Open-Meteo weather code 변환, 예보 슬롯 생성, 한국어 위치 라벨 fallback을 `src/weather.ts`로 분리했다.
+- `App.tsx`에는 브라우저 위치 권한 요청, 공개 API fetch 흐름, weather deck 렌더링만 남겼다.
+- Open-Meteo/BigDataCloud endpoint, CloudFront CSP, 인프라 코드는 변경하지 않았다.
+
+검증:
+
+- `npm run build` 통과.
+- root `npm audit --audit-level=high` 통과.
+- 실제 credential 형태인 AWS access key, GitHub token, private key 패턴 매치 없음.
+- `git diff --check` 통과.
+- 로컬 브라우저 스모크: 로그인 화면 title/브랜드/로그인 표시, desktop overflow `0`, console error `0` 확인.
+
+데이터 보존 판단:
+
+- 날씨는 서버 저장소를 사용하지 않고 브라우저에서 공개 API를 직접 호출하는 보조 정보다.
+- API route, request/response payload, DynamoDB item shape를 바꾸지 않았으므로 데이터 마이그레이션은 필요하지 않다.
+
+다음 단위:
+
+- 4차는 UI component 분리 전에 `App.tsx`의 운영 사용량 helper 또는 Trend Lens 표시 helper 중 하나를 더 작은 view model 경계로 옮길지 검토한다.
+- component 분리는 props 계약을 명확히 문서화한 뒤 진행한다.

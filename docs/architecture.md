@@ -19,6 +19,7 @@ Pineflow의 운영 본선은 AWS Serverless입니다. 프론트엔드는 Vite Re
 - `src/clientActivity.ts`: Pineflow 탭 안의 최근 브라우저 활동 시각을 로컬에 보관하고, 다음 출근 시 이전 세션의 자동 퇴근 보정 후보를 계산하는 클라이언트 경계.
 - `src/recordSessions.ts`: 출근/퇴근 record 배열을 화면용 세션, 보관함 검색, Workday Lens 주간 요약으로 변환하는 view model 경계. API payload와 DynamoDB item shape를 바꾸지 않는다.
 - `src/trendReadState.ts`: Trend Lens 기사 읽음 상태와 Google News fallback link를 관리하는 브라우저 보조 상태 경계. 서버/DynamoDB 데이터 구조를 바꾸지 않는다.
+- `src/weather.ts`: Open-Meteo code 변환, 시간대별 예보 슬롯 생성, 한국어 위치 표시 fallback 같은 날씨 표시 helper 경계. 외부 API 호출 정책과 CSP는 이 파일만 바꿔 확장하지 않는다.
 - `src/brand.ts`: 제품명, 태그라인, 업무 유형 라벨.
 - `src/types.ts`: 프론트엔드에서 공유하는 도메인 타입.
 - `src/styles.css`: 현재 레거시 진입 스타일시트. 새 override pass를 누적하지 않고 기존 selector를 통합한다.

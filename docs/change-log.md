@@ -12,6 +12,8 @@
 - 1차 리팩토링 후 `npm run build`, root/infra audit, `infra npm run verify`, 실제 credential 패턴 스캔, 로컬 로그인 화면 스모크 테스트를 통과했습니다. API 계약과 DynamoDB 데이터 형태는 바꾸지 않았습니다.
 - 2차 리팩토링으로 최근 세션, 기록 보관함 검색, `Workday Lens` 주간 요약 계산을 `src/recordSessions.ts`로 분리했습니다.
 - 2차 리팩토링 후 `npm run build`, root audit, 실제 credential 패턴 스캔, `git diff --check`, 로컬 로그인 화면 스모크 테스트를 통과했습니다. API 계약과 DynamoDB 데이터 형태는 바꾸지 않았습니다.
+- 3차 리팩토링으로 날씨 상태 타입, Open-Meteo weather code 변환, 시간대별 예보 슬롯 생성, 한국어 위치 라벨 fallback을 `src/weather.ts`로 분리했습니다.
+- 3차 리팩토링 후 `npm run build`, root audit, 실제 credential 패턴 스캔, `git diff --check`, 로컬 로그인 화면 스모크 테스트를 통과했습니다. 날씨 API endpoint, CSP, 저장소 계약은 바꾸지 않았습니다.
 
 ## 2026-06-09
 
