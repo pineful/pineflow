@@ -192,7 +192,7 @@ Trend Lens v1 원칙:
 - Trend Lens `완전 새로 받기`는 `POST /api/trend-lens/refresh`에 `reset=true`를 보내 `SYSTEM#TREND_LENS` partition의 `LATEST`와 날짜 snapshot만 삭제하고 새로 수집한다. 출퇴근 기록과 사용자 설정은 건드리지 않으며 reset 전용 1분 guard로 연타를 막는다.
 - Trend Lens details는 snapshot이 없어도 비어 있으면 안 된다. fallback으로 캐시 조회 상태, 전체 새로고침 역할, 저장 정책을 보여준다.
 - Trend Lens source 상태 영역은 수집 출처 점검표다. `planned`는 화면에서 `준비`가 아니라 `후보`로 표현하고, Google Trends처럼 아직 자동 수집하지 않는 소스는 실제 반영 소스 뒤에 둔다.
-- Trend Lens 읽음 상태는 브라우저 `localStorage`에 저장한다. 오늘 읽은 기사는 위치를 유지하고 `오늘 읽음`으로 표시하며, 다음날 이후 같은 URL은 목록 아래로 이동하고 흐리게 표시한다. v1에서는 사용자별 읽음 상태를 DynamoDB에 저장하지 않는다.
+- Trend Lens 읽음 상태는 브라우저 `localStorage`에 저장한다. 저장/복원, 오늘/이전 읽음 판정, Google News 중간 URL fallback은 `src/trendReadState.ts`에 둔다. 오늘 읽은 기사는 위치를 유지하고 `오늘 읽음`으로 표시하며, 다음날 이후 같은 URL은 목록 아래로 이동하고 흐리게 표시한다. v1에서는 사용자별 읽음 상태를 DynamoDB에 저장하지 않는다.
 - 원문 전문, 이미지, transcript, paywall content는 저장하지 않는다.
 - 캐시는 `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#LATEST`, `sk=TREND_LENS#SNAPSHOT#YYYY-MM-DD`에 저장한다.
 - DynamoDB TTL `expiresAt`으로 cache/guard item을 정리한다.

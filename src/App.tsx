@@ -40,6 +40,17 @@ import {
   type ClientActivitySnapshot
 } from "./clientActivity";
 import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
+import {
+  createTrendReadEntry,
+  getStoredTrendReadState,
+  orderTrendItemsByReadState,
+  storeTrendReadState,
+  trendArticleHref,
+  trendItemReadKey,
+  trendReadStatus,
+  type TrendReadState,
+  type TrendReadStatus
+} from "./trendReadState";
 import type {
   CommuteRecord,
   CommuteState,
@@ -64,7 +75,6 @@ const initialState: CommuteState = {
 
 const soundStorageKey = "pineflow.sound-enabled";
 const usageCacheStorageKey = "pineflow.usage-cache.v1";
-const trendLensReadStorageKey = "pineflow.trend-lens-read.v1";
 const sessionRefreshIntervalMs = 30 * 60 * 1000;
 
 type WeatherState = {
@@ -93,12 +103,6 @@ type RecordDataStatus = "idle" | "loading" | "ready" | "unavailable";
 type UsageStatus = "idle" | "loading" | "ready" | "unavailable";
 type TrendLensStatus = "idle" | "loading" | "ready" | "refreshing" | "unavailable";
 type CostSignalLevel = "safe" | "watch" | "billable" | "loading" | "unavailable";
-type TrendReadEntry = {
-  readAt: string;
-  readDate: string;
-};
-type TrendReadState = Record<string, TrendReadEntry>;
-type TrendReadStatus = "unread" | "readToday" | "readBefore";
 type FlowChartPoint = {
   x: number;
   y: number;
@@ -563,81 +567,6 @@ function getStoredUsageSnapshot() {
 function storeUsageSnapshot(snapshot: OperationalUsageSnapshot) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(usageCacheStorageKey, JSON.stringify(snapshot));
-}
-
-function trendItemReadKey(item: TrendLensItem) {
-  return item.sourceUrl || `${item.category}:${item.id}`;
-}
-
-function googleNewsSearchHref(item: TrendLensItem) {
-  const href = new URL("https://news.google.com/search");
-  href.searchParams.set("q", [item.title, item.sourceName].filter(Boolean).join(" "));
-
-  if (item.region === "korea" || item.language === "ko") {
-    href.searchParams.set("hl", "ko");
-    href.searchParams.set("gl", "KR");
-    href.searchParams.set("ceid", "KR:ko");
-  } else {
-    href.searchParams.set("hl", "en-US");
-    href.searchParams.set("gl", "US");
-    href.searchParams.set("ceid", "US:en");
-  }
-
-  return href.toString();
-}
-
-function trendArticleHref(item: TrendLensItem) {
-  try {
-    const href = new URL(item.sourceUrl);
-    if (href.hostname === "news.google.com" && !href.pathname.startsWith("/search")) {
-      return googleNewsSearchHref(item);
-    }
-  } catch {
-    return item.sourceUrl;
-  }
-
-  return item.sourceUrl;
-}
-
-function getStoredTrendReadState(): TrendReadState {
-  if (typeof window === "undefined") return {};
-
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(trendLensReadStorageKey) ?? "{}") as TrendReadState;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
-    return Object.fromEntries(
-      Object.entries(parsed).filter(([, entry]) => entry?.readAt && entry?.readDate)
-    );
-  } catch {
-    return {};
-  }
-}
-
-function storeTrendReadState(readState: TrendReadState) {
-  if (typeof window === "undefined") return;
-
-  const sortedEntries = Object.entries(readState)
-    .sort(([, left], [, right]) => new Date(right.readAt).getTime() - new Date(left.readAt).getTime())
-    .slice(0, 500);
-  window.localStorage.setItem(trendLensReadStorageKey, JSON.stringify(Object.fromEntries(sortedEntries)));
-}
-
-function trendReadStatus(item: TrendLensItem, readState: TrendReadState): TrendReadStatus {
-  const entry = readState[trendItemReadKey(item)];
-  if (!entry) return "unread";
-  return entry.readDate === todayUsageCacheDate() ? "readToday" : "readBefore";
-}
-
-function orderTrendItemsByReadState(items: TrendLensItem[], readState: TrendReadState) {
-  return items
-    .map((item, index) => ({ item, index, status: trendReadStatus(item, readState) }))
-    .sort((left, right) => {
-      const leftPenalty = left.status === "readBefore" ? 1 : 0;
-      const rightPenalty = right.status === "readBefore" ? 1 : 0;
-      if (leftPenalty !== rightPenalty) return leftPenalty - rightPenalty;
-      return left.index - right.index;
-    })
-    .map(({ item }) => item);
 }
 
 function formatUsageValue(value: number, unit: UsageMetric["unit"]) {
@@ -2361,14 +2290,10 @@ function App() {
   }
 
   function markTrendItemRead(item: TrendLensItem) {
-    const nowDate = new Date();
     setTrendReadState((previous) => {
       const next = {
         ...previous,
-        [trendItemReadKey(item)]: {
-          readAt: nowDate.toISOString(),
-          readDate: todayUsageCacheDate()
-        }
+        [trendItemReadKey(item)]: createTrendReadEntry()
       };
       storeTrendReadState(next);
       return next;

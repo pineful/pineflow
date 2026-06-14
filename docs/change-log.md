@@ -7,6 +7,9 @@
 - `scripts/check-css-guardrails.mjs`와 `npm run verify:css`를 추가하고, `npm run build`가 CSS guardrail을 먼저 실행하도록 연결했습니다.
 - 브라우저 활동 기반 자동 퇴근 보정 로직을 `App.tsx`에서 `src/clientActivity.ts`로 분리해 localStorage parsing, 활동 스냅샷 생성, 보정 후보 계산의 책임 위치를 명확히 했습니다.
 - 큰 범위 리팩토링 전 기준선으로 `docs/test-baseline-2026-06-14.md`를 추가했습니다. 빌드, audit, secret 스캔, infra guardrail, 로컬 로그인 화면 스모크 테스트 통과 여부와 인증 후 E2E 미실행 범위를 기록했습니다.
+- 큰 범위 리팩토링 실행 계획으로 `docs/refactor-plan-2026-06-14.md`를 추가했습니다. 각 단계의 목표, 금지 변경, 검증 명령, 데이터 보존 판단 기준을 정리했습니다.
+- 1차 저위험 리팩토링으로 Trend Lens 기사 읽음 상태, 읽음 순서 보정, Google News fallback link 로직을 `src/trendReadState.ts`로 분리했습니다.
+- 1차 리팩토링 후 `npm run build`, root/infra audit, `infra npm run verify`, 실제 credential 패턴 스캔, 로컬 로그인 화면 스모크 테스트를 통과했습니다. API 계약과 DynamoDB 데이터 형태는 바꾸지 않았습니다.
 
 ## 2026-06-09
 

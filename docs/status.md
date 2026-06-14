@@ -118,6 +118,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 화면 서비스 제목을 `작업사령탑`으로 바꾸고, Pineflow는 로고/브랜드명으로 유지하도록 정리.
 - 상단 대시보드에서 최근 세션 dock을 왼쪽 흐름 그래프 바로 아래에 고정하고, 오른쪽 커맨드 영역의 긴 설명 문구를 짧은 운영 라벨로 압축.
 - 첫 화면 진입 시 기록 데이터를 불러오지 못하는 증상을 줄이기 위해 초기 `/api/state` 조회를 중복 실행하지 않도록 잠금 처리하고, Trend Lens/운영 사용량 보조 호출은 기록 상태가 `ready`가 된 뒤에만 지연 실행하도록 수정.
+- 큰 범위 리팩토링 전 기준선과 실행 계획을 문서화하고, 1차 저위험 단계로 Trend Lens 기사 읽음 상태와 Google News fallback link 로직을 `src/trendReadState.ts`로 분리.
+- 1차 리팩토링 검증으로 build, root/infra audit, infra guardrail, 실제 credential 패턴 스캔, 로컬 로그인 화면 스모크 테스트를 통과. 서버 API와 DynamoDB shape는 변경하지 않아 데이터 마이그레이션은 필요 없음.
 - CSS가 기능 수정 때마다 계속 누적되지 않도록 `docs/modules/css-architecture.md`, `src/styles/README.md`, `scripts/check-css-guardrails.mjs`를 추가하고 `npm run build`에 CSS guardrail 검증을 연결.
 - 자동 퇴근 보정용 브라우저 활동 스냅샷 로직을 `src/clientActivity.ts`로 분리해 `App.tsx`의 책임을 줄이고 localStorage 사용 경계를 명확히 함.
 - 큰 범위 리팩토링 전 기준선으로 `docs/test-baseline-2026-06-14.md`를 추가하고, 빌드/보안/인프라/로컬 로그인 화면 스모크 테스트 결과를 기록.
