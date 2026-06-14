@@ -115,8 +115,12 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 모션/효과음/터치 피드백 변경: `docs/modules/microinteractions.md`, `src/App.tsx`, `src/styles.css`
 - 대시보드 리서치/재설계 근거 변경: `docs/research/dashboard-ux-redesign-2026-05-24.md`, `docs/modules/summary.md`
 - UI 컨트롤 외곽/shape/elevation 변경: `docs/modules/ui-controls.md`, `docs/research/groupware-control-shape-2026-06-04.md`, `src/styles.css`
+- CSS 구조/누적 방지 변경: `docs/modules/css-architecture.md`, `src/styles/README.md`, `scripts/check-css-guardrails.mjs`
 
 ## 현재 주의사항
+
+- `src/styles.css`는 현재 레거시 진입 스타일시트다. 파일 끝에 날짜별 override pass를 계속 추가하지 말고, 기존 selector를 통합하거나 `src/styles/` 아래 feature module로 분리한다.
+- `npm run build`는 `npm run verify:css`를 먼저 실행한다. CSS guardrail 실패를 우회하지 말고 `docs/modules/css-architecture.md` 기준에 맞게 정리한다.
 
 - `infra` npm audit에는 CDK 도구 체인의 moderate `brace-expansion` transitive issue가 남아 있다. Lambda asset에는 포함되지 않는다.
 - Lambda runtime은 AWS Health Node.js 20.x EOL 알림 대응 이후 `nodejs24.x`로 고정한다. `nodejs20.x`나 지원 종료가 가까운 런타임으로 되돌리면 `infra/scripts/verify-template.mjs` guardrail이 실패해야 한다.
@@ -131,7 +135,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 최근 기록 요약은 상단 흐름 그래프와 같은 정보 계층이다. 첫 화면 하단에 긴 최근 기록 피드를 다시 만들지 말고, 진행 중이거나 가장 최근 날짜의 세션만 그래프 안의 요약 dock에 탑재한다. 전체 히스토리는 `기록 보관함` overlay/dialog에서 날짜와 키워드 검색으로 조회한다.
 - 최근 기록 정렬은 실제 출근/퇴근 record의 `timestamp` 최신순이다. DynamoDB session query 결과나 세션 시작일 정렬을 그대로 UI에 노출하면, 자정을 넘긴 세션과 퇴근 시각 보정 기록이 엉뚱한 위치에 묶인다.
 - 전날 출근 후 퇴근하지 않은 활성 세션은 날짜가 바뀌어도 자동 마감하지 않는다. 밤샘 작업일 수 있으므로 `ACTIVE_SESSION`은 유지하고, 사용자가 다음날 `새 출근 시작`을 명시적으로 선택할 때만 이전 세션을 정리한 뒤 새 세션을 시작한다. `/api/state`는 최근 12개 세션 query 밖에 있는 활성 세션도 `ACTIVE_SESSION.sessionSk`로 반드시 포함해야 한다.
-- `새 출근 시작` 시 브라우저가 로컬에 보관한 마지막 사용자 활동 후보가 있으면 `POST /api/check-in`에 `inferredCheckOutAt`을 함께 보낸다. Lambda는 이 값이 이전 세션 출근 이후이자 새 출근 이전일 때만 이전 세션의 `checkOutAt`으로 저장하고, 아니면 기존처럼 `missing-check-out`으로 남긴다. 웹앱은 OS 전체 컴퓨터 사용 기록을 읽을 수 없으므로 이 기능은 Pineflow 페이지가 열려 있는 동안의 브라우저 활동 기반 보정이다.
+- `새 출근 시작` 시 브라우저가 로컬에 보관한 마지막 사용자 활동 후보가 있으면 `POST /api/check-in`에 `inferredCheckOutAt`을 함께 보낸다. 클라이언트 활동 스냅샷 저장과 후보 계산은 `src/clientActivity.ts`에 둔다. Lambda는 이 값이 이전 세션 출근 이후이자 새 출근 이전일 때만 이전 세션의 `checkOutAt`으로 저장하고, 아니면 기존처럼 `missing-check-out`으로 남긴다. 웹앱은 OS 전체 컴퓨터 사용 기록을 읽을 수 없으므로 이 기능은 Pineflow 페이지가 열려 있는 동안의 브라우저 활동 기반 보정이다.
 - 최근 기록 UI의 기본 단위는 개별 이벤트가 아니라 세션이다. 같은 session id의 출근/퇴근을 한 `Session Strip` 카드 안에 묶는다. 기본 대시보드에서는 전체 히스토리 feed를 보여주지 않는다. 진행 중인 세션이 있으면 그 세션이 속한 날짜만, 진행 중인 세션이 없으면 가장 최근 세션 날짜만 먼저 보여준다. 과거 기록은 `기록 보관함`에서 검색하고, 필요할 때 1주 단위 추가 보기로 확장한다. 기본 상태에서는 날짜, 상태, 업무 유형, 총 시간, 진행 레일, 메모 미리보기만 보여주고 정확한 출근/퇴근 시각은 반복 노출하지 않는다. 세션을 펼치면 요약 카드를 유지한 채 아래에 같은 그래프를 반복하지 말고, 요약 카드가 정확한 `IN/OUT` 시각, 전체 메모, endpoint 편집, `세션 삭제`를 제공하는 detail panel로 전환되어야 한다. 삭제 버튼을 목록 기본 표면에 항상 보이게 되돌리면 안 된다.
 - `Workday Lens`는 별도 `오늘의 흐름` section으로 만들지 않고 상단 `TimeFlowGraph` 안의 보조 주간 맥락으로만 둔다. 오늘 누적/첫 출근/마지막 퇴근/목표 대비 진행률은 상단 그래프에서 이미 설명하므로 반복하지 않는다. 월요일 시작 7일 기준의 오늘/주말/공휴일/명절/진행 중/기록 있음/빈 날을 작은 tile과 진행 bar로 표시하되, 오늘 누적 시간보다 강한 위계를 가져서는 안 된다. 월간 캘린더나 Google Calendar 일정을 첫 화면에 바로 크게 넣지 말고, 실제 연동 전에는 OAuth/개인 일정 데이터 취급 ADR을 먼저 작성한다.
 - 대시보드 요약처럼 시간순 계산이 필요한 함수는 `state.records`를 직접 `sort()`하지 말고 복사본을 정렬한다. React state 배열을 직접 mutate하면 최근 기록 순서가 화면에서 뒤섞인다. 누적 시간 계산은 flat record를 단순 순서로 짝짓지 말고 record id의 세션 id 기준으로 출근/퇴근을 묶어야 한다.

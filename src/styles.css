@@ -1,3 +1,17 @@
+/*
+ * CSS ARCHITECTURE GUARDRAIL
+ *
+ * This is the legacy stylesheet entry for Pineflow's current UI. Do not keep
+ * appending date-stamped override passes to the bottom of this file. When a
+ * change touches a feature surface, consolidate the existing selectors for that
+ * surface or move the rules into a scoped style module documented in
+ * docs/modules/css-architecture.md and src/styles/README.md.
+ *
+ * `npm run verify:css` enforces the current bloat ceiling and blocks new dated
+ * override blocks. Raise that baseline only after a deliberate consolidation
+ * plan is documented.
+ */
+
 :root {
   --color-bg: #f7f8f4;
   --color-surface: #ffffff;

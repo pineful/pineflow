@@ -23,8 +23,9 @@
 | 제품 방향 | `작업사령탑` 서비스 범위, 오늘 리듬, Trend Lens, 비용/보안 우선순위 | `src/brand.ts`, `src/App.tsx` | `docs/product-plan.md`, `docs/llm-context.md`, `docs/status.md` |
 | 브랜딩/로고 | Pineflow 이름, 워드마크, 앱 아이콘, 로고 판독성 | `src/brand.ts`, `src/App.tsx`, `src/styles.css`, `public/pineflow-icon.svg` | `docs/brand.md`, `docs/modules/branding.md`, `docs/research/pineflow-logo-*.md` |
 | 대시보드/오늘 요약 | 오늘 누적 시간, 목표 대비 진행, 그래프, 태블릿 배치 | `src/App.tsx`, `src/date.ts`, `src/styles.css` | `docs/modules/summary.md`, `docs/research/dashboard-ux-redesign-2026-05-24.md` |
-| 기록 UX | 출근/퇴근 CTA, 메모, 업무 유형, 최근 기록, 시간 수정 | `src/App.tsx`, `src/api.ts`, `src/types.ts`, `src/date.ts`, `src/styles.css` | `docs/modules/recording.md`, `docs/api-contract.md`, `docs/research/record-time-editor-ux-2026-05-26.md` |
+| 기록 UX | 출근/퇴근 CTA, 메모, 업무 유형, 최근 기록, 시간 수정, 브라우저 활동 기반 퇴근 보정 | `src/App.tsx`, `src/clientActivity.ts`, `src/api.ts`, `src/types.ts`, `src/date.ts`, `src/styles.css` | `docs/modules/recording.md`, `docs/api-contract.md`, `docs/research/record-time-editor-ux-2026-05-26.md` |
 | UI 컨트롤 외곽 | 버튼, 입력, 선택지, 카드, 위험 동작의 shape/elevation/focus 위계 | `src/styles.css`, `src/App.tsx` | `docs/modules/ui-controls.md`, `docs/research/groupware-control-shape-2026-06-04.md`, `docs/research/futuristic-ui-selection-2026-06-05.md`, `docs/modules/recording.md`, `docs/modules/microinteractions.md` |
+| CSS 아키텍처 | CSS 누적 방지, selector ownership, 스타일 파일 분리 기준, 자동 검증 | `src/styles.css`, `src/styles/`, `scripts/check-css-guardrails.mjs`, `package.json` | `docs/modules/css-architecture.md`, `src/styles/README.md`, `docs/modules/ui-controls.md` |
 | 인증/세션 | Cognito 로그인, 1일 refresh token, 열린 탭 refresh, 계정 메뉴 | `src/auth.ts`, `src/api.ts`, `src/App.tsx`, `infra/lib/pineflow-serverless-stack.ts` | `docs/modules/serverless-auth.md`, `docs/api-contract.md`, `docs/adr/0002-cognito-admin-only-auth.md`, `docs/adr/0007-open-tab-session-refresh.md` |
 | Serverless API | Lambda handler, API Gateway route, JWT authorizer, 오류 응답 | `infra/lambda/pineflow-api/index.mjs`, `infra/lib/pineflow-serverless-stack.ts` | `docs/api-contract.md`, `docs/serverless-implementation.md`, `docs/modules/serverless-auth.md` |
 | 저장소/데이터 | DynamoDB single-table, 활성 세션, 기록 보정, 백업/이관 | `infra/lambda/pineflow-api/index.mjs`, `infra/lib/pineflow-serverless-stack.ts` | `docs/modules/serverless-storage.md`, `docs/data-management.md`, `docs/adr/0003-dynamodb-single-table.md` |
@@ -46,6 +47,7 @@
 ## 작업 후 체크리스트
 
 1. 루트 앱 변경이 있으면 `npm run build`를 실행한다.
+   - `npm run build`는 CSS 누적 방지용 `npm run verify:css`를 먼저 실행한다. 실패하면 기준선을 올리기 전에 selector 통합이나 `src/styles/` 분리를 검토한다.
 2. `infra` 변경이 있으면 `infra`에서 `npm run verify`를 실행한다.
 3. 보안이나 의존성 변경이 있으면 루트와 `infra`에서 `npm audit --audit-level=high`를 실행한다.
 4. 사용자 화면이 바뀌면 가능한 범위에서 로컬 브라우저나 screenshot으로 확인한다.
@@ -63,6 +65,7 @@
 - 로고는 `v23 Leafy Crown + Saturn Flow Ring` 기준을 따른다.
 - UI 컨트롤 외곽은 `Structured Soft Rectangle` 기준을 따른다. 모든 버튼을 pill로 만들거나 모든 카드를 같은 8px 박스로만 처리하지 말고, 입력/선택/보조 실행/주요 실행/위험 실행을 형태로 구분한다.
 - Dribbble 기반 미래형 스타일은 `docs/research/futuristic-ui-selection-2026-06-05.md`와 `Obsidian Command Glass` 기준을 따른다. 배경선만 추가하거나 녹색 shell을 유지한 변경은 완료로 보지 않으며, 전체 IA나 보안/비용 구조를 바꾸는 근거로 쓰지 않는다.
+- `src/styles.css`는 레거시 진입 스타일시트다. 새 날짜별 override pass를 추가하지 말고 `docs/modules/css-architecture.md`와 `src/styles/README.md` 기준을 따른다.
 ## 2026-06-07 추가 작업 분야: Trend Lens
 
 | 분야 | 주 책임 | 주요 코드 | 반드시 같이 볼 문서 |

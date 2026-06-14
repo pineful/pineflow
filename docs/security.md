@@ -1,6 +1,6 @@
 # 보안 설계
 
-마지막 업데이트: 2026-06-09
+마지막 업데이트: 2026-06-14
 
 ## 현재 원칙
 
@@ -76,7 +76,7 @@ Pineflow는 개인용 서비스지만 인터넷에 노출될 수 있으므로 pr
 - DynamoDB single-table: `USER#<cognito-sub>` 아래 설정, `ACTIVE_SESSION`, `SESSION#...` 기록, `SYSTEM#TREND_LENS` 캐시, 운영 사용량 캐시. 비밀번호나 장기 secret을 저장하지 않는다.
 - S3/CloudFront: 정적 프론트엔드 배포. S3 public access는 차단하고 CloudFront OAC로만 접근한다.
 - 브라우저 `sessionStorage`: Cognito access token, refresh token, 로그인 화면 표시용 email. 탭을 닫으면 사라져야 한다.
-- 브라우저 `localStorage`: 비용 사용량 당일 캐시, Trend Lens 읽음 상태, 효과음 설정처럼 secret이 아닌 UI 보조 상태만 저장한다.
+- 브라우저 `localStorage`: 비용 사용량 당일 캐시, Trend Lens 읽음 상태, 효과음 설정, Pineflow 탭 안의 최근 활동 ISO 시각처럼 secret이 아닌 UI 보조 상태만 저장한다. 활동 스냅샷은 OS 전체 사용 기록이 아니며, 자동 퇴근 보정 후보 계산에 필요한 최근 시각만 보관한다.
 - PostgreSQL: `server/`와 Docker Compose에 남아 있는 EC2 PoC 전용 저장소다. 운영 본선 기능은 이 경로를 확장하지 않는다.
 
 현재 외부 API key가 필요한 운영 source는 없다. 날씨는 Open-Meteo와 BigDataCloud 공개 API를 브라우저에서 호출하고, Trend Lens는 Lambda allowlist에 고정된 공개 RSS/JSON만 수집한다. 보안 전문 매체 RSS도 공개 feed만 사용하며 API key를 요구하지 않는다. 향후 API key가 필요한 source를 추가한다면 기본 비활성화로 시작하고, key는 SSM Parameter Store Standard `SecureString`에 저장한다. GitHub Secrets/Variables, Lambda 평문 환경 변수, DynamoDB, 프론트엔드 번들에는 API key를 넣지 않는다.

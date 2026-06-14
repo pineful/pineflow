@@ -103,6 +103,7 @@
 - 사용자가 퇴근을 기록하지 않은 채 다음날 `새 출근 시작`을 누르면, Pineflow는 가능한 경우 이전 활성 세션을 `퇴근 미기록`이 아니라 마지막 브라우저 활동 시각으로 마감합니다.
 - 웹앱은 보안 경계상 Windows나 macOS의 전체 컴퓨터 사용 기록을 몰래 읽을 수 없습니다. 따라서 v1의 기준은 Pineflow가 로그인된 상태로 브라우저에 열려 있을 때 발생한 포인터, 키보드, 스크롤, 포커스, 페이지 숨김 같은 사용자 활동입니다.
 - 활동 기록은 서버에 지속적으로 보내지 않고 브라우저 `localStorage`에 최근 몇 개의 ISO 시각만 보관합니다. 추가 heartbeat API를 만들지 않아 API Gateway, Lambda, DynamoDB 비용을 늘리지 않습니다.
+- 클라이언트 활동 스냅샷 저장과 후보 계산은 `src/clientActivity.ts`에 둡니다. `App.tsx`에 다시 직접 localStorage parsing이나 후보 계산을 늘리지 않습니다.
 - 다음 출근을 처리할 때만 가장 그럴듯한 활동 시각 하나를 `POST /api/check-in`의 `inferredCheckOutAt`으로 보냅니다.
 - 새 출근 버튼 클릭, 로그인 직후 포커스 같은 명령 이벤트가 퇴근 후보로 오인되지 않도록 새 출근 시각 기준 90초 이내의 활동은 후보에서 제외합니다.
 - Lambda는 `inferredCheckOutAt`을 신뢰하지 않고 이전 활성 세션의 출근 시각 이후이자 새 출근 시각 이전인 경우에만 `checkOutAt`으로 저장합니다. 조건에 맞지 않으면 기존처럼 `missing-check-out`으로 남깁니다.

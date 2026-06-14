@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "api": "node server/index.mjs",
-    "build": "tsc && vite build",
+    "verify:css": "node scripts/check-css-guardrails.mjs",
+    "build": "npm run verify:css && tsc && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "start": "node server/index.mjs"
   },

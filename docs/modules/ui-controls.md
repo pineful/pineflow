@@ -48,6 +48,8 @@ Pineflow의 현재 화면은 `작업사령탑` 성격의 개인 작업 대시보
 
 주요 shape token은 `src/styles.css`의 `:root`에서 관리합니다.
 
+`src/styles.css`는 현재 레거시 진입 스타일시트입니다. 컨트롤 외곽을 고칠 때 파일 끝에 새 날짜별 override pass를 붙이지 말고, 기존 selector 위치를 찾아 통합하거나 `docs/modules/css-architecture.md` 기준에 따라 `src/styles/` feature module로 분리합니다. `npm run build`는 CSS guardrail을 먼저 실행하므로, 실패한 검증을 우회하지 않습니다.
+
 - `--radius-card`: 읽기 카드와 큰 패널
 - `--radius-control`: 일반 버튼과 선택 컨트롤
 - `--radius-field`: 텍스트/숫자 입력 필드

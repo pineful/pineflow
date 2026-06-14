@@ -25,6 +25,8 @@ docker compose up -d postgres
 
 API 설정을 바꾸려면 `.env.example`을 `.env`로 복사한 뒤 값을 수정합니다.
 
+`npm run build`는 TypeScript/Vite 빌드 전에 `npm run verify:css`를 실행합니다. 이 검증은 `src/styles.css`에 날짜별 override block을 계속 쌓거나 `!important`, CSS `@import`, TODO/FIXME/HACK 주석을 추가하는 것을 막기 위한 CSS 구조 가드레일입니다.
+
 Vite 개발 서버를 API와 별도로 띄울 때는 `.env`에 `VITE_API_BASE_URL=http://127.0.0.1:3001`를 둡니다. 그러면 브라우저 요청이 API 서버로 전달됩니다.
 
 `docker compose up -d postgres`를 실행하기 전에는 Docker Desktop이 켜져 있어야 합니다. Docker가 설치되어 있어도 엔진이 꺼져 있으면 PostgreSQL 이미지를 내려받거나 컨테이너를 시작할 수 없습니다.
@@ -41,4 +43,5 @@ Vite 개발 서버를 API와 별도로 띄울 때는 `.env`에 `VITE_API_BASE_UR
 - 이름, 문구, 로고: `docs/modules/branding.md`
 - 제품 범위: `docs/product-plan.md`
 - 코드 구조: `docs/architecture.md`
+- CSS 구조와 누적 방지: `docs/modules/css-architecture.md`, `src/styles/README.md`
 - AWS 운영 구조: `docs/deployment-aws.md`

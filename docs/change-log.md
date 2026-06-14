@@ -1,5 +1,12 @@
 # 변경 기록
 
+## 2026-06-14
+
+- CSS가 기능 수정 때마다 계속 누적되는 문제를 막기 위해 `docs/modules/css-architecture.md`와 `src/styles/README.md`를 추가했습니다.
+- `src/styles.css`를 레거시 진입 스타일시트로 명시하고, 새 날짜별 override pass를 추가하지 않는 기준을 문서화했습니다.
+- `scripts/check-css-guardrails.mjs`와 `npm run verify:css`를 추가하고, `npm run build`가 CSS guardrail을 먼저 실행하도록 연결했습니다.
+- 브라우저 활동 기반 자동 퇴근 보정 로직을 `App.tsx`에서 `src/clientActivity.ts`로 분리해 localStorage parsing, 활동 스냅샷 생성, 보정 후보 계산의 책임 위치를 명확히 했습니다.
+
 ## 2026-06-09
 
 - 보안 점검 결과를 문서화했습니다. 운영 본선에서는 사용자 비밀번호를 Pineflow DB에 저장하지 않고 Cognito가 해시/검증을 담당하며, DynamoDB에는 기록/설정/캐시만 저장한다는 점을 명확히 했습니다.

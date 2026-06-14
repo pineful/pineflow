@@ -16,13 +16,16 @@ Pineflow의 운영 본선은 AWS Serverless입니다. 프론트엔드는 Vite Re
 - `src/api.ts`: Cognito access token을 붙여 Serverless API를 호출하는 클라이언트.
 - `src/auth.ts`: Cognito 로그인, 첫 비밀번호 변경, token refresh.
 - `src/date.ts`: 날짜, 시간, 기간, 오늘 요약 계산 규칙.
+- `src/clientActivity.ts`: Pineflow 탭 안의 최근 브라우저 활동 시각을 로컬에 보관하고, 다음 출근 시 이전 세션의 자동 퇴근 보정 후보를 계산하는 클라이언트 경계.
 - `src/brand.ts`: 제품명, 태그라인, 업무 유형 라벨.
 - `src/types.ts`: 프론트엔드에서 공유하는 도메인 타입.
-- `src/styles.css`: 시각 디자인과 반응형 레이아웃.
+- `src/styles.css`: 현재 레거시 진입 스타일시트. 새 override pass를 누적하지 않고 기존 selector를 통합한다.
+- `src/styles/`: 장기적으로 feature 단위 CSS module을 둘 위치. 구조 기준은 `src/styles/README.md`와 `docs/modules/css-architecture.md`를 따른다.
 - `public/pineflow-icon.svg`: 앱 아이콘과 favicon 기준 로고.
 - `infra/lib/pineflow-serverless-stack.ts`: Cognito, API Gateway, Lambda, DynamoDB, S3, CloudFront, Budgets 정의.
 - `infra/lambda/pineflow-api/index.mjs`: Serverless API handler.
 - `infra/scripts/verify-template.mjs`: CDK 템플릿의 비용/보안 guardrail 검증.
+- `scripts/check-css-guardrails.mjs`: CSS 누적, 금지 문법, override block 증가를 막는 프론트엔드 guardrail 검증.
 - `.github/workflows/serverless.yml`: Serverless 본선 검증과 배포 workflow.
 
 ## PoC 경계
@@ -56,6 +59,8 @@ PoC 경계의 파일은 운영 본선 요구사항을 만족시키기 위해 확
 ## 변경 정책
 
 동작이 바뀌면 `docs/modules/` 아래의 해당 모듈 문서를 함께 수정합니다. 제품 범위가 바뀌면 `docs/product-plan.md`, 브랜드나 문구가 바뀌면 `docs/brand.md`, Serverless 운영 구조가 바뀌면 `docs/serverless-implementation.md`와 `docs/aws-serverless-deployment-checklist.md`를 함께 갱신합니다.
+
+CSS 변경은 `docs/modules/css-architecture.md`의 누적 방지 기준을 따른다. `src/styles.css` 끝에 날짜별 override pass를 붙이는 방식은 금지하고, 큰 변경은 selector ownership을 정리한 뒤 `src/styles/` feature module로 이동한다.
 
 ## 향후 확장 지점
 

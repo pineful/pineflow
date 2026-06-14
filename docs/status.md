@@ -118,6 +118,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 화면 서비스 제목을 `작업사령탑`으로 바꾸고, Pineflow는 로고/브랜드명으로 유지하도록 정리.
 - 상단 대시보드에서 최근 세션 dock을 왼쪽 흐름 그래프 바로 아래에 고정하고, 오른쪽 커맨드 영역의 긴 설명 문구를 짧은 운영 라벨로 압축.
 - 첫 화면 진입 시 기록 데이터를 불러오지 못하는 증상을 줄이기 위해 초기 `/api/state` 조회를 중복 실행하지 않도록 잠금 처리하고, Trend Lens/운영 사용량 보조 호출은 기록 상태가 `ready`가 된 뒤에만 지연 실행하도록 수정.
+- CSS가 기능 수정 때마다 계속 누적되지 않도록 `docs/modules/css-architecture.md`, `src/styles/README.md`, `scripts/check-css-guardrails.mjs`를 추가하고 `npm run build`에 CSS guardrail 검증을 연결.
+- 자동 퇴근 보정용 브라우저 활동 스냅샷 로직을 `src/clientActivity.ts`로 분리해 `App.tsx`의 책임을 줄이고 localStorage 사용 경계를 명확히 함.
 - DynamoDB `1 RCU` 가드레일에 맞춰 `/api/state`가 최근 세션 12개와 필요한 projection만 읽도록 줄이고, throughput 제한은 500 대신 429로 응답하도록 분리.
 
 ## 검증됨
