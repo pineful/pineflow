@@ -126,3 +126,29 @@ Pineflow를 기능 추가가 계속 가능한 구조로 정리하되, 기존 서
 - 2차는 `App.tsx`의 날짜/시간 표시, duration formatting, record grouping처럼 서버 저장소와 무관한 순수 helper를 `src/dateTime.ts` 또는 `src/recordsViewModel.ts` 경계로 옮긴다.
 - UI component 분리는 props 계약이 커질 수 있으므로, 순수 helper 분리 후 build와 smoke test가 안정적으로 반복되는 것을 먼저 확인한다.
 - Lambda 분리는 API 계약 영향이 더 크므로 프론트엔드 helper 분리와 CSS ownership 정리가 끝난 뒤 별도 커밋에서 진행한다.
+
+### 2026-06-14 / 2차 기록 view model 분리
+
+적용:
+
+- `RecentSession`, `WorkdayLensDay`, 세션 묶기, 기록 보관함 검색, 주간 Workday Lens 계산을 `src/recordSessions.ts`로 분리했다.
+- `App.tsx`는 `state.records`를 직접 세션으로 묶지 않고, 새 view model 함수 결과를 렌더링한다.
+- 공휴일/주말/주간 진행률 계산도 같은 파일로 옮겨 기록 도메인 표시 규칙을 한 경계에 모았다.
+
+검증:
+
+- `npm run build` 통과.
+- root `npm audit --audit-level=high` 통과.
+- 실제 credential 형태인 AWS access key, GitHub token, private key 패턴 매치 없음.
+- `git diff --check` 통과.
+- 로컬 브라우저 스모크: 로그인 화면 title/브랜드/로그인 표시, desktop overflow `0`, console error `0` 확인.
+
+데이터 보존 판단:
+
+- API route, request/response payload, DynamoDB item shape, 저장 로직을 바꾸지 않았다.
+- 기존 record 배열을 화면용 view model로 변환하는 위치만 옮겼으므로 데이터 마이그레이션은 필요하지 않다.
+
+다음 단위:
+
+- 3차는 `App.tsx`의 날씨 helper와 weather deck component 경계를 검토한다.
+- 날씨는 외부 API와 CSP/도메인 정책이 걸려 있으므로, 순수 표시 helper와 fetch 흐름을 분리하되 URL/권한/인프라 변경은 별도 ADR 없이 진행하지 않는다.

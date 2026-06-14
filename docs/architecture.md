@@ -1,6 +1,6 @@
 # 아키텍처
 
-마지막 업데이트: 2026-06-09
+마지막 업데이트: 2026-06-14
 
 ## 애플리케이션 형태
 
@@ -17,6 +17,7 @@ Pineflow의 운영 본선은 AWS Serverless입니다. 프론트엔드는 Vite Re
 - `src/auth.ts`: Cognito 로그인, 첫 비밀번호 변경, token refresh.
 - `src/date.ts`: 날짜, 시간, 기간, 오늘 요약 계산 규칙.
 - `src/clientActivity.ts`: Pineflow 탭 안의 최근 브라우저 활동 시각을 로컬에 보관하고, 다음 출근 시 이전 세션의 자동 퇴근 보정 후보를 계산하는 클라이언트 경계.
+- `src/recordSessions.ts`: 출근/퇴근 record 배열을 화면용 세션, 보관함 검색, Workday Lens 주간 요약으로 변환하는 view model 경계. API payload와 DynamoDB item shape를 바꾸지 않는다.
 - `src/trendReadState.ts`: Trend Lens 기사 읽음 상태와 Google News fallback link를 관리하는 브라우저 보조 상태 경계. 서버/DynamoDB 데이터 구조를 바꾸지 않는다.
 - `src/brand.ts`: 제품명, 태그라인, 업무 유형 라벨.
 - `src/types.ts`: 프론트엔드에서 공유하는 도메인 타입.

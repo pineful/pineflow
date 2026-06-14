@@ -10,6 +10,8 @@
 - 큰 범위 리팩토링 실행 계획으로 `docs/refactor-plan-2026-06-14.md`를 추가했습니다. 각 단계의 목표, 금지 변경, 검증 명령, 데이터 보존 판단 기준을 정리했습니다.
 - 1차 저위험 리팩토링으로 Trend Lens 기사 읽음 상태, 읽음 순서 보정, Google News fallback link 로직을 `src/trendReadState.ts`로 분리했습니다.
 - 1차 리팩토링 후 `npm run build`, root/infra audit, `infra npm run verify`, 실제 credential 패턴 스캔, 로컬 로그인 화면 스모크 테스트를 통과했습니다. API 계약과 DynamoDB 데이터 형태는 바꾸지 않았습니다.
+- 2차 리팩토링으로 최근 세션, 기록 보관함 검색, `Workday Lens` 주간 요약 계산을 `src/recordSessions.ts`로 분리했습니다.
+- 2차 리팩토링 후 `npm run build`, root audit, 실제 credential 패턴 스캔, `git diff --check`, 로컬 로그인 화면 스모크 테스트를 통과했습니다. API 계약과 DynamoDB 데이터 형태는 바꾸지 않았습니다.
 
 ## 2026-06-09
 
