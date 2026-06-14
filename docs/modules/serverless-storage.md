@@ -34,7 +34,9 @@
 - 기록 삭제는 `recordId`에서 `sessionId`를 추출해 해당 `SESSION#...` item 전체를 삭제한다. 활성 세션이면 `ACTIVE_SESSION` item도 같은 transaction에서 삭제한다. 출근/퇴근 이벤트 하나만 삭제하는 partial delete는 저장소 모델을 깨뜨리므로 제공하지 않는다.
 - 이 기능은 GSI 없이 최근 세션 query 결과에서 `sessionId`를 찾는다. 개인 사용과 낮은 기록량을 전제로 한 선택이며, 검색/통계 패턴이 명확해지기 전에는 인덱스를 추가하지 않는다.
 - 자정을 넘긴 활성 세션은 자동으로 마감하지 않는다. `ACTIVE_SESSION`은 사용자가 퇴근을 누르거나, 다음날 `새 출근 시작`을 명시적으로 선택하기 전까지 유지한다.
-- 다음날 `새 출근 시작`을 선택하면 하나의 transaction에서 이전 `SESSION#...` item에 `sessionStatus = missing-check-out`, `missedCheckOutAt`을 기록하고, 새 `SESSION#...` item을 만든 뒤 `ACTIVE_SESSION` 포인터를 새 세션으로 갱신한다.
+- 다음날 `새 출근 시작`을 선택하면 하나의 transaction에서 이전 `SESSION#...` item을 정리하고, 새 `SESSION#...` item을 만든 뒤 `ACTIVE_SESSION` 포인터를 새 세션으로 갱신한다.
+- 브라우저 마지막 활동 후보 `inferredCheckOutAt`이 이전 출근 이후이자 새 출근 이전이면 이전 item에 `checkOutAt`, `autoCheckOutAt`, `autoCheckOutSource = client-last-activity`, `autoCheckOutResolvedAt`, `sessionStatus = completed`를 기록한다.
+- 유효한 후보가 없으면 기존처럼 이전 item에 `sessionStatus = missing-check-out`, `missedCheckOutAt`을 기록한다.
 - `/api/state`는 최근 `SESSION#` query 12개 안에 활성 세션 원본이 없더라도 `ACTIVE_SESSION.sessionSk`로 해당 세션을 추가 조회해 응답에 포함해야 한다. 그래야 오래 이어진 밤샘 세션이 대시보드에서 사라지지 않는다.
 
 ## 변경 시 주의점

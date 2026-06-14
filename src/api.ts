@@ -114,7 +114,7 @@ export function resetTrendLens(scope: "all" | "security" = "all") {
 export function createCheckIn(
   mode: WorkMode,
   note: string,
-  options?: { resolveActiveSession?: "mark-missing-check-out" }
+  options?: { resolveActiveSession?: "mark-missing-check-out"; inferredCheckOutAt?: string }
 ) {
   return requestState("/api/check-in", {
     method: "POST",

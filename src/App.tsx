@@ -34,6 +34,7 @@ import {
 import { modeDescriptions, modeIcons, modeLabels, modePlans, productName, serviceTitle, tagline } from "./brand";
 import { formatDate, formatDuration, formatTime, isSameDay, minutesBetween, summarizeToday } from "./date";
 import type {
+  ActiveSession,
   CommuteRecord,
   CommuteState,
   OperationalUsageSnapshot,
@@ -58,6 +59,8 @@ const initialState: CommuteState = {
 const soundStorageKey = "pineflow.sound-enabled";
 const usageCacheStorageKey = "pineflow.usage-cache.v1";
 const trendLensReadStorageKey = "pineflow.trend-lens-read.v1";
+const clientActivityStorageKey = "pineflow.client-activity.v1";
+const clientActivityCommandExclusionMs = 90 * 1000;
 const sessionRefreshIntervalMs = 30 * 60 * 1000;
 
 type WeatherState = {
@@ -92,6 +95,12 @@ type TrendReadEntry = {
 };
 type TrendReadState = Record<string, TrendReadEntry>;
 type TrendReadStatus = "unread" | "readToday" | "readBefore";
+type ClientActivitySnapshot = {
+  lastAt?: string;
+  previousAt?: string;
+  recentAt?: string[];
+  updatedAt?: string;
+};
 
 type FlowChartPoint = {
   x: number;
@@ -152,6 +161,65 @@ type ReverseGeocodeResult = {
     }>;
   };
 };
+
+function normalizeClientActivityTime(value?: string) {
+  if (!value) return undefined;
+
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) return undefined;
+
+  return timestamp.toISOString();
+}
+
+function getStoredClientActivitySnapshot(): ClientActivitySnapshot {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(clientActivityStorageKey) ?? "{}") as ClientActivitySnapshot;
+    const recentAt = Array.isArray(parsed.recentAt)
+      ? parsed.recentAt.map(normalizeClientActivityTime).filter((value): value is string => Boolean(value))
+      : [];
+    return {
+      lastAt: normalizeClientActivityTime(parsed.lastAt),
+      previousAt: normalizeClientActivityTime(parsed.previousAt),
+      recentAt,
+      updatedAt: normalizeClientActivityTime(parsed.updatedAt)
+    };
+  } catch {
+    return {};
+  }
+}
+
+function saveClientActivitySnapshot(snapshot: ClientActivitySnapshot) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(clientActivityStorageKey, JSON.stringify(snapshot));
+  } catch {
+    // 활동 보정은 편의 기능이므로 저장소 접근 실패가 앱 사용을 막으면 안 됩니다.
+  }
+}
+
+function inferPreviousSessionCheckOutAt(
+  activeSession: ActiveSession | null,
+  snapshot: ClientActivitySnapshot,
+  now: Date
+) {
+  if (!activeSession) return undefined;
+
+  const activeStart = new Date(activeSession.checkInAt).getTime();
+  const nextStart = now.getTime();
+  if (Number.isNaN(activeStart) || Number.isNaN(nextStart) || nextStart <= activeStart) return undefined;
+
+  const commandCutoff = nextStart - clientActivityCommandExclusionMs;
+  const candidates = [...(snapshot.recentAt ?? []), snapshot.previousAt, snapshot.lastAt]
+    .filter((value, index, values): value is string => Boolean(value) && values.indexOf(value) === index)
+    .map((value) => (value ? new Date(value).getTime() : Number.NaN))
+    .filter((value) => !Number.isNaN(value) && value > activeStart && value < nextStart && value <= commandCutoff);
+
+  if (!candidates.length) return undefined;
+  return new Date(Math.max(...candidates)).toISOString();
+}
 
 const seoulCoordinates = {
   latitude: 37.5665,
@@ -2180,6 +2248,7 @@ function App() {
   const [soundEnabled, setSoundEnabled] = useState(getStoredSoundEnabled);
   const requestInFlightRef = useRef(false);
   const stateLoadInFlightRef = useRef(false);
+  const clientActivitySnapshotRef = useRef<ClientActivitySnapshot>(getStoredClientActivitySnapshot());
   const actionCooldownTimerRef = useRef<number | undefined>(undefined);
   const toastTimerRef = useRef<number | undefined>(undefined);
 
@@ -2245,6 +2314,28 @@ function App() {
     setState(serverState);
     setRecordDataStatus("ready");
     setErrorMessage("");
+  }
+
+  function rememberClientActivity(date = new Date()) {
+    const lastAt = date.toISOString();
+    const previous = clientActivitySnapshotRef.current;
+    const recentAt = [lastAt, previous.lastAt, previous.previousAt, ...(previous.recentAt ?? [])]
+      .map(normalizeClientActivityTime)
+      .filter((value, index, values): value is string => Boolean(value) && values.indexOf(value) === index)
+      .slice(0, 8);
+    const next = {
+      lastAt,
+      previousAt: previous.lastAt && previous.lastAt !== lastAt ? previous.lastAt : previous.previousAt,
+      recentAt,
+      updatedAt: lastAt
+    };
+
+    clientActivitySnapshotRef.current = next;
+    saveClientActivitySnapshot(next);
+  }
+
+  function previousSessionAutoCheckOutCandidate(referenceDate = new Date()) {
+    return inferPreviousSessionCheckOutAt(state.activeSession, clientActivitySnapshotRef.current, referenceDate);
   }
 
   function syncDraftFromCommuteState(serverState: CommuteState) {
@@ -2352,6 +2443,40 @@ function App() {
     }
 
     void reloadCommuteState();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || typeof window === "undefined") {
+      return;
+    }
+
+    clientActivitySnapshotRef.current = getStoredClientActivitySnapshot();
+    rememberClientActivity();
+
+    const recordActivity = () => rememberClientActivity();
+    const recordVisibleActivity = () => {
+      if (document.visibilityState === "visible") {
+        rememberClientActivity();
+      }
+    };
+
+    window.addEventListener("pointerdown", recordActivity, { passive: true });
+    window.addEventListener("keydown", recordActivity);
+    window.addEventListener("scroll", recordActivity, { passive: true });
+    window.addEventListener("wheel", recordActivity, { passive: true });
+    window.addEventListener("focus", recordActivity);
+    window.addEventListener("pagehide", recordActivity);
+    document.addEventListener("visibilitychange", recordVisibleActivity);
+
+    return () => {
+      window.removeEventListener("pointerdown", recordActivity);
+      window.removeEventListener("keydown", recordActivity);
+      window.removeEventListener("scroll", recordActivity);
+      window.removeEventListener("wheel", recordActivity);
+      window.removeEventListener("focus", recordActivity);
+      window.removeEventListener("pagehide", recordActivity);
+      document.removeEventListener("visibilitychange", recordVisibleActivity);
+    };
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -2707,7 +2832,7 @@ function App() {
     }
   }
 
-  async function checkIn(options?: { resolveActiveSession?: "mark-missing-check-out" }) {
+  async function checkIn(options?: { resolveActiveSession?: "mark-missing-check-out"; inferredCheckOutAt?: string }) {
     if (requestInFlightRef.current || isActionCoolingDown) return;
 
     requestInFlightRef.current = true;
@@ -2715,7 +2840,11 @@ function App() {
     setErrorMessage("");
 
     try {
-      const serverState = await createCheckIn(mode, note, options);
+      const requestOptions =
+        options?.resolveActiveSession === "mark-missing-check-out"
+          ? { ...options, inferredCheckOutAt: previousSessionAutoCheckOutCandidate() }
+          : options;
+      const serverState = await createCheckIn(mode, note, requestOptions);
       applyCommuteState(serverState);
       setMode(serverState.activeSession?.mode ?? mode);
       setNote(serverState.activeSession?.note ?? note);
@@ -2723,7 +2852,13 @@ function App() {
       setConfirmingDeleteRecordId("");
       setExpandedSessionId("");
       playFeedback("start");
-      flashToast(options?.resolveActiveSession ? "전날은 퇴근 미기록으로 남기고 새 출근을 시작했어요" : "출근 기록이 저장됐어요");
+      flashToast(
+        requestOptions?.resolveActiveSession
+          ? requestOptions.inferredCheckOutAt
+            ? "마지막 활동 시각으로 이전 세션을 마감했어요"
+            : "전날은 퇴근 미기록으로 남기고 새 출근을 시작했어요"
+          : "출근 기록이 저장됐어요"
+      );
       startActionCooldown();
     } catch (error) {
       handleAppError(error, "출근 기록에 실패했습니다.");
@@ -3377,7 +3512,7 @@ function App() {
                 onClick={() => checkIn({ resolveActiveSession: "mark-missing-check-out" })}
               >
                 <span>새 출근 시작</span>
-                <small>전날은 퇴근 미기록</small>
+                <small>마지막 활동 보정</small>
               </button>
             )}
           </div>

@@ -1,6 +1,6 @@
 # API 계약
 
-마지막 업데이트: 2026-06-12
+마지막 업데이트: 2026-06-14
 
 모든 API는 API Gateway HTTP API 뒤에 있으며, Cognito JWT authorizer를 통과해야 한다. 클라이언트는 `Authorization: Bearer <access_token>` 헤더를 보낸다.
 
@@ -176,9 +176,12 @@
 {
   "mode": "focus",
   "note": "오전 집중",
-  "resolveActiveSession": "mark-missing-check-out"
+  "resolveActiveSession": "mark-missing-check-out",
+  "inferredCheckOutAt": "2026-06-13T14:30:00.000Z"
 }
 ```
+
+`inferredCheckOutAt`은 전날 활성 세션을 새 출근으로 정리할 때만 사용하는 선택 필드다. 브라우저가 로컬에 보관한 마지막 사용자 활동 후보 시각을 보내며, 서버는 해당 시각이 이전 세션의 출근 이후이자 새 출근 이전일 때만 이전 세션의 `checkOutAt`으로 저장한다. 조건에 맞지 않거나 값이 없으면 기존처럼 이전 세션은 `missing-check-out`으로 남는다. 이 값은 OS 전체 사용 기록이 아니라 Pineflow 페이지가 열려 있는 동안의 브라우저 활동 힌트다.
 
 허용 mode:
 

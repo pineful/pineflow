@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-06-12
+마지막 업데이트: 2026-06-14
 
 ## 현재 상태 요약
 
@@ -167,3 +167,4 @@ Serverless workflow는 장기 AWS Access Key를 GitHub에 저장하지 않습니
 - 긴급 보안 신호와 Trend Lens 항목에는 source의 게재일/등록일을 표시한다. CISA KEV처럼 날짜만 제공되는 source는 날짜로, RSS처럼 시각이 있는 source는 일시로 표시한다.
 - 외부 source 실제 응답 크기와 파싱 가능 여부를 확인하는 `infra/scripts/check-trend-lens-sources.mjs` 수동 검증 스크립트를 추가했다.
 - Trend Lens 설계 문서, 리서치 문서, ADR 0008, API 계약, 보안/비용/저장소/배포 체크리스트를 갱신했다.
+- 다음날 `새 출근 시작` 시 이전 활성 세션을 브라우저 마지막 활동 후보 시각으로 자동 마감하는 보정 흐름을 추가했다. 후보가 유효하지 않으면 기존처럼 `missing-check-out`으로 남긴다.

@@ -2207,6 +2207,26 @@ function normalizeTimestamp(value) {
   return timestamp.toISOString();
 }
 
+function normalizeInferredCheckOutAt(value, activeCheckInAt, nextCheckInAt) {
+  const timestamp = normalizeTimestamp(value);
+  if (!timestamp) return null;
+
+  const inferred = new Date(timestamp);
+  const activeStart = new Date(activeCheckInAt);
+  const nextStart = new Date(nextCheckInAt);
+  if (
+    Number.isNaN(inferred.getTime()) ||
+    Number.isNaN(activeStart.getTime()) ||
+    Number.isNaN(nextStart.getTime()) ||
+    inferred <= activeStart ||
+    inferred >= nextStart
+  ) {
+    return null;
+  }
+
+  return timestamp;
+}
+
 async function findSessionById(pk, sessionId) {
   const result = await dynamodb.send(
     new QueryCommand({
@@ -2549,6 +2569,7 @@ async function checkIn(pk, body) {
   }
 
   const now = new Date().toISOString();
+  let inferredPreviousCheckOutAt = null;
   if (activeItem && shouldMarkPreviousMissing) {
     const activeCheckInAt = activeItem.checkInAt ? new Date(activeItem.checkInAt) : null;
     if (!activeItem.sessionSk || !activeItem.sessionId || !activeCheckInAt || Number.isNaN(activeCheckInAt.getTime())) {
@@ -2558,6 +2579,8 @@ async function checkIn(pk, body) {
     if (cacheDateFor(activeCheckInAt) === cacheDateFor(new Date(now))) {
       return json(409, { error: "The active session must be checked out before starting a new session today." });
     }
+
+    inferredPreviousCheckOutAt = normalizeInferredCheckOutAt(body.inferredCheckOutAt, activeCheckInAt, now);
   }
 
   const sessionId = randomUUID();
@@ -2578,7 +2601,23 @@ async function checkIn(pk, body) {
   try {
     const transactItems = [];
 
-    if (activeItem && shouldMarkPreviousMissing) {
+    if (activeItem && shouldMarkPreviousMissing && inferredPreviousCheckOutAt) {
+      transactItems.push({
+        Update: {
+          TableName: tableName,
+          Key: objectToItem({ pk, sk: activeItem.sessionSk }),
+          UpdateExpression:
+            "set checkOutAt = :checkOutAt, autoCheckOutAt = :checkOutAt, autoCheckOutSource = :source, autoCheckOutResolvedAt = :now, sessionStatus = :completed, updatedAt = :now",
+          ConditionExpression: "attribute_exists(pk) and attribute_not_exists(checkOutAt)",
+          ExpressionAttributeValues: {
+            ":checkOutAt": { S: inferredPreviousCheckOutAt },
+            ":source": { S: "client-last-activity" },
+            ":now": { S: now },
+            ":completed": { S: "completed" }
+          }
+        }
+      });
+    } else if (activeItem && shouldMarkPreviousMissing) {
       transactItems.push({
         Update: {
           TableName: tableName,
