@@ -5,3 +5,4 @@ dist/
 !.env.example
 !.env.production.example
 infra/cdk.out/
+.codex-remote-attachments/
