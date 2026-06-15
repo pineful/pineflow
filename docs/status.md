@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-06-14
+마지막 업데이트: 2026-06-15
 
 ## 현재 상태 요약
 
@@ -126,6 +126,8 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - 자동 퇴근 보정용 브라우저 활동 스냅샷 로직을 `src/clientActivity.ts`로 분리해 `App.tsx`의 책임을 줄이고 localStorage 사용 경계를 명확히 함.
 - 큰 범위 리팩토링 전 기준선으로 `docs/test-baseline-2026-06-14.md`를 추가하고, 빌드/보안/인프라/로컬 로그인 화면 스모크 테스트 결과를 기록.
 - DynamoDB `1 RCU` 가드레일에 맞춰 `/api/state`가 최근 세션 12개와 필요한 projection만 읽도록 줄이고, throughput 제한은 500 대신 429로 응답하도록 분리.
+- 최근 GitHub Actions Serverless 배포 5건이 모두 성공한 것을 확인했다. 현재 Codex 세션에는 AWS credential이 없어 CloudWatch 로그 직접 조회는 `NoCredentials`로 실패했으며, 운영 로그 확인은 사용자의 AWS CLI 세션에서 별도 수행해야 한다.
+- Trend Lens에 `겸임교수 공고` 분야를 추가했다. 한국외국어대학교 공식 채용 게시판을 1순위 source로 매일 확인하고, 서울·경기·충북 대학 겸임교수 공고 후보는 고정 Google News RSS query로 보조 수집한다. 외대 글로벌캠퍼스 확인 결과와 지역별 공고 목록은 Trend Lens 하단 공고 보드에 표시한다.
 
 ## 검증됨
 

@@ -106,8 +106,10 @@ Trend Lens는 기존 Serverless 본선 안에서 구현한다. EC2/PostgreSQL Po
 - `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#MANUAL#all`
 - `pk=SYSTEM#TREND_LENS`, `sk=TREND_LENS#MANUAL#security`
 
-Trend Lens 수집은 Lambda 내부 이벤트와 인증된 refresh route에서만 수행한다. 브라우저는 KISA, CISA, The Hacker News, BleepingComputer, SecurityWeek, Help Net Security, Google News RSS, Google Trends 후보 같은 외부 source를 직접 호출하지 않으므로 CloudFront CSP를 넓히지 않는다.
+Trend Lens 수집은 Lambda 내부 이벤트와 인증된 refresh route에서만 수행한다. 브라우저는 KISA, CISA, The Hacker News, BleepingComputer, SecurityWeek, Help Net Security, 한국외대 공식 채용 게시판, Google News RSS, Google Trends 후보 같은 외부 source를 직접 호출하지 않으므로 CloudFront CSP를 넓히지 않는다.
 외부 source 호출은 병렬로 수행하고 source별 실패는 전체 API 실패가 아니라 `sourceStatuses`의 `unavailable` 상태로 낮춰 처리한다.
+
+겸임교수 공고 확인은 새 AWS 리소스를 만들지 않고 기존 Trend Lens daily refresh에 포함한다. 한국외대 공식 채용 게시판은 512KB/2.2초 기본 source 한도로 목록 HTML만 읽고, 원문 상세 페이지는 사용자가 클릭할 링크로만 저장한다. 서울·경기·충북 공고 후보는 고정 Google News RSS query를 사용하며 사용자 입력 query/URL은 허용하지 않는다.
 
 비용 가드레일:
 

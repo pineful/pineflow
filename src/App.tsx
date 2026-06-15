@@ -509,6 +509,111 @@ function TrendLensItemCard({
   );
 }
 
+function isHufsAcademicJob(item: TrendLensItem) {
+  const text = `${item.title} ${item.sourceName} ${item.summary} ${item.reasonTags.join(" ")}`;
+  return /한국외국어|한국외대|외국어대학교|HUFS|외대 확인/i.test(text);
+}
+
+function isGlobalCampusJob(item: TrendLensItem) {
+  const text = `${item.title} ${item.summary} ${item.reasonTags.join(" ")}`;
+  return /글로벌|용인/.test(text);
+}
+
+function academicJobLink(
+  item: TrendLensItem,
+  readState: TrendReadState,
+  onRead: (item: TrendLensItem) => void,
+  className = ""
+) {
+  const readStatus = trendReadStatus(item, readState);
+  return (
+    <a
+      className={`academicJobLink ${trendPriorityClass(item.priority)} ${readStatus} ${className}`.trim()}
+      href={trendArticleHref(item)}
+      key={item.id}
+      rel="noreferrer"
+      target="_blank"
+      onAuxClick={(event) => {
+        if (event.button === 1) onRead(item);
+      }}
+      onClick={() => onRead(item)}
+    >
+      <span>
+        <b>{trendPriorityLabel(item.priority)}</b>
+        <small>{trendPublishedLabel(item)}</small>
+      </span>
+      <strong>{item.title}</strong>
+      <em>{[item.sourceName, ...item.reasonTags.slice(0, 2)].filter(Boolean).join(" · ")}</em>
+    </a>
+  );
+}
+
+function AcademicJobsBoard({
+  section,
+  sourceStatuses,
+  readState,
+  onRead
+}: {
+  section?: { items: TrendLensItem[] };
+  sourceStatuses: TrendLensSourceStatus[];
+  readState: TrendReadState;
+  onRead: (item: TrendLensItem) => void;
+}) {
+  const items = orderTrendItemsByReadState(section?.items ?? [], readState);
+  const hufsItems = items.filter(isHufsAcademicJob);
+  const globalCampusItem = hufsItems.find(isGlobalCampusJob) ?? hufsItems[0];
+  const regionalItems = items.filter((item) => !isHufsAcademicJob(item));
+  const hufsSource = sourceStatuses.find((source) => source.id === "hufs-recruitment");
+  const hufsSourceUnavailable = hufsSource?.status === "unavailable";
+  const hufsEmptyMessage = hufsSourceUnavailable
+    ? "공식 채용 게시판 확인에 실패했습니다. 잠시 후 전체 새로고침으로 다시 확인하세요."
+    : "오늘 수집 기준 외대 글로벌캠퍼스 겸임교수 모집 공고는 발견되지 않았습니다.";
+
+  return (
+    <section className="academicJobsBoard" aria-label="겸임교수 공고 확인">
+      <div className="academicJobsHeader">
+        <div>
+          <span>공고 레이더</span>
+          <strong>겸임교수 모집 확인</strong>
+        </div>
+        <small>공식 게시판 우선 · 지역 검색 보조</small>
+      </div>
+
+      <article className={`hufsJobSignal ${globalCampusItem ? "found" : hufsSourceUnavailable ? "unavailable" : "clear"}`}>
+        <div>
+          <span>외대 글로벌캠퍼스</span>
+          <strong>{globalCampusItem ? "공고 후보 확인" : hufsSourceUnavailable ? "확인 실패" : "현재 공고 없음"}</strong>
+          <p>{globalCampusItem ? "등록일과 원문 링크를 확인하세요." : hufsEmptyMessage}</p>
+        </div>
+        {globalCampusItem ? (
+          academicJobLink(globalCampusItem, readState, onRead, "featured")
+        ) : (
+          <span className="academicJobEmpty">{hufsSource?.message ?? hufsEmptyMessage}</span>
+        )}
+      </article>
+
+      <div className="academicJobsLists">
+        <article>
+          <h3>외국어대학교 공고</h3>
+          {hufsItems.length > 0 ? (
+            <div>{hufsItems.slice(0, 4).map((item) => academicJobLink(item, readState, onRead))}</div>
+          ) : (
+            <p>공식 채용 게시판 기준으로 표시할 겸임교수 공고가 없습니다.</p>
+          )}
+        </article>
+        <article>
+          <h3>서울·경기·충북 공고</h3>
+          {regionalItems.length > 0 ? (
+            <div>{regionalItems.slice(0, 6).map((item) => academicJobLink(item, readState, onRead))}</div>
+          ) : (
+            <p>오늘 수집된 지역 겸임교수 공고 후보가 아직 없습니다.</p>
+          )}
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function TrendLensPanel({
   snapshot,
   status,
@@ -537,6 +642,7 @@ function TrendLensPanel({
   const secondaryItems = briefItems.slice(1, 4);
   const sections = snapshot?.sections ?? [];
   const securitySection = snapshot?.sections.find((section) => section.id === "security");
+  const academicJobsSection = sections.find((section) => section.id === "academic-jobs");
   const activeSection = sections.find((section) => section.id === activeCategory) ?? sections[0];
   const activeItems = orderTrendItemsByReadState(activeSection?.items ?? [], readState);
   const securityItems = orderTrendItemsByReadState(securitySection?.items ?? [], readState);
@@ -721,6 +827,15 @@ function TrendLensPanel({
             )}
             </div>
           </>
+        )}
+
+        {academicJobsSection && (
+          <AcademicJobsBoard
+            section={academicJobsSection}
+            sourceStatuses={sourceStatuses}
+            readState={readState}
+            onRead={onMarkRead}
+          />
         )}
 
         <details className="trendLensDetails">

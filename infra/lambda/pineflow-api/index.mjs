@@ -728,6 +728,12 @@ const trendLensSections = [
     title: "교육 트렌드",
     subtitle: "교육 방법, 에듀테크, 학습 콘텐츠 흐름입니다.",
     focus: "콘텐츠 제작과 학습 설계에 연결될 신호를 봅니다."
+  },
+  {
+    id: "academic-jobs",
+    title: "겸임교수 공고",
+    subtitle: "외대 글로벌캠퍼스와 서울·경기·충북 대학 공고를 확인합니다.",
+    focus: "한국외대 공식 채용 게시판을 우선 확인하고, 지역 대학 공고는 고정 검색 RSS로 보조합니다."
   }
 ];
 
@@ -764,6 +770,14 @@ const trendLensSources = {
     host: "news.google.com",
     pathPrefix: "/rss/",
     accept: "application/rss+xml, application/xml, text/xml"
+  },
+  hufsRecruitment: {
+    id: "hufs-recruitment",
+    label: "한국외대 채용",
+    url: "https://www.hufs.ac.kr/hufs/11284/subview.do",
+    host: "www.hufs.ac.kr",
+    pathPrefix: "/hufs/11284/subview.do",
+    accept: "text/html, application/xhtml+xml, */*"
   },
   theHackerNews: {
     id: "the-hacker-news",
@@ -893,6 +907,44 @@ const topicNewsFeeds = {
       region: "global",
       language: "en",
       maxAgeDays: 14
+    }
+  ],
+  "academic-jobs": [
+    {
+      id: "academic-jobs-hufs",
+      label: "외대 겸임교수 보조 검색",
+      query: '"한국외국어대학교" "겸임교수" "모집" OR "한국외대" "겸임교수" "초빙" OR "외국어대학교" "겸임교수" "글로벌캠퍼스"',
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      region: "korea",
+      language: "ko",
+      maxAgeDays: 90,
+      itemLimit: 3
+    },
+    {
+      id: "academic-jobs-seoul-gyeonggi",
+      label: "서울·경기 겸임교수 공고",
+      query: '"겸임교수" "모집" "대학교" ("서울" OR "경기" OR "경기도")',
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      region: "korea",
+      language: "ko",
+      maxAgeDays: 45,
+      itemLimit: 3
+    },
+    {
+      id: "academic-jobs-chungbuk",
+      label: "충북 겸임교수 공고",
+      query: '"겸임교수" "모집" "대학교" ("충북" OR "충청북도" OR "청주")',
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      region: "korea",
+      language: "ko",
+      maxAgeDays: 45,
+      itemLimit: 3
     }
   ]
 };
@@ -1744,6 +1796,13 @@ function newsPriority(category, title, published, now) {
   const ageHours = Math.max(0, (now.getTime() - published.getTime()) / 36e5);
   const text = title.toLowerCase();
 
+  if (category === "academic-jobs") {
+    if (/한국외국어|한국외대|외국어대학교|hufs/i.test(title)) {
+      return ageHours <= 720 ? "high" : "watch";
+    }
+    return ageHours <= 336 ? "watch" : "note";
+  }
+
   if (category === "mandolin") {
     if (/concert|festival|competition|masterclass|recital|공연|콩쿠르|마스터클래스|페스티벌|리사이틀/.test(text)) {
       return ageHours <= 240 ? "high" : "watch";
@@ -1761,24 +1820,125 @@ function newsPriority(category, title, published, now) {
 function newsSummaryFor(item, feed) {
   const description = compactText(item.description, 180);
   if (description) return description;
+  if (feed.id.startsWith("academic-jobs")) return "겸임교수 모집 공고 후보입니다. 원문 공고의 지원 자격과 접수 마감일을 확인해야 합니다.";
   if (feed.id.startsWith("mandolin")) return "만돌린 연주, 아티스트, 레슨, 공연 흐름을 확인할 수 있는 최신 소식입니다.";
   if (feed.id.startsWith("education")) return "교육 방법, 에듀테크, AI 학습 흐름을 따라가기 위한 최신 소식입니다.";
   return "IT 콘텐츠 제작과 기술 흐름을 따라가기 위한 최신 소식입니다.";
+}
+
+function isAcademicJobNoticeTitle(title = "") {
+  const text = decodeXmlText(title).replace(/\s+/g, " ").trim();
+  if (!/겸임/.test(text)) return false;
+  if (!/(모집|초빙|채용|공고|임용|위촉)/.test(text)) return false;
+  return !/(합격자|발표|결과|서류|면접|직원|조교|근로자|대학원생)/.test(text);
+}
+
+function isRelevantNewsItem(category, item) {
+  if (category !== "academic-jobs") return true;
+  const text = `${item.title} ${item.description ?? ""}`;
+  return isAcademicJobNoticeTitle(text);
+}
+
+function academicJobTags(title = "", sourceName = "") {
+  const tags = ["겸임교수 공고"];
+  if (/한국외국어|한국외대|외국어대학교|HUFS/i.test(`${title} ${sourceName}`)) tags.push("외대 확인");
+  if (/글로벌|용인/.test(title)) tags.push("글로벌캠퍼스");
+  if (/서울/.test(title)) tags.push("서울");
+  if (/경기|경기도|용인|수원|성남|안양|고양|부천|안산|화성|평택|의정부/.test(title)) tags.push("경기");
+  if (/충북|충청북도|청주|충주|제천/.test(title)) tags.push("충북");
+  return tags.slice(0, 4);
+}
+
+function isoDateFromDottedDate(value = "") {
+  const match = String(value).match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/);
+  if (!match) return "";
+  return `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}`;
+}
+
+function hufsArticleUrl(href = "") {
+  try {
+    const url = new URL(href, "https://www.hufs.ac.kr");
+    if (url.protocol !== "https:" || url.hostname !== trendLensSources.hufsRecruitment.host) return "";
+    if (!url.pathname.startsWith("/bbs/hufs/")) return "";
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+function hufsArticleId(url = "") {
+  return new URL(url).pathname.match(/\/(\d+)\/artclView\.do$/)?.[1] ?? url;
+}
+
+function parseHufsRecruitmentItems(html) {
+  return [...html.matchAll(/<tr\b[\s\S]*?<\/tr>/gi)]
+    .map((match) => {
+      const row = match[0];
+      const subjectMatch = row.match(
+        /<td[^>]*class="[^"]*\btd-subject\b[^"]*"[\s\S]*?<a[^>]+href="([^"]*artclView\.do[^"]*)"[^>]*>([\s\S]*?)<\/a>/i
+      );
+      if (!subjectMatch) return null;
+
+      const sourceUrl = hufsArticleUrl(subjectMatch[1]);
+      if (!sourceUrl) return null;
+
+      const title = compactText(decodeXmlText(subjectMatch[2]), trendLensTextLimits.title);
+      if (!isAcademicJobNoticeTitle(title)) return null;
+
+      const dateText = decodeXmlText(row.match(/<td[^>]*class="[^"]*\btd-date\b[^"]*"[^>]*>([\s\S]*?)<\/td>/i)?.[1] ?? "");
+      const publishedAt = isoDateFromDottedDate(dateText);
+      if (!publishedAt) return null;
+
+      return {
+        id: `hufs-recruitment-${hufsArticleId(sourceUrl)}`,
+        category: "academic-jobs",
+        priority: /글로벌|용인/.test(title) ? "high" : "watch",
+        title,
+        summary: "한국외국어대학교 공식 채용 게시판에서 확인한 겸임교수 모집 공고입니다. 원문에서 캠퍼스, 전공, 접수 마감일을 확인하세요.",
+        sourceName: "한국외대 채용",
+        sourceUrl,
+        publishedAt,
+        region: "korea",
+        language: "ko",
+        reasonTags: ["한국외대 공식", ...academicJobTags(title, "한국외대 채용")].slice(0, 4)
+      };
+    })
+    .filter(Boolean);
+}
+
+async function collectHufsRecruitmentBoard(now) {
+  const checkedAt = now.toISOString();
+  const text = await fetchTrendLensSource(trendLensSources.hufsRecruitment);
+  const items = parseHufsRecruitmentItems(text).slice(0, 6);
+
+  return {
+    status: sourceStatus(
+      trendLensSources.hufsRecruitment,
+      "ready",
+      checkedAt,
+      items.length > 0
+        ? `한국외대 공식 채용 게시판에서 겸임교수 공고 ${items.length}개를 확인했습니다.`
+        : "한국외대 공식 채용 게시판을 확인했으며, 현재 겸임교수 모집 공고는 발견하지 못했습니다."
+    ),
+    items
+  };
 }
 
 async function collectNewsFeed(category, feed, now) {
   const checkedAt = now.toISOString();
   const source = sourceForNewsFeed(feed);
   const text = await fetchTrendLensSource(trendLensSources.googleNews, googleNewsUrl(feed));
-  const rssItems = parseRssItems(text, 12)
+  const itemLimit = feed.itemLimit ?? trendLensNewsItemsPerFeed;
+  const rssItems = parseRssItems(text, Math.max(12, itemLimit * 4))
     .filter((item) => item.title && item.link && item.publishedAt)
     .filter((item) => !isStaticKnowledgeNewsItem(item))
+    .filter((item) => isRelevantNewsItem(category, item))
     .map((item) => ({
       ...item,
       published: new Date(item.publishedAt)
     }))
     .filter((item) => isRecentEnough(item.published, now, feed.maxAgeDays))
-    .slice(0, trendLensNewsItemsPerFeed);
+    .slice(0, itemLimit);
 
   return {
     status: sourceStatus(
@@ -1803,10 +1963,10 @@ async function collectNewsFeed(category, feed, now) {
         region: feed.region,
         language: feed.language,
         reasonTags: [
-          feed.region === "korea" ? "한국 우선" : "글로벌 보조",
+          ...(category === "academic-jobs" ? academicJobTags(title, sourceName) : [feed.region === "korea" ? "한국 우선" : "글로벌 보조"]),
           sourceName,
-          "최신 소식"
-        ]
+          category === "academic-jobs" ? "모집 공고" : "최신 소식"
+        ].slice(0, 4)
       };
     }))
   };
@@ -1907,15 +2067,37 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   });
 
   if (scope === "all") {
-    const categories = ["mandolin", "it-content", "education"];
+    let hufsRecruitmentItems = [];
+    try {
+      const hufsRecruitment = await collectHufsRecruitmentBoard(now);
+      statuses.push(hufsRecruitment.status);
+      hufsRecruitmentItems = hufsRecruitment.items;
+    } catch {
+      statuses.push(sourceStatus(trendLensSources.hufsRecruitment, "unavailable", now.toISOString(), "한국외대 공식 채용 게시판을 확인하지 못했습니다. 보조 검색 결과가 있으면 함께 표시합니다."));
+    }
+
+    const categories = ["mandolin", "it-content", "education", "academic-jobs"];
     const sectionResults = await Promise.allSettled(categories.map((category) => collectNewsSection(category, now)));
     sectionResults.forEach((result, index) => {
       const category = categories[index];
       if (result.status === "fulfilled") {
         statuses.push(...result.value.statuses);
-        updates.push({ ...trendSectionBase(category), items: result.value.items });
+        const items =
+          category === "academic-jobs"
+            ? dedupeItems([...hufsRecruitmentItems, ...result.value.items])
+                .sort((left, right) => {
+                  const priorityDiff = priorityWeight(right.priority) - priorityWeight(left.priority);
+                  if (priorityDiff !== 0) return priorityDiff;
+                  return new Date(right.publishedAt ?? 0).getTime() - new Date(left.publishedAt ?? 0).getTime();
+                })
+                .slice(0, 8)
+            : result.value.items;
+        updates.push({ ...trendSectionBase(category), items });
       } else {
         statuses.push(sourceStatus(trendLensSources.googleNews, "unavailable", now.toISOString(), `${category} 최신 소식을 불러오지 못했습니다.`));
+        if (category === "academic-jobs") {
+          updates.push({ ...trendSectionBase(category), items: hufsRecruitmentItems });
+        }
       }
     });
   }
@@ -1982,6 +2164,7 @@ function trendLensPlaceholderSnapshot() {
       ...securityNewsSources.map((source) =>
         sourceStatus(source, "unavailable", now.toISOString(), `첫 ${source.label} 수집 전입니다.`)
       ),
+      sourceStatus(trendLensSources.hufsRecruitment, "unavailable", now.toISOString(), "첫 한국외대 채용 게시판 확인 전입니다."),
       sourceStatus(trendLensSources.googleNews, "unavailable", now.toISOString(), "첫 Google News RSS 수집 전입니다."),
       plannedSourceStatus(trendLensSources.googleTrendsPlanned, now.toISOString(), "아직 자동 수집하지 않습니다. 공식 API 비용, 키 관리, 이용 조건을 확인한 뒤 연결할 후보 소스입니다.")
     ],

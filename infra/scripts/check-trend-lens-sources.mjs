@@ -143,6 +143,19 @@ async function googleNewsParser(text, source) {
   return `${count} rss items, ${direct}`;
 }
 
+function isAcademicJobNoticeTitle(title = "") {
+  const text = decodeXmlText(title).replace(/\s+/g, " ").trim();
+  if (!/겸임/.test(text)) return false;
+  if (!/(모집|초빙|채용|공고|임용|위촉)/.test(text)) return false;
+  return !/(합격자|발표|결과|서류|면접|직원|조교|근로자|대학원생)/.test(text);
+}
+
+function hufsAcademicJobCount(text) {
+  return [...text.matchAll(/<tr\b[\s\S]*?<\/tr>/gi)]
+    .map((match) => decodeXmlText(match[0]))
+    .filter(isAcademicJobNoticeTitle).length;
+}
+
 const sources = [
   {
     id: "cisa-kev",
@@ -197,6 +210,14 @@ const sources = [
     parser: (text) => `${rssItemCount(text)} rss items`
   },
   {
+    id: "hufs-recruitment",
+    label: "HUFS recruitment board",
+    url: "https://www.hufs.ac.kr/hufs/11284/subview.do",
+    accept: "text/html, application/xhtml+xml, */*",
+    maxBytes: 512 * 1024,
+    parser: (text) => `${hufsAcademicJobCount(text)} academic job notices`
+  },
+  {
     id: "google-news-mandolin",
     label: "Google News mandolin RSS",
     hl: "ko",
@@ -240,6 +261,21 @@ const sources = [
     }),
     maxBytes: 512 * 1024,
     parser: googleNewsParser
+  },
+  {
+    id: "google-news-academic-jobs",
+    label: "Google News academic jobs RSS",
+    hl: "ko",
+    gl: "KR",
+    ceid: "KR:ko",
+    url: googleNewsUrl('"겸임교수" "모집" "대학교" ("서울" OR "경기" OR "충북")', {
+      hl: "ko",
+      gl: "KR",
+      ceid: "KR:ko",
+      maxAgeDays: 45
+    }),
+    maxBytes: 512 * 1024,
+    parser: googleNewsParser
   }
 ];
 
@@ -271,7 +307,7 @@ const results = await Promise.allSettled(
     const response = await fetch(source.url, {
       signal: AbortSignal.timeout(sourceTimeoutMs),
       headers: {
-        accept: "application/json, application/rss+xml, application/xml, text/xml",
+        accept: source.accept ?? "application/json, application/rss+xml, application/xml, text/xml",
         "user-agent": "PineflowTrendLensSourceCheck/0.1"
       }
     });

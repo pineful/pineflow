@@ -6511,7 +6511,8 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendItem.readToday,
 .briefQueue a.readToday,
 .trendFocusList li.readToday,
-.trendCategoryCard li.readToday {
+.trendCategoryCard li.readToday,
+.academicJobLink.readToday {
   border-color: rgba(126, 224, 177, 0.3);
   background:
     linear-gradient(145deg, rgba(20, 45, 42, 0.78), rgba(10, 20, 34, 0.88)),
@@ -6521,7 +6522,8 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendItem.readBefore,
 .briefQueue a.readBefore,
 .trendFocusList li.readBefore,
-.trendCategoryCard li.readBefore {
+.trendCategoryCard li.readBefore,
+.academicJobLink.readBefore {
   border-color: rgba(126, 224, 177, 0.18);
   background:
     linear-gradient(145deg, rgba(17, 29, 39, 0.72), rgba(9, 15, 24, 0.86)),
@@ -6531,35 +6533,40 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendItem.readToday > *,
 .briefQueue a.readToday > *,
 .trendFocusList li.readToday > *,
-.trendCategoryCard li.readToday > * {
+.trendCategoryCard li.readToday > *,
+.academicJobLink.readToday > * {
   opacity: 0.64;
 }
 
 .trendItem.readBefore > *,
 .briefQueue a.readBefore > *,
 .trendFocusList li.readBefore > *,
-.trendCategoryCard li.readBefore > * {
+.trendCategoryCard li.readBefore > *,
+.academicJobLink.readBefore > * {
   opacity: 0.42;
 }
 
 .trendItem.readBefore:hover,
 .briefQueue a.readBefore:hover,
 .trendFocusList li.readBefore:hover,
-.trendCategoryCard li.readBefore:hover {
+.trendCategoryCard li.readBefore:hover,
+.academicJobLink.readBefore:hover {
   border-color: rgba(126, 224, 177, 0.3);
 }
 
 .trendItem.readToday:hover > *,
 .briefQueue a.readToday:hover > *,
 .trendFocusList li.readToday:hover > *,
-.trendCategoryCard li.readToday:hover > * {
+.trendCategoryCard li.readToday:hover > *,
+.academicJobLink.readToday:hover > * {
   opacity: 0.82;
 }
 
 .trendItem.readBefore:hover > *,
 .briefQueue a.readBefore:hover > *,
 .trendFocusList li.readBefore:hover > *,
-.trendCategoryCard li.readBefore:hover > * {
+.trendCategoryCard li.readBefore:hover > *,
+.academicJobLink.readBefore:hover > * {
   opacity: 0.6;
 }
 
@@ -6570,7 +6577,9 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendFocusList li.readToday::before,
 .trendFocusList li.readBefore::before,
 .trendCategoryCard li.readToday::before,
-.trendCategoryCard li.readBefore::before {
+.trendCategoryCard li.readBefore::before,
+.academicJobLink.readToday::before,
+.academicJobLink.readBefore::before {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -6590,7 +6599,8 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendItem.readBefore::before,
 .briefQueue a.readBefore::before,
 .trendFocusList li.readBefore::before,
-.trendCategoryCard li.readBefore::before {
+.trendCategoryCard li.readBefore::before,
+.academicJobLink.readBefore::before {
   border-color: rgba(160, 187, 205, 0.34);
   background:
     radial-gradient(circle at 50% 50%, rgba(160, 187, 205, 0.72) 0 52%, transparent 54%),
@@ -6605,7 +6615,9 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendFocusList li.readToday::after,
 .trendFocusList li.readBefore::after,
 .trendCategoryCard li.readToday::after,
-.trendCategoryCard li.readBefore::after {
+.trendCategoryCard li.readBefore::after,
+.academicJobLink.readToday::after,
+.academicJobLink.readBefore::after {
   position: absolute;
   top: 14px;
   right: 17px;
@@ -6620,7 +6632,8 @@ button.sessionEndpoint:hover:not(:disabled) {
 .trendItem.readBefore::after,
 .briefQueue a.readBefore::after,
 .trendFocusList li.readBefore::after,
-.trendCategoryCard li.readBefore::after {
+.trendCategoryCard li.readBefore::after,
+.academicJobLink.readBefore::after {
   border-color: rgba(6, 19, 28, 0.72);
 }
 
@@ -6756,7 +6769,7 @@ button.sessionEndpoint:hover:not(:disabled) {
 
 .trendTabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: 7px;
 }
 

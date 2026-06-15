@@ -84,7 +84,7 @@ export type OperationalUsageSnapshot = {
   note: string;
 };
 
-export type TrendLensCategoryId = "security" | "mandolin" | "it-content" | "education";
+export type TrendLensCategoryId = "security" | "mandolin" | "it-content" | "education" | "academic-jobs";
 
 export type TrendLensPriority = "urgent" | "high" | "watch" | "note";
 

@@ -336,6 +336,16 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
 
 `sourceUrl`은 사용자가 새 탭에서 열 수 있는 표시/열기 URL이다. Google News RSS의 `news.google.com/rss/articles/...` 중간 URL은 브라우저에서 빈 화면처럼 보일 수 있으므로 그대로 저장하지 않는다. Lambda는 Google News article/decode endpoint만 제한적으로 조회해 publisher 원문 URL을 우선 저장하고, publisher URL 자체를 추가 fetch하지 않는다. decode가 실패한 항목에만 제목/출처 기반 Google News 검색 fallback을 사용한다.
 
+허용 `category`:
+
+- `security`: 공식/전문 보안 신호.
+- `mandolin`: 만돌린 소식과 레슨/연주 소재.
+- `it-content`: IT 콘텐츠 제작 소재.
+- `education`: 교육/에듀테크 트렌드.
+- `academic-jobs`: 한국외대 글로벌캠퍼스와 서울·경기·충북 대학 겸임교수 모집 공고 후보.
+
+`academic-jobs`는 별도 API route를 만들지 않고 기존 Trend Lens 일일 snapshot에 포함된다. 한국외대 공식 채용 게시판은 source status로 확인 성공/실패를 구분하며, 공식 게시판이 정상 응답했지만 겸임교수 모집 공고가 없을 때만 UI가 `현재 공고 없음`으로 표시해야 한다.
+
 `cacheStatus` 값:
 
 - `fresh`: 방금 수집된 캐시.

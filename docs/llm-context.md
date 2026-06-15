@@ -165,7 +165,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - 헤더 브랜드는 밝은 뉴트럴 타일 위의 compact mark와 `pineflow` 소문자 워드마크를 함께 사용한다. 어두운 히어로 배경에 마크를 직접 올리거나 일반 `h1` 글꼴로 `Pineflow`를 표시하면 최종 시안의 색감과 타이포 의도가 깨진다.
 - 색상은 obsidian/graphite UI를 기본으로 하고, 파인 그린은 로고와 작은 생명감 accent에만 제한한다. 핵심 데이터와 선택/focus는 cyan, 출근/퇴근/저장 같은 command action은 amber/orange, 위험 동작은 coral red로 분리한다.
 - 앱 첫 화면의 비용 신호등은 하단 운영 사용량 패널의 당일 스냅샷을 요약해 Free Tier 기준 안정/주의/위험/확인 불가 상태를 보여준다. 신호등은 별도 AWS 조회를 만들지 않아야 하며, 하단 운영 사용량 패널은 CloudWatch 기초 지표, 시간 순 추이, Free Tier 기준 예상 상태를 표시한다. 앱 Lambda에 Cost Explorer 권한을 추가하지 않고, 실제 청구액은 AWS Budgets와 Billing 콘솔에서 확인하는 구조를 유지한다. 같은 날짜의 사용량 스냅샷은 프론트엔드와 DynamoDB에 캐시해 비용 확인을 위한 반복 CloudWatch 호출을 피한다. 운영 지표 조회 실패는 기록 기능 오류처럼 상단 error banner로 띄우지 않는다.
-- Trend Lens는 최근 기록 긴 피드가 사라진 하단 폭을 활용하는 넓은 지식 보드다. 넓은 화면에서는 `보안`, `만돌린`, `IT 콘텐츠`, `교육`을 카테고리 카드로 동시에 스캔하게 하고, 좁은 화면에서는 탭으로 한 분야씩 전환한다.
+- Trend Lens는 최근 기록 긴 피드가 사라진 하단 폭을 활용하는 넓은 지식 보드다. 넓은 화면에서는 `보안`, `만돌린`, `IT 콘텐츠`, `교육`, `겸임교수 공고`를 카테고리 카드로 동시에 스캔하게 하고, 좁은 화면에서는 탭으로 한 분야씩 전환한다.
 - 아키텍처와 데이터 플로우 설명이 필요하면 `docs/diagrams/pineflow-architecture-infographic.svg`를 기준으로 한다. 이 그림은 Cognito 비밀번호 경계, DynamoDB 저장 항목, SSM SecureString 후보, OIDC 배포 흐름을 함께 보여준다.
 - 프론트엔드 S3 bucket은 `assets/` 객체만 30일 뒤 Intelligent-Tiering으로 전환한다. `index.html`은 CloudFront 첫 화면 안정성을 위해 Standard에 둔다. archive/deep archive 계열 전환은 현재 프론트엔드 객체에는 적용하지 않는다.
 ## 2026-06-07 Trend Lens 확장
@@ -182,11 +182,13 @@ Trend Lens v1 원칙:
 - 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
 - 보안 섹션은 KISA/CISA 공식 source와 전문 보안 매체 RSS allowlist를 함께 사용한다. 전문 매체 기사는 `전문 매체`, `빠른 보안 뉴스` reason tag로 공식 경보와 구분한다.
 - 만돌린, IT 콘텐츠, 교육 분야는 Google News RSS allowlist query로 최신 소식을 수집한다. Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스가 아니므로 source로 쓰지 않는다.
+- 겸임교수 공고 분야는 한국외국어대학교 공식 `채용` 게시판을 1순위 source로 확인하고, 서울·경기·충북 지역 대학 공고는 고정 Google News RSS query를 보조 source로 사용한다. 사용자 입력 검색어/URL은 허용하지 않는다.
+- 한국외대 글로벌캠퍼스 공고 영역은 `공고 없음`과 `공식 source 확인 실패`를 UI에서 분리한다. 공식 게시판이 정상 응답했지만 `겸임` 모집 공고가 없을 때만 공고 없음으로 표시한다.
 - Google News RSS의 `/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. Lambda는 Google News article/decode endpoint만 제한적으로 조회해 publisher 원문 URL을 우선 저장한다. publisher URL은 사용자가 클릭할 표시 URL일 뿐 Lambda가 추가 fetch하지 않는다. decode가 실패한 항목만 제목/출처 기반 Google News 검색 URL을 fallback으로 쓴다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존하고 UI에 게재일/등록일을 표시한다.
 - CVE 번호가 제목에 드러나는 보안 항목은 `짧은 취약점 설명 · CVE-...` 형태로 저장한다. CISA KEV의 vendor/product/취약점 설명과 KISA/CISA 교차 참조를 우선 사용하고, CVE별 외부 조회 API를 추가하려면 비용/timeout/source allowlist ADR이 먼저다.
 - 전체 refresh는 source를 병렬로 수집하고, source별 실패는 전체 API 실패가 아니라 `sourceStatuses`로 낮춰 기록한다.
-- Trend Lens UI는 분야 전체를 한 번에 늘어놓지 않는다. 오늘 브리프 lead/queue와 `보안`, `만돌린`, `IT 콘텐츠`, `교육` 탭으로 한 분야씩 보여준다.
+- Trend Lens UI는 분야 전체를 한 번에 늘어놓지 않는다. 오늘 브리프 lead/queue와 `보안`, `만돌린`, `IT 콘텐츠`, `교육`, `겸임교수 공고` 탭으로 한 분야씩 보여준다. 겸임교수 공고는 별도 보드에서 외대 글로벌캠퍼스 확인 결과와 서울·경기·충북 공고 목록을 나눠 보여준다.
 - 데스크톱 하단에서 Trend Lens는 최근 기록이 사라진 폭을 넓게 쓰는 지식 보드다. 날씨는 상단 대시보드 weather deck으로 이동했으므로 Trend Lens 아래에 중복 배치하지 않는다. `오늘의 흐름`은 상단 그래프와 중복되는 별도 section으로 만들지 않는다. `AWS 운영 사용량`은 오른쪽 보조 단에 끼워 넣지 않고 Trend Lens 이후 1단 section으로 읽히게 둔다.
 - Trend Lens 상태 문구는 `캐시 확인 중`, `수집 중`, `수집 전`, `캐시 조회 실패`, `이전 캐시`, `오늘 브리프`처럼 사용자가 다음 행동을 알 수 있게 구분한다.
 - Trend Lens에서 `캐시 다시 조회`는 저장된 DynamoDB snapshot만 다시 읽는 가벼운 확인이고, `전체 새로고침`은 외부 allowlist source를 다시 수집하는 동작이다. 두 동작을 같은 의미로 보이게 만들지 않는다.

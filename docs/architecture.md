@@ -26,7 +26,7 @@ Pineflow의 운영 본선은 AWS Serverless입니다. 프론트엔드는 Vite Re
 - `src/styles/`: 장기적으로 feature 단위 CSS module을 둘 위치. 구조 기준은 `src/styles/README.md`와 `docs/modules/css-architecture.md`를 따른다.
 - `public/pineflow-icon.svg`: 앱 아이콘과 favicon 기준 로고.
 - `infra/lib/pineflow-serverless-stack.ts`: Cognito, API Gateway, Lambda, DynamoDB, S3, CloudFront, Budgets 정의.
-- `infra/lambda/pineflow-api/index.mjs`: Serverless API handler.
+- `infra/lambda/pineflow-api/index.mjs`: Serverless API handler. Trend Lens의 KISA/CISA/보안 매체/Google News RSS/한국외대 채용 게시판 수집 allowlist도 이 경계 안에서만 관리한다.
 - `infra/scripts/verify-template.mjs`: CDK 템플릿의 비용/보안 guardrail 검증.
 - `scripts/check-css-guardrails.mjs`: CSS 누적, 금지 문법, override block 증가를 막는 프론트엔드 guardrail 검증.
 - `.github/workflows/serverless.yml`: Serverless 본선 검증과 배포 workflow.

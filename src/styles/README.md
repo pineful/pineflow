@@ -17,6 +17,10 @@
 - `weather.css`: weather deck, forecast ribbon, hourly graph.
 - `operations.css`: AWS 사용량과 비용 신호 패널.
 
+현재 분리된 feature style:
+
+- `trend-lens-academic-jobs.css`: Trend Lens 안의 겸임교수 공고 확인 보드. 기존 `styles.css`의 읽음 상태 공통 selector를 재사용하되, 공고 보드 layout과 link 표면만 소유한다.
+
 ## 가드레일
 
 - `src/styles.css`에 새 `YYYY-MM-DD ... pass` block을 추가하지 않는다.
