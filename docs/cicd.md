@@ -21,9 +21,31 @@ EC2 Docker/PostgreSQL workflow는 PoC 보존용 수동 workflow입니다. 새 �
 9. 해당 값을 Vite 환경 변수로 주입해 프론트엔드를 다시 빌드합니다.
 10. `dist/`를 S3에 sync하고 CloudFront cache를 invalidate합니다.
 
+## Serverless 롤백 (이전 정상 커밋으로 되돌리기)
+
+배포 후 문제가 생기면 `Pineflow Serverless Rollback` workflow
+(`.github/workflows/serverless-rollback.yml`)로 이전의 알려진 정상 커밋으로
+되돌립니다.
+
+1. GitHub Actions에서 `Pineflow Serverless Rollback`을 `workflow_dispatch`로 실행합니다.
+2. **반드시 main 브랜치에서 실행**합니다(Actions UI의 "Use workflow from"을 main으로).
+   GitHub OIDC trust subject가 `refs/heads/main`으로 고정돼 있어, 다른 브랜치에서
+   실행하면 AssumeRole이 실패합니다. `target_ref` 입력에는 되돌릴 커밋 SHA나 태그만 넣습니다.
+3. workflow는 그 ref를 checkout해 `npm run build`와 infra `npm run verify`로 먼저
+   검증한 뒤, OIDC로 IAM Role을 assume해 `cdk deploy`로 인프라를 그 시점 템플릿으로
+   되돌리고, 같은 ref의 프론트엔드를 다시 빌드해 S3/CloudFront에 반영합니다.
+4. `cdk deploy`가 인프라까지 그 ref 기준으로 정렬하므로 백엔드와 프론트엔드가
+   같은 시점 상태로 맞춰집니다.
+
+롤백과 일반 배포는 같은 `pineflow-serverless-deploy` concurrency group을 공유해
+한 시점에 한 배포만 stack을 만지도록 합니다. DynamoDB에 저장된 사용자 데이터는
+코드 롤백으로 되돌아가지 않으므로, 데이터 구조를 바꾼 배포를 되돌릴 때는
+`docs/data-management.md` 기준으로 데이터 영향을 먼저 검토합니다.
+
 ## 본선 관련 파일
 
 - `.github/workflows/serverless.yml`: Serverless 검증과 배포 workflow.
+- `.github/workflows/serverless-rollback.yml`: 이전 정상 커밋으로 되돌리는 수동 롤백 workflow.
 - `infra/lib/pineflow-serverless-stack.ts`: CDK stack 정의.
 - `infra/scripts/verify-template.mjs`: 비용/보안 guardrail 검증.
 - `infra/bootstrap/github-oidc-deploy-role.template.yaml`: GitHub OIDC 배포 Role 템플릿.

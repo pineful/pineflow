@@ -1,25 +1,42 @@
-name: Pineflow Serverless
+name: Pineflow Serverless Rollback
+
+# 본선 Serverless 배포를 이전의 알려진 정상 커밋(SHA/태그)으로 되돌린다.
+#
+# 중요 (OIDC 가드레일):
+# - GitHub OIDC trust policy subject는 `refs/heads/<branch>`(기본 main)로
+#   고정돼 있다(infra/bootstrap/github-oidc-deploy-role.template.yaml).
+# - 따라서 이 workflow는 반드시 **main 브랜치에서** 실행해야 한다. Actions UI의
+#   "Use workflow from"을 main으로 둔 채 `target_ref`에 되돌릴 커밋 SHA/태그를
+#   입력한다. OIDC 토큰 subject는 main으로 유지되고, 배포 코드만 과거 ref가 된다.
+# - cdk deploy가 해당 ref의 템플릿으로 인프라까지 되돌리므로 프론트엔드와
+#   백엔드가 함께 그 시점 상태로 정렬된다.
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
   workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "되돌릴 커밋 SHA 또는 태그 (이전의 정상 배포 지점)"
+        required: true
+        type: string
 
 concurrency:
-  group: pineflow-serverless-${{ github.ref }}
-  cancel-in-progress: true
+  group: pineflow-serverless-deploy
+  cancel-in-progress: false
 
 jobs:
-  validate:
-    name: Validate app and infrastructure
+  rollback:
+    name: Roll back serverless stack to a known-good ref
     runs-on: ubuntu-latest
+    # main에서 실행할 때만, 그리고 필수 배포 변수가 모두 있을 때만 동작한다.
+    if: github.ref == 'refs/heads/main' && vars.AWS_ROLE_ARN != '' && vars.AWS_REGION != '' && vars.BUDGET_ALERT_EMAIL != ''
     permissions:
       contents: read
+      id-token: write
     steps:
-      - name: Checkout
+      - name: Checkout target ref
         uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.target_ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -30,7 +47,7 @@ jobs:
       - name: Install app dependencies
         run: npm ci
 
-      - name: Build frontend
+      - name: Build frontend (validate target ref)
         run: npm run build
 
       - name: Install infrastructure dependencies
@@ -41,42 +58,13 @@ jobs:
         working-directory: infra
         run: npm run verify
 
-  deploy:
-    name: Deploy serverless stack
-    needs: validate
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AWS_ROLE_ARN != '' && vars.AWS_REGION != '' && vars.BUDGET_ALERT_EMAIL != ''
-    # Rollback workflow와 같은 그룹으로 묶어, 한 시점에 한 배포만 stack을 만지게 한다.
-    concurrency:
-      group: pineflow-serverless-deploy
-      cancel-in-progress: false
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: npm
-
-      - name: Install app dependencies
-        run: npm ci
-
-      - name: Install infrastructure dependencies
-        working-directory: infra
-        run: npm ci
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Deploy CDK stack
+      - name: Deploy CDK stack at target ref
         working-directory: infra
         run: npx cdk deploy --require-approval never --outputs-file cdk-outputs.json --parameters BudgetAlertEmail=${{ vars.BUDGET_ALERT_EMAIL }}
 
@@ -103,3 +91,7 @@ jobs:
 
       - name: Invalidate CloudFront cache
         run: aws cloudfront create-invalidation --distribution-id "$FRONTEND_DISTRIBUTION_ID" --paths "/index.html" "/assets/*"
+
+      - name: Rollback summary
+        run: |
+          echo "Rolled back Pineflow serverless stack to ${{ inputs.target_ref }}" >> "$GITHUB_STEP_SUMMARY"
