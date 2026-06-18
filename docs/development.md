@@ -63,6 +63,14 @@ npm test   # node --import tsx --test "src/**/*.test.ts"
   스모크 + 배포 후 실계정 e2e로 본다.
 - CI(`Pineflow Serverless`)의 validate job이 빌드 전에 `npm test`를 실행한다.
 
+## 배포 후 실계정 검증 (E1, Playwright)
+
+배포된 앱을 관리자 테스트 계정으로 점검하는 end-to-end 하니스는 루트와 분리된
+`e2e/` 디렉터리에 있다(자체 `package.json`이라 본선 빌드/CI에 영향 없음).
+로그인~출퇴근~기록 수정·삭제~Trend Lens~로그아웃을 데스크탑/모바일 viewport에서
+돈다. 배포 URL과 테스트 계정을 env로 받으며, env가 없으면 skip 한다. 실행
+방법은 `e2e/README.md`를 본다.
+
 Vite 개발 서버를 API와 별도로 띄울 때는 `.env`에 `VITE_API_BASE_URL=http://127.0.0.1:3001`를 둡니다. 그러면 브라우저 요청이 API 서버로 전달됩니다.
 
 `docker compose up -d postgres`를 실행하기 전에는 Docker Desktop이 켜져 있어야 합니다. Docker가 설치되어 있어도 엔진이 꺼져 있으면 PostgreSQL 이미지를 내려받거나 컨테이너를 시작할 수 없습니다.

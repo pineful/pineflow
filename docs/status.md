@@ -146,7 +146,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - Budget 알림 이메일 구독과 비용 알림 수신 상태를 주기적으로 확인 (A3: CDK에 Budgets 리소스는 있으나 이메일 구독 승인은 사용자 받은편지함에서 직접 수행).
 - 큰 파일 리팩토링(C1 `src/styles.css` 모듈 분리, C2 `src/App.tsx` 책임 분리)은 배포 후 실계정 e2e 기준선 확보 뒤 진행 (refactor-plan 진입 기준).
 - B4 구현: Trend Lens CVE 외부 조회(NVD)와 keyed source는 ADR 0010 결정 완료, 코드 구현은 ADR 게이트(승인 + 배포 후 e2e)를 따른다.
-- E1 실계정 end-to-end 검증: 배포 후 테스트 계정/URL로 로그인~출퇴근~기록 수정·삭제~Trend Lens를 모바일/데스크탑에서 점검.
+- E1 실계정 end-to-end 검증: 배포 후 테스트 계정/URL로 로그인~출퇴근~기록 수정·삭제~Trend Lens를 모바일/데스크탑에서 점검. Playwright 하니스(`e2e/`, `e2e/README.md`)는 준비 완료, 배포 URL/계정을 env로 받으면 실행한다.
 
 ## 현재 CI/CD 방향
 

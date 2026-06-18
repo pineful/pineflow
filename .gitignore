@@ -6,3 +6,7 @@ dist/
 !.env.production.example
 infra/cdk.out/
 .codex-remote-attachments/
+e2e/test-results/
+e2e/playwright-report/
+e2e/blob-report/
+e2e/.cache/

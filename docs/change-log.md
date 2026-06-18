@@ -222,3 +222,4 @@
 - B2: `Pineflow Serverless Rollback` workflow를 추가했다. main에서 workflow_dispatch로 이전 정상 커밋(SHA/태그)을 입력받아 그 ref로 cdk deploy + 프론트엔드 재배포한다. OIDC trust subject가 main 고정이므로 main에서만 실행하며, 일반 배포와 같은 concurrency group으로 묶었다.
 - E2: Node 내장 test runner + tsx로 순수 모듈(date/weather/recordSessions) 단위 테스트를 추가하고 `npm test`와 CI validate 단계에 연결했다. 테스트 파일은 `tsconfig.json` exclude로 앱 빌드에서 제외한다.
 - B4: CVE 외부 조회(NVD)와 API key source(SSM SecureString, 기본 비활성화) 확장 방침을 `docs/adr/0010`으로 결정했다. 외부 호출 코드는 ADR 게이트(승인 + 배포 후 e2e)를 따른다. 관련 module/llm-context 문서에 교차 참조를 추가했다.
+- E1 준비: 배포 후 실계정 end-to-end 검증용 Playwright 하니스를 `e2e/`에 추가했다(루트와 분리된 독립 package.json). 로그인~출퇴근~기록 수정·삭제~Trend Lens~로그아웃을 데스크탑/모바일 viewport에서 돌며, 배포 URL/계정을 env로 받고 미설정 시 skip한다. `--list`로 컴파일/설정 로드를 확인했다(데스크탑/모바일 2 테스트).
