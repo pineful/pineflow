@@ -2015,7 +2015,10 @@ function parseHibrainRecruitmentItems(html, now) {
 async function collectHibrainRecruitmentBoard(now) {
   const checkedAt = now.toISOString();
   const text = await fetchTrendLensSource(trendLensSources.hibrainRecruitment);
-  const anchorCount = (text.match(/\/recruitment\/recruits\/\d+/g) ?? []).length;
+  const anchors = [...text.matchAll(/<a\b[^>]*href="([^"]*\/recruitment\/recruits\/\d+[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)];
+  const innerTexts = anchors.map((match) => compactText(decodeXmlText(match[2]), 200)).filter(Boolean);
+  const gyeomCount = innerTexts.filter((value) => /겸임/.test(value)).length;
+  const sample = compactText(innerTexts.find((value) => value.length > 8) ?? "", 48);
   const items = parseHibrainRecruitmentItems(text, now).slice(0, 6);
 
   return {
@@ -2025,7 +2028,7 @@ async function collectHibrainRecruitmentBoard(now) {
       checkedAt,
       items.length > 0
         ? `하이브레인넷 신규 공고에서 겸임교수 모집 ${items.length}개를 확인했습니다.`
-        : `하이브레인넷 신규 공고 목록을 확인했습니다(공고 링크 ${anchorCount}개). 현재 겸임교수 모집 공고는 발견하지 못했습니다.`
+        : `하이브레인넷 목록 확인(링크 ${anchors.length} 텍스트 ${innerTexts.length} 겸임 ${gyeomCount} 예: "${sample}"). 겸임 공고 0건.`
     ),
     items
   };
