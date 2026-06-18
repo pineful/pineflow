@@ -1986,8 +1986,10 @@ function parseHibrainRecruitmentItems(html, now) {
       const range = inner.match(/(\d{2}\.\d{1,2}\.\d{1,2})\s*~\s*(\d{2}\.\d{1,2}\.\d{1,2})/);
       const deadline = range ? isoDateFromShortDottedDate(range[2]) : "";
       const dates = [...inner.matchAll(/\d{2}\.\d{1,2}\.\d{1,2}/g)].map((entry) => entry[0]);
-      const publishedAt = dates.length > 0 ? isoDateFromShortDottedDate(dates[dates.length - 1]) : deadline;
-      if (!publishedAt) return null;
+      // www 데스크톱 목록은 앵커 텍스트에 날짜가 없고 제목만 있다. 날짜가 없으면 수집 시각으로
+      // 대체하고 공고를 버리지 않는다(마감일은 원문에서 확인). global 변형은 앵커에 날짜가 있다.
+      const publishedAt =
+        (dates.length > 0 ? isoDateFromShortDottedDate(dates[dates.length - 1]) : "") || deadline || now.toISOString();
 
       const id = `hibrain-recruitment-${hibrainRecruitId(sourceUrl)}`;
       if (seen.has(id)) return null;
@@ -2015,10 +2017,7 @@ function parseHibrainRecruitmentItems(html, now) {
 async function collectHibrainRecruitmentBoard(now) {
   const checkedAt = now.toISOString();
   const text = await fetchTrendLensSource(trendLensSources.hibrainRecruitment);
-  const anchors = [...text.matchAll(/<a\b[^>]*href="([^"]*\/recruitment\/recruits\/\d+[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)];
-  const innerTexts = anchors.map((match) => compactText(decodeXmlText(match[2]), 200)).filter(Boolean);
-  const gyeomCount = innerTexts.filter((value) => /겸임/.test(value)).length;
-  const sample = compactText(innerTexts.find((value) => value.length > 8) ?? "", 48);
+  const anchorCount = (text.match(/\/recruitment\/recruits\/\d+/g) ?? []).length;
   const items = parseHibrainRecruitmentItems(text, now).slice(0, 6);
 
   return {
@@ -2028,7 +2027,7 @@ async function collectHibrainRecruitmentBoard(now) {
       checkedAt,
       items.length > 0
         ? `하이브레인넷 신규 공고에서 겸임교수 모집 ${items.length}개를 확인했습니다.`
-        : `하이브레인넷 목록 확인(링크 ${anchors.length} 텍스트 ${innerTexts.length} 겸임 ${gyeomCount} 예: "${sample}"). 겸임 공고 0건.`
+        : `하이브레인넷 신규 공고 목록을 확인했습니다(공고 ${anchorCount}개). 현재 겸임교수 모집 공고는 발견하지 못했습니다.`
     ),
     items
   };
