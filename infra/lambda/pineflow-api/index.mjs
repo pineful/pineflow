@@ -696,11 +696,13 @@ const trendLensTextLimits = {
 };
 const trendLensManualCooldownMs = {
   all: 30 * 60 * 1000,
-  security: 5 * 60 * 1000
+  security: 5 * 60 * 1000,
+  academic: 10 * 60 * 1000
 };
 const trendLensForcedCooldownMs = {
   all: 5 * 60 * 1000,
-  security: 60 * 1000
+  security: 60 * 1000,
+  academic: 60 * 1000
 };
 const trendLensResetCooldownMs = 60 * 1000;
 
@@ -2138,36 +2140,38 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   ];
   const updates = [];
 
-  const securityResults = await Promise.allSettled([
-    collectKisaRss(trendLensSources.kisaSecurityNotice, now),
-    collectKisaRss(trendLensSources.kisaVulnerability, now),
-    collectCisaKev(now),
-    ...securityNewsSources.map((source) => collectSecurityNewsRss(source, now))
-  ]);
-  const securitySources = [
-    trendLensSources.kisaSecurityNotice,
-    trendLensSources.kisaVulnerability,
-    trendLensSources.cisaKev,
-    ...securityNewsSources
-  ];
-  const securityItems = securityResults.flatMap((result, index) => {
-    if (result.status === "fulfilled") {
-      statuses.push(result.value.status);
-      return result.value.items;
-    }
+  if (scope === "all" || scope === "security") {
+    const securityResults = await Promise.allSettled([
+      collectKisaRss(trendLensSources.kisaSecurityNotice, now),
+      collectKisaRss(trendLensSources.kisaVulnerability, now),
+      collectCisaKev(now),
+      ...securityNewsSources.map((source) => collectSecurityNewsRss(source, now))
+    ]);
+    const securitySources = [
+      trendLensSources.kisaSecurityNotice,
+      trendLensSources.kisaVulnerability,
+      trendLensSources.cisaKev,
+      ...securityNewsSources
+    ];
+    const securityItems = securityResults.flatMap((result, index) => {
+      if (result.status === "fulfilled") {
+        statuses.push(result.value.status);
+        return result.value.items;
+      }
 
-    const source = securitySources[index];
-    statuses.push(sourceStatus(source, "unavailable", now.toISOString(), `${source.label}를 불러오지 못했습니다. 마지막 캐시가 있으면 그대로 사용합니다.`));
-    return [];
-  });
-  updates.push({
-    ...trendSectionBase("security"),
-    items: dedupeItems(enrichSecurityCveTitles(securityItems))
-      .sort((left, right) => priorityWeight(right.priority) - priorityWeight(left.priority))
-      .slice(0, 8)
-  });
+      const source = securitySources[index];
+      statuses.push(sourceStatus(source, "unavailable", now.toISOString(), `${source.label}를 불러오지 못했습니다. 마지막 캐시가 있으면 그대로 사용합니다.`));
+      return [];
+    });
+    updates.push({
+      ...trendSectionBase("security"),
+      items: dedupeItems(enrichSecurityCveTitles(securityItems))
+        .sort((left, right) => priorityWeight(right.priority) - priorityWeight(left.priority))
+        .slice(0, 8)
+    });
+  }
 
-  if (scope === "all") {
+  if (scope === "all" || scope === "academic") {
     const academicBoards = [
       {
         source: trendLensSources.hufsRecruitment,
@@ -2181,7 +2185,11 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
       }
     ];
 
-    const categories = ["mandolin", "it-content", "education", "academic-jobs"];
+    // academic scope는 겸임교수 보드만 가볍게 갱신해 8초 안에 안정적으로 끝낸다.
+    // all scope에서만 다른 분야 뉴스까지 함께 모은다.
+    const categories = scope === "all"
+      ? ["mandolin", "it-content", "education", "academic-jobs"]
+      : ["academic-jobs"];
     // 채용 게시판 수집과 분야별 뉴스 수집을 모두 동시에 실행해 Lambda timeout 여유를 확보한다.
     const [boardResults, sectionResults] = await Promise.all([
       Promise.allSettled(academicBoards.map((board) => board.promise)),
@@ -2223,7 +2231,7 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
     });
   }
 
-  const sections = mergeTrendSections(scope === "security" ? previousSnapshot?.sections : emptyTrendSections(), updates);
+  const sections = mergeTrendSections(scope === "all" ? emptyTrendSections() : previousSnapshot?.sections, updates);
   const briefItems = buildBriefItems(sections);
   const hasReady = statuses.some((status) => status.status === "ready");
   const hasUnavailable = statuses.some((status) => status.status === "unavailable");
@@ -2418,7 +2426,7 @@ async function clearTrendLensCache() {
 }
 
 async function refreshTrendLensSnapshot(scope = "all", source = "manual", options = {}) {
-  const normalizedScope = scope === "security" ? "security" : "all";
+  const normalizedScope = scope === "security" || scope === "academic" ? scope : "all";
   const now = new Date();
   let clearedCacheItems = 0;
 
@@ -2473,6 +2481,10 @@ async function handleTrendLensSchedule(event) {
   }
   if (task === "trend-lens-security-refresh") {
     await refreshTrendLensSnapshot("security", "scheduled");
+    return { ok: true, task };
+  }
+  if (task === "trend-lens-academic-refresh") {
+    await refreshTrendLensSnapshot("academic", "scheduled");
     return { ok: true, task };
   }
 
@@ -3100,7 +3112,7 @@ export async function handler(event) {
     if (method === "POST" && path === "/api/check-in") return checkIn(pk, body.value);
     if (method === "POST" && path === "/api/check-out") return checkOut(pk);
     if (method === "POST" && path === "/api/trend-lens/refresh") {
-      const scope = body.value.scope === "security" ? "security" : "all";
+      const scope = body.value.scope === "security" || body.value.scope === "academic" ? body.value.scope : "all";
       return refreshTrendLensSnapshot(scope, "manual", {
         force: Boolean(body.value.force),
         reset: Boolean(body.value.reset)

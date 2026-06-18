@@ -8,9 +8,10 @@ Trend Lens는 Pineflow를 단순 출퇴근 기록 앱에서 `하루 리듬 + 지
 
 ## v1 범위
 
-- 하루 1회 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 호출한다.
-- 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 보안 섹션만 갱신한다. KISA/CISA는 확인된 공식 신호로, 전문 보안 매체 RSS는 더 빠른 현장 신호로 구분한다.
-- 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 전체 또는 보안 신호를 다시 갱신할 수 있다. `reset=true`이면 Trend Lens 전용 캐시를 삭제하고 이전 snapshot 없이 다시 수집한다.
+- 하루 1회 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 호출한다(`scope=all`).
+- 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 보안 섹션만 갱신한다(`scope=security`). KISA/CISA는 확인된 공식 신호로, 전문 보안 매체 RSS는 더 빠른 현장 신호로 구분한다.
+- 겸임교수 공고 빠른 확인: EventBridge Rule이 2시간마다 겸임교수 보드만 가볍게 갱신한다(`scope=academic`, ADR 0012). 외대 채용 게시판 + 하이브레인넷 신규 공고 + 겸임 Google News만 모아 8초 Lambda timeout 안에 안정적으로 끝내고, 무거운 `all` 수집에 hibrain이 밀려 누락되는 것을 막는다.
+- 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 전체(`all`)·보안(`security`)·겸임교수(`academic`) 신호를 다시 갱신할 수 있다. `reset=true`이면 Trend Lens 전용 캐시를 삭제하고 이전 snapshot 없이 다시 수집한다.
 - 첫 화면 표시: 최대 5개 `오늘 브리프`, 긴급 보안 신호 1개, 겸임교수 공고 확인 보드, 분야별 상세는 탭 영역.
 - 저장 데이터: 제목, 링크, 출처, 발행 시각, 짧은 요약, 우선순위 근거 태그만 저장한다.
 

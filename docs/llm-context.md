@@ -176,6 +176,7 @@ Trend Lens v1 원칙:
 
 - 하루 1회 전체 브리프 자동 수집: EventBridge Rule이 07:00 KST에 Lambda를 직접 호출한다.
 - 보안 위험 신호 빠른 확인: EventBridge Rule이 30분마다 `security` scope만 갱신한다. KISA/CISA는 확인된 공식 신호, The Hacker News/BleepingComputer/SecurityWeek/Help Net Security는 더 빠른 글로벌 전문 매체 신호로 구분한다.
+- 겸임교수 공고 빠른 확인: EventBridge Rule이 2시간마다 `academic` scope만 갱신한다(ADR 0012). 외대 채용 게시판·하이브레인넷 신규 공고·겸임 Google News만 가볍게 모아 8초 Lambda timeout 안에 안정적으로 끝내고, 무거운 `all` 수집 과부하에 hibrain이 밀려 누락되는 것을 막는다. Lambda timeout(8초)은 늘리지 않고 수집 작업량을 줄이는 방향을 유지한다.
 - 수동 갱신: 로그인 사용자가 `POST /api/trend-lens/refresh`로 `all` 또는 `security`만 요청할 수 있다.
 - `GET /api/trend-lens`는 DynamoDB 캐시만 읽고 외부 source를 호출하지 않는다.
 - 모든 API route는 JWT authorizer가 필요하다. EventBridge 내부 이벤트는 public route가 아니다.

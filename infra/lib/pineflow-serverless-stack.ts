@@ -284,6 +284,17 @@ export class PineflowServerlessStack extends cdk.Stack {
       ]
     });
 
+    new events.Rule(this, "TrendLensAcademicRefreshRule", {
+      ruleName: "pineflow-trend-lens-academic-refresh",
+      description: "Refreshes only the lightweight 겸임교수 (academic jobs) board so it is not starved by the heavy full refresh.",
+      schedule: events.Schedule.rate(cdk.Duration.hours(2)),
+      targets: [
+        new targets.LambdaFunction(apiFunction, {
+          event: events.RuleTargetInput.fromObject({ pineflowTask: "trend-lens-academic-refresh" })
+        })
+      ]
+    });
+
     new cloudwatch.Alarm(this, "ApiLambdaErrorAlarm", {
       alarmName: "pineflow-api-lambda-errors",
       metric: apiFunction.metricErrors({ period: cdk.Duration.minutes(5) }),

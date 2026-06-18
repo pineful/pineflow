@@ -78,6 +78,14 @@ assert(
   "Trend Lens security refresh rule must be synthesized."
 );
 assert(
+  eventRules.some((rule) => rule.Properties.Name === "pineflow-trend-lens-academic-refresh"),
+  "Trend Lens academic-jobs refresh rule must be synthesized."
+);
+assert(
+  eventRules.some((rule) => rule.Properties.ScheduleExpression === "rate(2 hours)"),
+  "Trend Lens academic-jobs refresh must stay on the lightweight 2 hour cadence."
+);
+assert(
   eventRules.some((rule) => rule.Properties.ScheduleExpression === "cron(0 22 * * ? *)"),
   "Trend Lens daily refresh must run once per day at 07:00 KST."
 );
