@@ -787,7 +787,11 @@ const trendLensSources = {
     url: "https://www.hibrain.net/recruitment/recruits?listType=D3NEW",
     host: "www.hibrain.net",
     pathPrefix: "/recruitment/recruits",
-    accept: "text/html, application/xhtml+xml, */*"
+    accept: "text/html, application/xhtml+xml, */*",
+    // www 데스크톱 목록은 global보다 무겁고 느릴 수 있어 가벼운 academic scope에서만 한도를 완화한다.
+    maxBytes: 2 * 1024 * 1024,
+    timeoutMs: trendLensLargeSourceTimeoutMs,
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
   },
   theHackerNews: {
     id: "the-hacker-news",
@@ -1318,7 +1322,7 @@ async function fetchTrendLensSource(source, url = source.url) {
       signal: AbortSignal.timeout(timeoutMs),
       headers: {
         accept: source.accept,
-        "user-agent": "PineflowTrendLens/0.1"
+        "user-agent": source.userAgent ?? "PineflowTrendLens/0.1"
       }
     });
 
@@ -2203,7 +2207,8 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
         statuses.push(result.value.status);
         academicBoardItems.push(...result.value.items);
       } else {
-        statuses.push(sourceStatus(board.source, "unavailable", now.toISOString(), board.failMessage));
+        const reason = compactText(String(result.reason?.message ?? result.reason ?? "원인 불명"), 120);
+        statuses.push(sourceStatus(board.source, "unavailable", now.toISOString(), `${board.failMessage} (사유: ${reason})`));
       }
     });
 

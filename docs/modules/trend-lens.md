@@ -69,7 +69,7 @@ Trend Lens는 개인별 설정이 생기기 전까지 global cache를 사용한�
 - 예외적으로 CISA KEV 공식 JSON은 현재 1.5MB 안팎이므로 `cisa-kev` 소스에만 2MB 응답 한도와 4.5초 timeout을 둔다. 다른 source의 기본 한도는 계속 512KB/2.2초다.
 - Google News 원문 링크 decode는 feed당 상위 3개 후보에만 적용하고, article page는 1.5MB/1.8초, decode 응답은 64KB/1.8초로 제한한다. 실패하면 해당 항목만 검색 fallback으로 내려가며 전체 브리프 수집은 실패하지 않는다.
 - 한국외대 공식 채용 게시판은 512KB/2.2초 기본 source 한도 안에서만 읽는다. 원문 상세 페이지를 추가 fetch하지 않고 목록의 작성일과 링크만 저장한다.
-- 하이브레인넷 신규 공고 목록도 512KB/2.2초 기본 source 한도 안에서만 읽는다. 목록 1회만 읽고 공고 상세/첨부파일은 추가 fetch하지 않으며, 제목·등록/마감 날짜·공고 URL만 저장한다. `scope=all` 전체 수집에서만 동작하고 보안 30분 갱신에는 포함하지 않는다.
+- 하이브레인넷 신규 공고 목록은 www 데스크톱 페이지가 global보다 무겁고 느릴 수 있어 `cisa-kev`처럼 예외적으로 2MB/4.5초 한도와 브라우저 User-Agent를 적용한다(가벼운 `academic` scope에서만 도므로 8초 timeout 여유가 있다). 목록 1회만 읽고 공고 상세/첨부파일은 추가 fetch하지 않으며, 제목·등록/마감 날짜·공고 URL만 저장한다. fetch 실패 시 source 상태 메시지에 사유(403/timeout/응답 초과 등)를 함께 남겨 원인을 추적한다. `academic`(2시간)과 `all`(일일) 수집에서 동작하고 보안 30분 갱신에는 포함하지 않는다.
 - 저장 전에는 제목, 요약, source 상태 메시지, reason tag를 짧게 압축한다. DynamoDB item size를 넘기지 않기 위해 원문 전문이나 긴 설명을 snapshot payload에 넣지 않는다.
 - 보안 source와 분야별 뉴스 source는 병렬로 수집해 전체 refresh가 Lambda timeout에 쉽게 걸리지 않게 한다. 보안 전문 매체 RSS는 모두 512KB/2.2초 기본 한도를 적용하며, 응답이 느리거나 실패하면 해당 source status만 `unavailable`로 낮춘다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존한다. 보안 위험 신호의 판단에는 게재일/등록일이 중요하므로 UI에서도 반드시 표시한다.
