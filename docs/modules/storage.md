@@ -1,5 +1,10 @@
 # 저장소 모듈
 
+> **레거시 PoC 문서.** 이 문서는 Express/**PostgreSQL** PoC 저장소 계약이다.
+> 운영 본선 저장소는 DynamoDB single-table이며, 본선 설계는
+> `docs/modules/serverless-storage.md`와
+> `docs/adr/0003-dynamodb-single-table.md`를 본다.
+
 ## 책임
 
 저장소 모듈은 Express API를 통해 출퇴근 세션과 사용자 설정을 PostgreSQL에 저장합니다.

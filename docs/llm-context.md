@@ -122,7 +122,7 @@ GSI는 아직 만들지 않는다. 검색/통계 기능이 필요해지면 먼�
 - `src/styles.css`는 현재 레거시 진입 스타일시트다. 파일 끝에 날짜별 override pass를 계속 추가하지 말고, 기존 selector를 통합하거나 `src/styles/` 아래 feature module로 분리한다.
 - `npm run build`는 `npm run verify:css`를 먼저 실행한다. CSS guardrail 실패를 우회하지 말고 `docs/modules/css-architecture.md` 기준에 맞게 정리한다.
 
-- `infra` npm audit에는 CDK 도구 체인의 moderate `brace-expansion` transitive issue가 남아 있다. Lambda asset에는 포함되지 않는다.
+- `infra` npm audit는 현재 lockfile 기준 0건이다. 과거 CDK 도구 체인의 moderate `brace-expansion` transitive issue는 패치 버전으로 해소되었다(Lambda asset에는 원래 미포함). 새로 high/critical advisory가 생기면 막는다.
 - Lambda runtime은 AWS Health Node.js 20.x EOL 알림 대응 이후 `nodejs24.x`로 고정한다. `nodejs20.x`나 지원 종료가 가까운 런타임으로 되돌리면 `infra/scripts/verify-template.mjs` guardrail이 실패해야 한다.
 - 실제 AWS 배포 전 Budget 알림 이메일 구독을 승인해야 한다.
 - 배포 후 첫 사용자는 Cognito에서 관리자가 생성해야 한다.

@@ -137,7 +137,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - CDK synth 결과에서 주요 보안/비용 가드레일 확인.
 - `infra` CDK 템플릿 guardrail 자동 검증 성공.
 - 루트 애플리케이션 `npm audit --audit-level=high` 취약점 없음.
-- `infra` `npm audit --audit-level=high` 기준 high 이상 취약점 없음. 단, `aws-cdk-lib` 하위 개발/인프라 도구 체인에 moderate `brace-expansion` 이슈가 남아 있으며 Lambda 런타임 asset에는 포함되지 않는다.
+- `infra` `npm audit` 기준 취약점 0건. 과거 `aws-cdk-lib` 하위 개발/인프라 도구 체인의 moderate `brace-expansion` 이슈는 현재 lockfile에서 패치 버전으로 해소되었다(원래 Lambda 런타임 asset에는 미포함).
 
 ## 아직 남은 일
 

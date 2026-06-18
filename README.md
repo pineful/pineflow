@@ -6,6 +6,11 @@ Pineflow는 회사에 속해 있지 않아도 개인의 출근, 퇴근, 집중 �
 
 ## 로컬 실행
 
+> Linux(예: Claude Code on the web)에서는 아래 PowerShell 명령 대신 `npm install`,
+> `npm run dev`, `npm run build`를 그대로 쓴다. `NODE_OPTIONS=--use-system-ca`는
+> Windows 전용이라 불필요하다. OS별 명령 대조는 `docs/development.md`와
+> `docs/agent-collaboration.md`를 본다.
+
 Windows 환경에서는 npm registry 접근 시 Node가 Windows 시스템 인증서 저장소를 사용하도록 설정합니다.
 
 ```powershell

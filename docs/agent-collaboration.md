@@ -80,9 +80,10 @@ Codex로 교차 검증도 병행한다. 이 문서는 두 에이전트(또는 �
 
 - `npm run build`는 `verify:css`(CSS 가드레일) + `tsc` + `vite build`를 포함한다.
 - `infra npm run verify`는 `tsc --noEmit` + `cdk synth` + `verify-template.mjs`.
-- 별도 단위 테스트 프레임워크는 없다. 위 두 명령이 린트/검증 역할을 한다.
-- `infra` audit의 moderate `brace-expansion`은 CDK 도구 체인의 알려진 잔여
-  이슈이며 Lambda asset에는 포함되지 않는다(신규 high/critical만 막는다).
+- 루트/`infra` 단위 테스트는 Node 내장 test runner(`npm test`)로 순수 모듈을
+  검증한다. 화면 동작은 빌드/로컬 스모크 + 배포 후 실계정 e2e로 본다.
+- 과거 `infra` audit의 moderate `brace-expansion` 잔여 이슈는 현재 lockfile
+  기준 해소되어 audit이 0건이다. 새로 high/critical이 생기면 막는다.
 - 검증을 통과하지 못한 변경은 인계하지 않는다.
 
 ## 6. Claude Code 환경 셋업

@@ -1,6 +1,25 @@
 # 개발 메모
 
-## Node와 npm
+## 실행 환경별 명령 (Windows / Linux)
+
+이 문서의 명령은 Codex가 쓰던 **Windows PowerShell** 기준이다. Claude Code
+on the web 등 **Linux** 환경에서는 경로/PowerShell 구문 대신 아래 bash 명령을
+쓴다. 검증 **항목과 의미는 동일**하고 쉘만 다르다. OS 무관 공통 검증 루프는
+`docs/agent-collaboration.md`를 단일 출처로 본다.
+
+| 작업 | Windows (PowerShell) | Linux (bash) |
+| --- | --- | --- |
+| 의존성 설치 | `& "C:\Program Files\nodejs\npm.cmd" install` | `npm install` |
+| 루트 빌드+검증 | `& "...\npm.cmd" run build` | `npm run build` |
+| 개발 서버 | `& "...\npm.cmd" run dev` | `npm run dev` |
+| infra 검증 | `cd infra; & "...\npm.cmd" run verify` | `cd infra && npm run verify` |
+| 보안 audit | `& "...\npm.cmd" audit --audit-level=high` | `npm audit --audit-level=high` |
+
+- Linux에서는 `NODE_OPTIONS=--use-system-ca`(Windows 인증서 회피용)가 필요 없다.
+- Claude Code on the web 세션은 `.claude/hooks/session-start.sh`가 루트와
+  `infra` 의존성을 자동 설치하므로 수동 설치가 보통 필요 없다.
+
+## Node와 npm (Windows)
 
 이 작업공간은 Windows의 Node.js와 npm을 사용합니다. 현재 환경에서는 npm이 레지스트리에 접근할 때 Node가 Windows 시스템 인증서 저장소를 사용하도록 설정해야 합니다.
 

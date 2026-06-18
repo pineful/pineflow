@@ -46,7 +46,7 @@ npm audit --audit-level=high
 ```bash
 cd infra
 npm run verify         # tsc --noEmit + cdk synth + verify-template.mjs 가드레일
-npm audit --audit-level=high   # moderate brace-expansion은 알려진 잔여 이슈(Lambda asset 제외)
+npm audit --audit-level=high   # 현재 lockfile 기준 0건 (과거 brace-expansion moderate는 해소됨)
 ```
 
 별도 단위 테스트 프레임워크는 없다. `npm run build`와 infra `npm run verify`가
