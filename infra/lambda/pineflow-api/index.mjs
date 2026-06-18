@@ -732,8 +732,8 @@ const trendLensSections = [
   {
     id: "academic-jobs",
     title: "겸임교수 공고",
-    subtitle: "외대 글로벌캠퍼스와 서울·경기·충북 대학 공고를 확인합니다.",
-    focus: "한국외대 공식 채용 게시판을 우선 확인하고, 지역 대학 공고는 고정 검색 RSS로 보조합니다."
+    subtitle: "외대 글로벌캠퍼스, 하이브레인넷 신규 공고, 서울·경기·충북 대학 공고를 확인합니다.",
+    focus: "한국외대 공식 채용 게시판과 하이브레인넷 신규 공고를 우선 확인하고, 지역 대학 공고는 고정 검색 RSS로 보조합니다."
   }
 ];
 
@@ -777,6 +777,14 @@ const trendLensSources = {
     url: "https://www.hufs.ac.kr/hufs/11284/subview.do",
     host: "www.hufs.ac.kr",
     pathPrefix: "/hufs/11284/subview.do",
+    accept: "text/html, application/xhtml+xml, */*"
+  },
+  hibrainRecruitment: {
+    id: "hibrain-recruitment",
+    label: "하이브레인넷 채용",
+    url: "https://www.hibrain.net/recruitment/recruits?listType=D3NEW",
+    host: "www.hibrain.net",
+    pathPrefix: "/recruitment/recruits",
     accept: "text/html, application/xhtml+xml, */*"
   },
   theHackerNews: {
@@ -1924,6 +1932,98 @@ async function collectHufsRecruitmentBoard(now) {
   };
 }
 
+function isoDateFromShortDottedDate(value = "") {
+  const match = String(value).match(/(\d{2})\.(\d{1,2})\.(\d{1,2})/);
+  if (!match) return "";
+  return `20${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}`;
+}
+
+function hibrainRecruitUrl(href = "") {
+  try {
+    const url = new URL(href, "https://www.hibrain.net");
+    if (url.protocol !== "https:" || url.hostname !== trendLensSources.hibrainRecruitment.host) return "";
+    if (!/^\/recruitment\/recruits\/\d+$/.test(url.pathname)) return "";
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return "";
+  }
+}
+
+function hibrainRecruitId(url = "") {
+  return new URL(url).pathname.match(/\/(\d+)$/)?.[1] ?? url;
+}
+
+function isDeadlineWithinDays(isoDate, now, days) {
+  if (!isoDate) return false;
+  const deadline = new Date(`${isoDate}T23:59:59+09:00`).getTime();
+  if (Number.isNaN(deadline)) return false;
+  const diff = deadline - now.getTime();
+  return diff >= 0 && diff <= days * 24 * 60 * 60 * 1000;
+}
+
+function parseHibrainRecruitmentItems(html, now) {
+  const seen = new Set();
+  return [...html.matchAll(/<a\b[^>]*href="([^"]*\/recruitment\/recruits\/\d+[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)]
+    .map((match) => {
+      const sourceUrl = hibrainRecruitUrl(match[1]);
+      if (!sourceUrl) return null;
+
+      const inner = compactText(decodeXmlText(match[2]), 400);
+      if (!inner) return null;
+
+      const title = compactText(
+        inner.replace(/\s*\b\d{2}\.\d{1,2}\.\d{1,2}\b[\s\S]*$/, "").replace(/^\d{1,3}\s+/, ""),
+        trendLensTextLimits.title
+      );
+      if (!isAcademicJobNoticeTitle(title)) return null;
+
+      const range = inner.match(/(\d{2}\.\d{1,2}\.\d{1,2})\s*~\s*(\d{2}\.\d{1,2}\.\d{1,2})/);
+      const deadline = range ? isoDateFromShortDottedDate(range[2]) : "";
+      const dates = [...inner.matchAll(/\d{2}\.\d{1,2}\.\d{1,2}/g)].map((entry) => entry[0]);
+      const publishedAt = dates.length > 0 ? isoDateFromShortDottedDate(dates[dates.length - 1]) : deadline;
+      if (!publishedAt) return null;
+
+      const id = `hibrain-recruitment-${hibrainRecruitId(sourceUrl)}`;
+      if (seen.has(id)) return null;
+      seen.add(id);
+
+      return {
+        id,
+        category: "academic-jobs",
+        priority: isDeadlineWithinDays(deadline, now, 14) ? "high" : "watch",
+        title,
+        summary: deadline
+          ? `하이브레인넷에서 확인한 겸임교수 모집 공고입니다. 접수 마감 ${deadline}. 원문에서 대학/기관, 전공, 지원 자격, 첨부파일을 확인하세요.`
+          : "하이브레인넷에서 확인한 겸임교수 모집 공고입니다. 원문에서 대학/기관, 전공, 접수 마감일, 첨부파일을 확인하세요.",
+        sourceName: "하이브레인넷",
+        sourceUrl,
+        publishedAt,
+        region: "korea",
+        language: "ko",
+        reasonTags: ["하이브레인넷", ...academicJobTags(title, "하이브레인넷")].slice(0, 4)
+      };
+    })
+    .filter(Boolean);
+}
+
+async function collectHibrainRecruitmentBoard(now) {
+  const checkedAt = now.toISOString();
+  const text = await fetchTrendLensSource(trendLensSources.hibrainRecruitment);
+  const items = parseHibrainRecruitmentItems(text, now).slice(0, 6);
+
+  return {
+    status: sourceStatus(
+      trendLensSources.hibrainRecruitment,
+      "ready",
+      checkedAt,
+      items.length > 0
+        ? `하이브레인넷 신규 공고에서 겸임교수 모집 ${items.length}개를 확인했습니다.`
+        : "하이브레인넷 신규 공고를 확인했으며, 현재 겸임교수 모집 공고는 발견하지 못했습니다."
+    ),
+    items
+  };
+}
+
 async function collectNewsFeed(category, feed, now) {
   const checkedAt = now.toISOString();
   const source = sourceForNewsFeed(feed);
@@ -2076,6 +2176,17 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
       statuses.push(sourceStatus(trendLensSources.hufsRecruitment, "unavailable", now.toISOString(), "한국외대 공식 채용 게시판을 확인하지 못했습니다. 보조 검색 결과가 있으면 함께 표시합니다."));
     }
 
+    let hibrainRecruitmentItems = [];
+    try {
+      const hibrainRecruitment = await collectHibrainRecruitmentBoard(now);
+      statuses.push(hibrainRecruitment.status);
+      hibrainRecruitmentItems = hibrainRecruitment.items;
+    } catch {
+      statuses.push(sourceStatus(trendLensSources.hibrainRecruitment, "unavailable", now.toISOString(), "하이브레인넷 신규 공고를 확인하지 못했습니다. 다른 공고 source 결과가 있으면 함께 표시합니다."));
+    }
+
+    const academicBoardItems = [...hufsRecruitmentItems, ...hibrainRecruitmentItems];
+
     const categories = ["mandolin", "it-content", "education", "academic-jobs"];
     const sectionResults = await Promise.allSettled(categories.map((category) => collectNewsSection(category, now)));
     sectionResults.forEach((result, index) => {
@@ -2084,7 +2195,7 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
         statuses.push(...result.value.statuses);
         const items =
           category === "academic-jobs"
-            ? dedupeItems([...hufsRecruitmentItems, ...result.value.items])
+            ? dedupeItems([...academicBoardItems, ...result.value.items])
                 .sort((left, right) => {
                   const priorityDiff = priorityWeight(right.priority) - priorityWeight(left.priority);
                   if (priorityDiff !== 0) return priorityDiff;
@@ -2096,7 +2207,7 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
       } else {
         statuses.push(sourceStatus(trendLensSources.googleNews, "unavailable", now.toISOString(), `${category} 최신 소식을 불러오지 못했습니다.`));
         if (category === "academic-jobs") {
-          updates.push({ ...trendSectionBase(category), items: hufsRecruitmentItems });
+          updates.push({ ...trendSectionBase(category), items: academicBoardItems });
         }
       }
     });

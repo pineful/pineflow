@@ -128,6 +128,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - DynamoDB `1 RCU` 가드레일에 맞춰 `/api/state`가 최근 세션 12개와 필요한 projection만 읽도록 줄이고, throughput 제한은 500 대신 429로 응답하도록 분리.
 - 최근 GitHub Actions Serverless 배포 5건이 모두 성공한 것을 확인했다. 현재 Codex 세션에는 AWS credential이 없어 CloudWatch 로그 직접 조회는 `NoCredentials`로 실패했으며, 운영 로그 확인은 사용자의 AWS CLI 세션에서 별도 수행해야 한다.
 - Trend Lens에 `겸임교수 공고` 분야를 추가했다. 한국외국어대학교 공식 채용 게시판을 1순위 source로 매일 확인하고, 서울·경기·충북 대학 겸임교수 공고 후보는 고정 Google News RSS query로 보조 수집한다. 외대 글로벌캠퍼스 확인 결과와 지역별 공고 목록은 Trend Lens 하단 공고 보드에 표시한다.
+- Trend Lens `겸임교수 공고` 분야에 하이브레인넷(`www.hibrain.net`) 신규 공고 목록을 source로 추가했다(ADR 0011). 코드 고정 신규 목록 URL에서 `/recruitment/recruits/<id>` 공고 제목과 `YY.MM.DD` 날짜만 추출하고 `겸임` 제목 필터로 겸임교수 공고만 남기며, 마감 14일 이내는 우선순위를 올린다. 기존 512KB/2.2초 source 한도와 실패 시 graceful degrade 패턴을 그대로 따른다. hibrain 국내 사이트는 CloudFront에서 해외 IP를 geo차단하므로 서울 리전 Lambda 기준으로 동작하며, geo/WAF 통과 여부와 국내 목록 마크업 일치 여부는 배포 후 `check-trend-lens-sources.mjs`(한국 네트워크 실행)와 실제 수집 결과로 검증해야 한다. `npm run verify`와 `npm audit`는 통과.
 - 주 개발 도구를 Codex에서 Claude Code로 전환하기 위한 환경/지침 셋업을 추가했다. Claude Code 진입점 `CLAUDE.md`, 에이전트 협업/교차 검증 규칙 `docs/agent-collaboration.md`, web 세션 의존성 자동 설치용 SessionStart 훅(`.claude/`)을 추가하고, AGENTS.md를 정본으로 명시했다. 기존 설계 사상은 복제하지 않고 포인터로 연결했다.
 
 ## 검증됨
