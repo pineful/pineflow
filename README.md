@@ -49,7 +49,8 @@ Serverless 운영 배포는 GitHub OIDC와 AWS IAM Role을 사용합니다. 장�
 
 ## 문서
 
-- LLM 작업 컨텍스트: `AGENTS.md`, `docs/llm-context.md`
+- LLM 작업 컨텍스트: `AGENTS.md`, `CLAUDE.md`, `docs/llm-context.md`
+- 에이전트 협업/교차 검증 규칙: `docs/agent-collaboration.md`
 - 진행 상황: `docs/status.md`
 - 제품 계획: `docs/product-plan.md`
 - 아키텍처: `docs/architecture.md`

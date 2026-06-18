@@ -1,16 +1,19 @@
 # Pineflow Agent Guide
 
-이 문서는 Codex 같은 LLM 기반 코드 수정 에이전트가 Pineflow를 이어서 작업할 때 반드시 먼저 읽어야 하는 작업 지침이다. 이 저장소에서 코드를 변경할 때는 기능 구현보다 아래 설계 원칙 보존을 우선한다.
+이 문서는 Codex나 Claude Code 같은 LLM 기반 코드 수정 에이전트가 Pineflow를 이어서 작업할 때 반드시 먼저 읽어야 하는 **정본(canonical) 작업 지침**이다. 이 저장소에서 코드를 변경할 때는 기능 구현보다 아래 설계 원칙 보존을 우선한다.
+
+여러 에이전트(Codex 주 개발/검증, Claude Code 주 개발)가 같은 저장소를 다루므로, 충돌 회피와 교차 검증 규칙은 `docs/agent-collaboration.md`를 따른다. Claude Code는 `CLAUDE.md`를 진입점으로 읽지만, 설계 원칙의 정본은 이 문서와 `docs/`다. 두 파일이 어긋나면 이 문서가 우선이며, 공통 규칙이 바뀌면 이 문서를 갱신한다.
 
 ## 먼저 읽을 문서
 
-1. `docs/llm-context.md`
-2. `docs/workstreams.md`
-3. `docs/status.md`
-4. `docs/serverless-implementation.md`
-5. `docs/architecture.md`
-6. `docs/adr/`
-7. 변경하려는 영역의 `docs/modules/*.md`
+1. `docs/agent-collaboration.md`
+2. `docs/llm-context.md`
+3. `docs/workstreams.md`
+4. `docs/status.md`
+5. `docs/serverless-implementation.md`
+6. `docs/architecture.md`
+7. `docs/adr/`
+8. 변경하려는 영역의 `docs/modules/*.md`
 
 ## 핵심 설계 원칙
 
