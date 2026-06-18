@@ -186,7 +186,7 @@ Trend Lens v1 원칙:
 - 한국외대 글로벌캠퍼스 공고 영역은 `공고 없음`과 `공식 source 확인 실패`를 UI에서 분리한다. 공식 게시판이 정상 응답했지만 `겸임` 모집 공고가 없을 때만 공고 없음으로 표시한다.
 - Google News RSS의 `/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. Lambda는 Google News article/decode endpoint만 제한적으로 조회해 publisher 원문 URL을 우선 저장한다. publisher URL은 사용자가 클릭할 표시 URL일 뿐 Lambda가 추가 fetch하지 않는다. decode가 실패한 항목만 제목/출처 기반 Google News 검색 URL을 fallback으로 쓴다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존하고 UI에 게재일/등록일을 표시한다.
-- CVE 번호가 제목에 드러나는 보안 항목은 `짧은 취약점 설명 · CVE-...` 형태로 저장한다. CISA KEV의 vendor/product/취약점 설명과 KISA/CISA 교차 참조를 우선 사용하고, CVE별 외부 조회 API를 추가하려면 비용/timeout/source allowlist ADR이 먼저다.
+- CVE 번호가 제목에 드러나는 보안 항목은 `짧은 취약점 설명 · CVE-...` 형태로 저장한다. CISA KEV의 vendor/product/취약점 설명과 KISA/CISA 교차 참조를 우선 사용하고, CVE별 외부 조회 API를 추가하려면 비용/timeout/source allowlist ADR이 먼저다. CVE 외부 조회(NVD)와 API key source(SSM SecureString) 확장 방침은 `docs/adr/0010-trend-lens-cve-enrichment-and-keyed-sources.md`에서 결정했고, 구현은 ADR의 게이트(승인 + 배포 후 e2e)를 따른다.
 - 전체 refresh는 source를 병렬로 수집하고, source별 실패는 전체 API 실패가 아니라 `sourceStatuses`로 낮춰 기록한다.
 - Trend Lens UI는 분야 전체를 한 번에 늘어놓지 않는다. 오늘 브리프 lead/queue와 `보안`, `만돌린`, `IT 콘텐츠`, `교육`, `겸임교수 공고` 탭으로 한 분야씩 보여준다. 겸임교수 공고는 별도 보드에서 외대 글로벌캠퍼스 확인 결과와 서울·경기·충북 공고 목록을 나눠 보여준다.
 - 데스크톱 하단에서 Trend Lens는 최근 기록이 사라진 폭을 넓게 쓰는 지식 보드다. 날씨는 상단 대시보드 weather deck으로 이동했으므로 Trend Lens 아래에 중복 배치하지 않는다. `오늘의 흐름`은 상단 그래프와 중복되는 별도 section으로 만들지 않는다. `AWS 운영 사용량`은 오른쪽 보조 단에 끼워 넣지 않고 Trend Lens 이후 1단 section으로 읽히게 둔다.

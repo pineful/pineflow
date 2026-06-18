@@ -216,3 +216,9 @@
 - `AGENTS.md`를 정본으로 명시하고 `docs/agent-collaboration.md`를 먼저 읽을 문서 1순위로 추가했다. Codex와 Claude Code가 같은 협업 규칙을 공유한다.
 - Claude Code on the web 세션에서 의존성 설치가 자동화되도록 SessionStart 훅(`.claude/hooks/session-start.sh`)과 `.claude/settings.json`을 추가했다. 훅은 `CLAUDE_CODE_REMOTE=true`에서만 루트와 infra의 `npm install`을 멱등적으로 실행하고 로컬 세션은 건드리지 않는다.
 - Linux 컨테이너에서 루트 `npm run build`, `infra npm run verify`, 양쪽 `npm audit --audit-level=high`가 통과하는 것을 확인했다. 코드/저장소/인프라 계약은 변경하지 않아 데이터 마이그레이션은 필요 없다.
+- D1: README/development.md에 Windows↔Linux 명령 대조를 추가하고, Linux(Claude Code on the web) 실행 경로를 명시했다. Codex의 PowerShell 명령은 보존한다.
+- D2: EC2/PostgreSQL PoC 문서(`deployment-aws.md`, `modules/storage.md`) 상단에 레거시 PoC 배너와 Serverless 본선 포인터를 추가했다.
+- C3: infra `npm audit`가 현재 lockfile 기준 0건임을 확인하고, 과거 잔여 moderate `brace-expansion` 언급을 해소 상태로 갱신했다.
+- B2: `Pineflow Serverless Rollback` workflow를 추가했다. main에서 workflow_dispatch로 이전 정상 커밋(SHA/태그)을 입력받아 그 ref로 cdk deploy + 프론트엔드 재배포한다. OIDC trust subject가 main 고정이므로 main에서만 실행하며, 일반 배포와 같은 concurrency group으로 묶었다.
+- E2: Node 내장 test runner + tsx로 순수 모듈(date/weather/recordSessions) 단위 테스트를 추가하고 `npm test`와 CI validate 단계에 연결했다. 테스트 파일은 `tsconfig.json` exclude로 앱 빌드에서 제외한다.
+- B4: CVE 외부 조회(NVD)와 API key source(SSM SecureString, 기본 비활성화) 확장 방침을 `docs/adr/0010`으로 결정했다. 외부 호출 코드는 ADR 게이트(승인 + 배포 후 e2e)를 따른다. 관련 module/llm-context 문서에 교차 참조를 추가했다.
