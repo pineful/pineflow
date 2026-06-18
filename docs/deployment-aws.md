@@ -1,5 +1,10 @@
 # AWS EC2 Docker 배포
 
+> **레거시 PoC 문서.** 이 문서는 EC2 Docker/PostgreSQL **PoC** 운영 절차다.
+> Pineflow의 운영 본선은 AWS Serverless이며 새 기능은 이쪽으로 확장하지 않는다.
+> 본선 배포는 `docs/cicd.md`, `docs/serverless-implementation.md`,
+> `docs/aws-serverless-deployment-checklist.md`를 본다.
+
 ## 목표 구조
 
 Pineflow는 AWS EC2 `t3.micro` 인스턴스 한 대에서 두 개의 Docker 컨테이너로 운영합니다.

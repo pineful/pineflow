@@ -110,3 +110,17 @@ npm run check:trend-lens-sources
 ```
 
 이 검증은 공개 source를 직접 조회하므로 기본 `npm run verify`에는 넣지 않는다. 배포 전 원인 불명의 Trend Lens 조회 오류가 생기면 먼저 이 스크립트로 source 응답 크기와 파싱 가능 여부를 확인한다.
+
+## 향후 확장: CVE 외부 조회와 keyed source (ADR 0010)
+
+CVE 심각도(CVSS) 외부 보강(NVD)과 API key가 필요한 source(SSM SecureString,
+기본 비활성화) 확장 방침은 `docs/adr/0010-trend-lens-cve-enrichment-and-keyed-sources.md`에서
+결정했다. 핵심 제약:
+
+- 외부 CVE 조회는 `services.nvd.nist.gov` 하나만 allowlist에 고정하고, 조회 대상
+  CVE는 수집한 CISA KEV item에서 추출한 것만 쓴다. 사용자 입력 CVE/URL은 금지.
+- `all` scope 전체 수집에서만 회당 최대 5개 CVE를 보강하고, 실패는 비치명적으로
+  `nvd-cve` source status에만 기록한다.
+- API key는 SSM SecureString에서만 읽고 평문 env/Secrets/DynamoDB에 두지 않는다.
+- 구현은 ADR 게이트(승인 + 배포 후 e2e)를 따르며, 구현 시 API 계약/보안/비용/
+  배포 체크리스트와 `verify-template.mjs` 가드레일을 함께 갱신한다.

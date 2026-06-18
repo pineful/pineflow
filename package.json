@@ -7,6 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "api": "node server/index.mjs",
     "verify:css": "node scripts/check-css-guardrails.mjs",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "build": "npm run verify:css && tsc && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "start": "node server/index.mjs"
@@ -25,6 +26,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vite": "^8.0.16"
   }

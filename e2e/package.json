@@ -1,0 +1,15 @@
+{
+  "name": "pineflow-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Pineflow 배포 후 실계정 end-to-end(E1) 검증 하니스. 루트 앱 빌드와 분리한다.",
+  "scripts": {
+    "test": "playwright test",
+    "test:desktop": "playwright test --project=desktop-chromium",
+    "test:mobile": "playwright test --project=mobile-pixel",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

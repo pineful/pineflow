@@ -208,3 +208,18 @@
 - 새 출근 버튼 클릭이나 로그인 직후 포커스가 퇴근 후보로 오인되지 않도록 새 출근 시각 기준 90초 이내의 활동은 제외한다.
 - Lambda는 `inferredCheckOutAt`이 이전 출근 이후이자 새 출근 이전일 때만 이전 세션의 `checkOutAt`으로 저장하고, 조건에 맞지 않으면 기존처럼 `missing-check-out`으로 남기도록 검증한다.
 - `docs/api-contract.md`, `docs/modules/recording.md`, `docs/llm-context.md`에 자동 퇴근 보정의 API 계약과 설계 한계를 문서화했다.
+
+## 2026-06-18
+
+- 주 개발 도구를 Codex에서 Claude Code로 전환하기 위한 환경/지침 셋업을 추가했다. 기존 설계 사상(AGENTS.md + docs/)은 정본으로 그대로 두고, Claude Code가 자동으로 읽는 진입점 `CLAUDE.md`를 추가했다. CLAUDE.md는 설계 원칙을 복제하지 않고 읽기 순서, Linux 실행 환경, 검증 루프, 가드레일 요약만 포인터로 안내한다.
+- Codex(주로 교차 검증)와 Claude Code(주 개발)가 같은 저장소에서 충돌하지 않도록 `docs/agent-collaboration.md`를 추가했다. 단일 출처 원칙, 에이전트별 작업 브랜치 분리, 진행 상태 인계, 교차 검증 프로토콜, OS 무관 공통 검증 루프를 정리했다.
+- `AGENTS.md`를 정본으로 명시하고 `docs/agent-collaboration.md`를 먼저 읽을 문서 1순위로 추가했다. Codex와 Claude Code가 같은 협업 규칙을 공유한다.
+- Claude Code on the web 세션에서 의존성 설치가 자동화되도록 SessionStart 훅(`.claude/hooks/session-start.sh`)과 `.claude/settings.json`을 추가했다. 훅은 `CLAUDE_CODE_REMOTE=true`에서만 루트와 infra의 `npm install`을 멱등적으로 실행하고 로컬 세션은 건드리지 않는다.
+- Linux 컨테이너에서 루트 `npm run build`, `infra npm run verify`, 양쪽 `npm audit --audit-level=high`가 통과하는 것을 확인했다. 코드/저장소/인프라 계약은 변경하지 않아 데이터 마이그레이션은 필요 없다.
+- D1: README/development.md에 Windows↔Linux 명령 대조를 추가하고, Linux(Claude Code on the web) 실행 경로를 명시했다. Codex의 PowerShell 명령은 보존한다.
+- D2: EC2/PostgreSQL PoC 문서(`deployment-aws.md`, `modules/storage.md`) 상단에 레거시 PoC 배너와 Serverless 본선 포인터를 추가했다.
+- C3: infra `npm audit`가 현재 lockfile 기준 0건임을 확인하고, 과거 잔여 moderate `brace-expansion` 언급을 해소 상태로 갱신했다.
+- B2: `Pineflow Serverless Rollback` workflow를 추가했다. main에서 workflow_dispatch로 이전 정상 커밋(SHA/태그)을 입력받아 그 ref로 cdk deploy + 프론트엔드 재배포한다. OIDC trust subject가 main 고정이므로 main에서만 실행하며, 일반 배포와 같은 concurrency group으로 묶었다.
+- E2: Node 내장 test runner + tsx로 순수 모듈(date/weather/recordSessions) 단위 테스트를 추가하고 `npm test`와 CI validate 단계에 연결했다. 테스트 파일은 `tsconfig.json` exclude로 앱 빌드에서 제외한다.
+- B4: CVE 외부 조회(NVD)와 API key source(SSM SecureString, 기본 비활성화) 확장 방침을 `docs/adr/0010`으로 결정했다. 외부 호출 코드는 ADR 게이트(승인 + 배포 후 e2e)를 따른다. 관련 module/llm-context 문서에 교차 참조를 추가했다.
+- E1 준비: 배포 후 실계정 end-to-end 검증용 Playwright 하니스를 `e2e/`에 추가했다(루트와 분리된 독립 package.json). 로그인~출퇴근~기록 수정·삭제~Trend Lens~로그아웃을 데스크탑/모바일 viewport에서 돌며, 배포 URL/계정을 env로 받고 미설정 시 skip한다. `--list`로 컴파일/설정 로드를 확인했다(데스크탑/모바일 2 테스트).

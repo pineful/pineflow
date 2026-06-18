@@ -69,5 +69,6 @@ CSS 변경은 `docs/modules/css-architecture.md`의 누적 방지 기준을 따�
 
 - 기록 내보내기 기능 추가.
 - 계정 동기화와 다중 기기 사용 지원.
-- GitHub Actions rollback 자동화.
 - DynamoDB export/import 백업 절차 구현.
+
+(완료: Serverless GitHub Actions rollback 자동화 — `docs/cicd.md`, `.github/workflows/serverless-rollback.yml`.)
