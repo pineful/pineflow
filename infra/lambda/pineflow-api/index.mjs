@@ -2009,6 +2009,7 @@ function parseHibrainRecruitmentItems(html, now) {
 async function collectHibrainRecruitmentBoard(now) {
   const checkedAt = now.toISOString();
   const text = await fetchTrendLensSource(trendLensSources.hibrainRecruitment);
+  const anchorCount = (text.match(/\/recruitment\/recruits\/\d+/g) ?? []).length;
   const items = parseHibrainRecruitmentItems(text, now).slice(0, 6);
 
   return {
@@ -2018,7 +2019,7 @@ async function collectHibrainRecruitmentBoard(now) {
       checkedAt,
       items.length > 0
         ? `하이브레인넷 신규 공고에서 겸임교수 모집 ${items.length}개를 확인했습니다.`
-        : "하이브레인넷 신규 공고를 확인했으며, 현재 겸임교수 모집 공고는 발견하지 못했습니다."
+        : `하이브레인넷 신규 공고 목록을 확인했습니다(공고 링크 ${anchorCount}개). 현재 겸임교수 모집 공고는 발견하지 못했습니다.`
     ),
     items
   };
@@ -2167,28 +2168,37 @@ async function buildTrendLensSnapshot(scope = "all", previousSnapshot = null) {
   });
 
   if (scope === "all") {
-    let hufsRecruitmentItems = [];
-    try {
-      const hufsRecruitment = await collectHufsRecruitmentBoard(now);
-      statuses.push(hufsRecruitment.status);
-      hufsRecruitmentItems = hufsRecruitment.items;
-    } catch {
-      statuses.push(sourceStatus(trendLensSources.hufsRecruitment, "unavailable", now.toISOString(), "한국외대 공식 채용 게시판을 확인하지 못했습니다. 보조 검색 결과가 있으면 함께 표시합니다."));
-    }
-
-    let hibrainRecruitmentItems = [];
-    try {
-      const hibrainRecruitment = await collectHibrainRecruitmentBoard(now);
-      statuses.push(hibrainRecruitment.status);
-      hibrainRecruitmentItems = hibrainRecruitment.items;
-    } catch {
-      statuses.push(sourceStatus(trendLensSources.hibrainRecruitment, "unavailable", now.toISOString(), "하이브레인넷 신규 공고를 확인하지 못했습니다. 다른 공고 source 결과가 있으면 함께 표시합니다."));
-    }
-
-    const academicBoardItems = [...hufsRecruitmentItems, ...hibrainRecruitmentItems];
+    const academicBoards = [
+      {
+        source: trendLensSources.hufsRecruitment,
+        promise: collectHufsRecruitmentBoard(now),
+        failMessage: "한국외대 공식 채용 게시판을 확인하지 못했습니다. 보조 검색 결과가 있으면 함께 표시합니다."
+      },
+      {
+        source: trendLensSources.hibrainRecruitment,
+        promise: collectHibrainRecruitmentBoard(now),
+        failMessage: "하이브레인넷 신규 공고를 확인하지 못했습니다. 다른 공고 source 결과가 있으면 함께 표시합니다."
+      }
+    ];
 
     const categories = ["mandolin", "it-content", "education", "academic-jobs"];
-    const sectionResults = await Promise.allSettled(categories.map((category) => collectNewsSection(category, now)));
+    // 채용 게시판 수집과 분야별 뉴스 수집을 모두 동시에 실행해 Lambda timeout 여유를 확보한다.
+    const [boardResults, sectionResults] = await Promise.all([
+      Promise.allSettled(academicBoards.map((board) => board.promise)),
+      Promise.allSettled(categories.map((category) => collectNewsSection(category, now)))
+    ]);
+
+    const academicBoardItems = [];
+    boardResults.forEach((result, index) => {
+      const board = academicBoards[index];
+      if (result.status === "fulfilled") {
+        statuses.push(result.value.status);
+        academicBoardItems.push(...result.value.items);
+      } else {
+        statuses.push(sourceStatus(board.source, "unavailable", now.toISOString(), board.failMessage));
+      }
+    });
+
     sectionResults.forEach((result, index) => {
       const category = categories[index];
       if (result.status === "fulfilled") {
