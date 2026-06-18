@@ -372,13 +372,13 @@ API 요청/응답/status가 바뀌면 이 문서를 같은 변경에서 갱신�
 
 - `all`: 전체 브리프 갱신.
 - `security`: 공식 보안 신호만 빠르게 갱신.
+- `academic`: 겸임교수 공고 보드(외대 채용 게시판 + 하이브레인넷 신규 공고 + 겸임 Google News)만 가볍게 갱신한다. fetch 수가 적어 8초 Lambda timeout 안에 안정적으로 끝나고, 무거운 `all` 수집에 hibrain이 밀려 누락되는 것을 막는다. 다른 분야 섹션은 이전 snapshot 값을 유지한다(ADR 0012).
 
 제약:
 
 - URL, host, 임의 keyword 입력은 허용하지 않는다.
-- `all` 수동 갱신은 기본 30분 cooldown을 둔다.
-- `security` 수동 갱신은 기본 5분 cooldown을 둔다.
-- `force=true`이면 사용자가 명시적으로 강제한 요청으로 보고 `all` 5분, `security` 1분의 짧은 연타 방지 cooldown만 적용한다.
+- `all` 수동 갱신은 기본 30분, `security`는 5분, `academic`은 10분 cooldown을 둔다.
+- `force=true`이면 사용자가 명시적으로 강제한 요청으로 보고 `all` 5분, `security` 1분, `academic` 1분의 짧은 연타 방지 cooldown만 적용한다.
 - `reset=true`이면 `SYSTEM#TREND_LENS` partition의 `LATEST`와 날짜 snapshot을 먼저 삭제한 뒤 이전 snapshot 없이 다시 수집한다. 출퇴근 기록과 사용자 설정은 삭제하지 않는다. 연타 방지를 위해 reset 전용 1분 guard를 둔다.
 - cooldown 중이면 `429`와 함께 `nextManualRefreshAllowedAt`을 반환한다. 프론트엔드는 이 상황을 서버 장애가 아니라 방금 갱신한 상태로 안내한다.
 - 자동 수집은 public endpoint가 아니라 EventBridge가 Lambda 내부 이벤트를 호출한다.
