@@ -156,6 +156,14 @@ function hufsAcademicJobCount(text) {
     .filter(isAcademicJobNoticeTitle).length;
 }
 
+function hibrainAcademicJobCount(text) {
+  const anchors = [...text.matchAll(/<a\b[^>]*href="([^"]*\/recruitment\/recruits\/\d+[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi)];
+  const titles = anchors
+    .map((match) => decodeXmlText(match[2]).replace(/\s*\b\d{2}\.\d{1,2}\.\d{1,2}\b[\s\S]*$/, "").replace(/^\d{1,3}\s+/, ""))
+    .filter(isAcademicJobNoticeTitle);
+  return `${anchors.length} recruit anchors, ${titles.length} academic job notices`;
+}
+
 const sources = [
   {
     id: "cisa-kev",
@@ -216,6 +224,14 @@ const sources = [
     accept: "text/html, application/xhtml+xml, */*",
     maxBytes: 512 * 1024,
     parser: (text) => `${hufsAcademicJobCount(text)} academic job notices`
+  },
+  {
+    id: "hibrain-recruitment",
+    label: "Hibrain new recruitment listing",
+    url: "https://www.hibrain.net/recruitment/recruits?listType=D3NEW",
+    accept: "text/html, application/xhtml+xml, */*",
+    maxBytes: 512 * 1024,
+    parser: (text) => hibrainAcademicJobCount(text)
   },
   {
     id: "google-news-mandolin",

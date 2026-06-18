@@ -182,7 +182,7 @@ Trend Lens v1 원칙:
 - 외부 source URL은 코드 allowlist에 고정한다. 사용자 입력 URL, host, keyword를 Lambda fetch에 쓰지 않는다.
 - 보안 섹션은 KISA/CISA 공식 source와 전문 보안 매체 RSS allowlist를 함께 사용한다. 전문 매체 기사는 `전문 매체`, `빠른 보안 뉴스` reason tag로 공식 경보와 구분한다.
 - 만돌린, IT 콘텐츠, 교육 분야는 Google News RSS allowlist query로 최신 소식을 수집한다. Wikipedia, Wikimedia Pageviews, 백과사전, wiki mirror는 일일 뉴스가 아니므로 source로 쓰지 않는다.
-- 겸임교수 공고 분야는 한국외국어대학교 공식 `채용` 게시판을 1순위 source로 확인하고, 서울·경기·충북 지역 대학 공고는 고정 Google News RSS query를 보조 source로 사용한다. 사용자 입력 검색어/URL은 허용하지 않는다.
+- 겸임교수 공고 분야는 한국외국어대학교 공식 `채용` 게시판과 하이브레인넷(`www.hibrain.net`) 신규 공고 목록을 1순위 source로 확인하고, 서울·경기·충북 지역 대학 공고는 고정 Google News RSS query를 보조 source로 사용한다. 사용자 입력 검색어/URL은 허용하지 않는다. 하이브레인넷 source는 ADR 0011을 따르며, 코드 고정 신규 목록 URL에서 제목과 날짜만 추출해 `겸임` 필터로 좁히고 공고 상세/첨부파일은 Lambda가 추가 fetch하지 않는다. hibrain 국내 사이트는 해외 IP를 geo차단하므로 서울 리전 Lambda 기준으로 동작하고, 차단/실패 시 source status만 낮춘다.
 - 한국외대 글로벌캠퍼스 공고 영역은 `공고 없음`과 `공식 source 확인 실패`를 UI에서 분리한다. 공식 게시판이 정상 응답했지만 `겸임` 모집 공고가 없을 때만 공고 없음으로 표시한다.
 - Google News RSS의 `/rss/articles/...` 중간 URL은 사용자 클릭 링크로 저장하지 않는다. Lambda는 Google News article/decode endpoint만 제한적으로 조회해 publisher 원문 URL을 우선 저장한다. publisher URL은 사용자가 클릭할 표시 URL일 뿐 Lambda가 추가 fetch하지 않는다. decode가 실패한 항목만 제목/출처 기반 Google News 검색 URL을 fallback으로 쓴다.
 - 보안 신호와 뉴스 item은 `publishedAt`을 가능한 한 보존하고 UI에 게재일/등록일을 표시한다.
