@@ -46,6 +46,23 @@ API 설정을 바꾸려면 `.env.example`을 `.env`로 복사한 뒤 값을 수�
 
 `npm run build`는 TypeScript/Vite 빌드 전에 `npm run verify:css`를 실행합니다. 이 검증은 `src/styles.css`에 날짜별 override block을 계속 쌓거나 `!important`, CSS `@import`, TODO/FIXME/HACK 주석을 추가하는 것을 막기 위한 CSS 구조 가드레일입니다.
 
+## 단위 테스트
+
+순수 로직 모듈(`src/date.ts`, `src/weather.ts`, `src/recordSessions.ts` 등)은
+Node 내장 test runner로 회귀 검증합니다. 별도 테스트 프레임워크 없이 `tsx`
+loader만 devDependency로 사용합니다.
+
+```bash
+npm test   # node --import tsx --test "src/**/*.test.ts"
+```
+
+- 테스트 파일은 모듈 옆에 `*.test.ts`로 둡니다. (예: `src/date.test.ts`)
+- 테스트 파일은 브라우저 앱 빌드 대상이 아니므로 `tsconfig.json`의 `exclude`로
+  `tsc`/`vite` 빌드에서 제외합니다. Node `node:test`/`node:assert`를 직접 씁니다.
+- 화면 동작, 인증 플로우, AWS 연동은 단위 테스트 범위가 아니다. 빌드/로컬
+  스모크 + 배포 후 실계정 e2e로 본다.
+- CI(`Pineflow Serverless`)의 validate job이 빌드 전에 `npm test`를 실행한다.
+
 Vite 개발 서버를 API와 별도로 띄울 때는 `.env`에 `VITE_API_BASE_URL=http://127.0.0.1:3001`를 둡니다. 그러면 브라우저 요청이 API 서버로 전달됩니다.
 
 `docker compose up -d postgres`를 실행하기 전에는 Docker Desktop이 켜져 있어야 합니다. Docker가 설치되어 있어도 엔진이 꺼져 있으면 PostgreSQL 이미지를 내려받거나 컨테이너를 시작할 수 없습니다.
