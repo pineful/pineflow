@@ -8,6 +8,7 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 
 ## 완료됨
 
+- 로그인 직후 출근/퇴근 race 버그 수정: reserved concurrency 1 Lambda에 백그라운드 usage/Trend Lens 조회와 기록 요청이 동시에 도달해 5xx(`서버가 요청을 처리하지 못했습니다`)가 나던 문제를, `src/api.ts`에서 모든 API 호출을 FIFO로 직렬화해 해결. 비멱등 요청 자동 재시도는 두지 않음.
 - 제품명 `Pineflow` 확정.
 - 모바일 우선 출퇴근 기록 UI 구현.
 - EC2 Docker/PostgreSQL PoC 구현.
