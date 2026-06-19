@@ -47,7 +47,27 @@ function messageForStatus(statusCode: number, serverMessage?: string) {
   return message;
 }
 
-async function requestJson<T>(path: string, init?: RequestInit, didRetry = false): Promise<T> {
+// Lambda는 reserved concurrency 1로 동작하므로 동시에 두 개 이상의 요청이 도달하면
+// 두 번째 요청이 throttle되어 5xx로 떨어진다(예: 로그인 직후 백그라운드 usage/trend
+// 조회와 출퇴근 기록 요청이 겹치는 경우). 모든 API 호출을 FIFO로 직렬화해 단일 클라이언트가
+// 스스로 동시 요청을 만들지 않도록 막는다. 자동 재시도는 출퇴근 같은 비멱등 요청을 중복
+// 생성할 수 있어 두지 않는다.
+let requestQueue: Promise<unknown> = Promise.resolve();
+
+function enqueueRequest<T>(task: () => Promise<T>): Promise<T> {
+  const result = requestQueue.then(task, task);
+  requestQueue = result.then(
+    () => undefined,
+    () => undefined
+  );
+  return result;
+}
+
+function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  return enqueueRequest(() => performRequest<T>(path, init, false));
+}
+
+async function performRequest<T>(path: string, init: RequestInit | undefined, didRetry: boolean): Promise<T> {
   const token = await getValidAccessToken();
   if (!token) {
     throw new SessionExpiredError();
@@ -65,7 +85,7 @@ async function requestJson<T>(path: string, init?: RequestInit, didRetry = false
   if ((response.status === 401 || response.status === 403) && !didRetry) {
     const refreshedToken = await refreshSession(true);
     if (refreshedToken) {
-      return requestJson<T>(path, init, true);
+      return performRequest<T>(path, init, true);
     }
   }
 
@@ -81,8 +101,8 @@ async function requestJson<T>(path: string, init?: RequestInit, didRetry = false
   return response.json();
 }
 
-async function requestState(path: string, init?: RequestInit, didRetry = false) {
-  return requestJson<CommuteState>(path, init, didRetry);
+function requestState(path: string, init?: RequestInit) {
+  return requestJson<CommuteState>(path, init);
 }
 
 export function fetchState() {
