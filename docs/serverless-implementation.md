@@ -62,6 +62,8 @@ DynamoDB single-table 구조를 사용한다.
 
 기록 삭제는 `DELETE /api/records/{recordId}`로 처리한다. `recordId`에서 `sessionId`를 추출해 해당 `SESSION#...` item 전체를 삭제하고, 삭제 대상이 활성 세션이면 `ACTIVE_SESSION` item도 같은 transaction에서 삭제한다. 개별 출근/퇴근 이벤트만 삭제하는 기능은 세션 모델을 깨뜨릴 수 있으므로 제공하지 않는다.
 
+운영자용 DynamoDB 논리 백업/복구 절차는 `infra/scripts/dynamodb-backup.mjs`로 제공한다. 이 스크립트는 새 AWS 리소스를 만들지 않고 AWS CLI `scan`/`put-item`을 저속 호출해 raw DynamoDB AttributeValue JSON을 저장한다. 검증은 `SESSION#<checkInAt>#<sessionId>` 정렬 키와 `ACTIVE_SESSION.sessionSk` 참조를 확인하며, 복구는 기본적으로 기존 item을 덮어쓰지 않는다.
+
 ## 배포 흐름
 
 1. GitHub Actions가 앱과 인프라를 검증한다.
@@ -73,7 +75,6 @@ DynamoDB single-table 구조를 사용한다.
 
 ## 아직 남은 작업
 
-- DynamoDB export/import 운영 절차 구체화.
 - 실제 사용 후 CloudWatch 지표를 보며 throttling/capacity 조정 필요 여부 확인.
 - Budget 알림 이메일 구독과 비용 알림 수신 상태를 주기적으로 확인.
 

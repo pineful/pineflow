@@ -66,6 +66,7 @@ Serverless 운영 배포는 GitHub OIDC와 AWS IAM Role을 사용합니다. 장�
 - 모듈 설계: `docs/modules/`
 - 변경 기록: `docs/change-log.md`
 - AWS 배포/운영: `docs/deployment-aws.md`
+- Serverless 배포 인계서: `docs/serverless-deployment-handoff.md`
 - CI/CD: `docs/cicd.md`
 - 보안: `docs/security.md`
 - 데이터 백업/마이그레이션: `docs/data-management.md`

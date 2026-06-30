@@ -1,5 +1,13 @@
 # 변경 기록
 
+## 2026-06-29
+
+- 운영 본선 DynamoDB용 export/import 백업 절차를 추가했습니다. `infra/scripts/dynamodb-backup.mjs`는 AWS CLI v2를 사용해 새 AWS 리소스 없이 raw DynamoDB AttributeValue JSON을 백업하고, import 전 `SESSION#<checkInAt>#<sessionId>` 정렬 키와 `ACTIVE_SESSION.sessionSk` 참조를 검증합니다.
+- `infra` npm scripts에 `dynamodb:backup`, `dynamodb:backup:validate`, `dynamodb:restore`를 추가했습니다. 복구는 기본적으로 기존 item을 덮어쓰지 않고, `--skip-existing`, `--skip-derived`, `--dry-run`으로 운영 위험을 줄입니다.
+- 개인 기록 백업 파일이 커밋되지 않도록 `backups/`를 `.gitignore`에 추가하고, `docs/data-management.md`, `docs/modules/serverless-storage.md`, `docs/serverless-implementation.md`, `docs/development.md`, `docs/status.md`에 운영 절차와 주의사항을 반영했습니다.
+- 루트 `npm audit`에 남아 있던 low severity `@babel/core` transitive advisory를 lockfile 업데이트로 해소했습니다.
+- 흩어져 있던 배포 준비 내용을 사용자가 따라갈 수 있도록 `docs/serverless-deployment-handoff.md`로 묶었습니다. 최초 AWS 준비, GitHub OIDC Role, Repository Variables, Actions 배포, 배포 후 Cognito 사용자 생성, E2E, 백업, 롤백, 중단 기준을 한 문서에 정리했습니다.
+
 ## 2026-06-14
 
 - CSS가 기능 수정 때마다 계속 누적되는 문제를 막기 위해 `docs/modules/css-architecture.md`와 `src/styles/README.md`를 추가했습니다.

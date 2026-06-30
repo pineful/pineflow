@@ -1,6 +1,6 @@
 # 진행 상황
 
-마지막 업데이트: 2026-06-18
+마지막 업데이트: 2026-06-29
 
 ## 현재 상태 요약
 
@@ -8,6 +8,9 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 
 ## 완료됨
 
+- DynamoDB export/import 백업 절차를 구현했다. `infra/scripts/dynamodb-backup.mjs`는 AWS CLI v2로 DynamoDB table을 raw AttributeValue JSON으로 저속 export/import하고, `ACTIVE_SESSION.sessionSk`와 `SESSION#<checkInAt>#<sessionId>` 관계를 복구 전 검증한다. 기본 import는 기존 item을 덮어쓰지 않으며, `--skip-existing`, `--skip-derived`, `--dry-run`으로 운영 복구 위험을 줄인다. `backups/`는 `.gitignore`에 추가해 개인 기록 백업이 저장소에 올라가지 않게 했다.
+- 사용자에게 전달할 Serverless 배포 인계서를 추가했다. `docs/serverless-deployment-handoff.md`는 최초 AWS 준비, GitHub OIDC Role 생성, Repository Variables, GitHub Actions 배포, 배포 후 Cognito 사용자 생성과 E2E, 백업, 롤백, 중단 기준을 한 흐름으로 정리한다.
+- 루트 `npm audit`에 남아 있던 low severity `@babel/core` transitive advisory를 lockfile 패치 범위 업데이트로 해소했다. 루트와 `infra` 모두 audit 기준 0건이다.
 - 로그인 직후 출근/퇴근 race 버그 수정: reserved concurrency 1 Lambda에 백그라운드 usage/Trend Lens 조회와 기록 요청이 동시에 도달해 5xx(`서버가 요청을 처리하지 못했습니다`)가 나던 문제를, `src/api.ts`에서 모든 API 호출을 FIFO로 직렬화해 해결. 비멱등 요청 자동 재시도는 두지 않음.
 - 제품명 `Pineflow` 확정.
 - 모바일 우선 출퇴근 기록 UI 구현.
@@ -139,14 +142,14 @@ Pineflow는 기존 EC2 Docker/PostgreSQL PoC를 보존하되, 실제 운영 기�
 - `infra` CDK synth 성공.
 - CDK synth 결과에서 주요 보안/비용 가드레일 확인.
 - `infra` CDK 템플릿 guardrail 자동 검증 성공.
-- 루트 애플리케이션 `npm audit --audit-level=high` 취약점 없음.
+- 루트 애플리케이션 `npm audit` 취약점 없음.
 - `infra` `npm audit` 기준 취약점 0건. 과거 `aws-cdk-lib` 하위 개발/인프라 도구 체인의 moderate `brace-expansion` 이슈는 현재 lockfile에서 패치 버전으로 해소되었다(원래 Lambda 런타임 asset에는 미포함).
 
 ## 아직 남은 일
 
-- DynamoDB export/import 백업 절차 구현.
 - 실제 사용 후 CloudWatch 지표 기반 throttling/capacity 조정.
 - Budget 알림 이메일 구독과 비용 알림 수신 상태를 주기적으로 확인 (A3: CDK에 Budgets 리소스는 있으나 이메일 구독 승인은 사용자 받은편지함에서 직접 수행).
+- 최초 배포 후 `docs/serverless-deployment-handoff.md` 기준으로 CloudFront URL, Cognito 테스트 계정, E1 Playwright 실계정 검증 결과를 남긴다.
 - 큰 파일 리팩토링(C1 `src/styles.css` 모듈 분리, C2 `src/App.tsx` 책임 분리)은 배포 후 실계정 e2e 기준선 확보 뒤 진행 (refactor-plan 진입 기준).
 - B4 구현: Trend Lens CVE 외부 조회(NVD)와 keyed source는 ADR 0010 결정 완료, 코드 구현은 ADR 게이트(승인 + 배포 후 e2e)를 따른다.
 - E1 실계정 end-to-end 검증: 배포 후 테스트 계정/URL로 로그인~출퇴근~기록 수정·삭제~Trend Lens를 모바일/데스크탑에서 점검. Playwright 하니스(`e2e/`, `e2e/README.md`)는 준비 완료, 배포 URL/계정을 env로 받으면 실행한다.

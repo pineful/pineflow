@@ -7,6 +7,9 @@
     "synth": "cdk synth",
     "verify": "npm run build && npm run synth && node scripts/verify-template.mjs",
     "check:trend-lens-sources": "node scripts/check-trend-lens-sources.mjs",
+    "dynamodb:backup": "node scripts/dynamodb-backup.mjs export",
+    "dynamodb:restore": "node scripts/dynamodb-backup.mjs import",
+    "dynamodb:backup:validate": "node scripts/dynamodb-backup.mjs validate",
     "diff": "cdk diff",
     "deploy": "cdk deploy"
   },

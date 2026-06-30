@@ -22,6 +22,11 @@
 - 운영 전환 전 PostgreSQL PoC 데이터가 있다면 JSON 또는 CSV로 export한다.
 - Cognito 사용자 `sub`와 기존 owner key를 매핑한 뒤 DynamoDB item 형식으로 변환한다.
 - import 후 record count와 표본 기록을 검증한다.
+- 운영 본선 DynamoDB 백업은 `infra/scripts/dynamodb-backup.mjs`를 사용한다. 이 스크립트는 새 AWS 리소스를 만들지 않고 AWS CLI `scan`/`put-item`을 저속으로 호출해 raw DynamoDB AttributeValue JSON을 export/import한다.
+- 백업 검증은 `pk/sk` 중복, `SESSION#<checkInAt>#<sessionId>` 정렬 키 일치, `ACTIVE_SESSION.sessionSk` 참조 유효성을 확인한다.
+- 복구는 기본적으로 기존 item을 덮어쓰지 않는다. 빈 table 복구는 기본 import, 일부 item 보강은 `--skip-existing`, 사용자 기록/설정만 복구할 때는 `--skip-derived`를 사용한다.
+- Trend Lens snapshot과 운영 사용량 snapshot은 파생 cache이므로, 재생성이 가능한 복구에서는 제외할 수 있다.
+- `1 RCU / 1 WCU` 비용 가드레일을 유지하기 위해 export page와 import write 사이에 지연을 둔다. 데이터가 늘어나면 `--page-size`를 줄이거나 `--delay-ms`를 늘린다.
 
 ## 기록 시간 보정
 

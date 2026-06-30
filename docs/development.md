@@ -71,6 +71,23 @@ npm test   # node --import tsx --test "src/**/*.test.ts"
 돈다. 배포 URL과 테스트 계정을 env로 받으며, env가 없으면 skip 한다. 실행
 방법은 `e2e/README.md`를 본다.
 
+## Serverless DynamoDB 백업/복구
+
+운영 본선 DynamoDB table의 논리 백업/복구는 `infra/scripts/dynamodb-backup.mjs`를
+사용합니다. 이 명령은 AWS CLI v2 credential이 필요하고, 새 AWS 리소스를 만들지
+않습니다. 백업 파일은 개인 기록을 포함하므로 `backups/`에 두더라도 커밋하지
+않습니다(`.gitignore` 적용).
+
+```powershell
+cd infra
+& "C:\Program Files\nodejs\npm.cmd" run dynamodb:backup -- --out ../backups/pineflow-dynamodb-20260629-000000.json --profile <aws-profile> --region ap-northeast-2
+& "C:\Program Files\nodejs\npm.cmd" run dynamodb:backup:validate -- --file ../backups/pineflow-dynamodb-20260629-000000.json
+& "C:\Program Files\nodejs\npm.cmd" run dynamodb:restore -- --file ../backups/pineflow-dynamodb-20260629-000000.json --dry-run --profile <aws-profile> --region ap-northeast-2
+```
+
+절차와 복구 옵션(`--skip-existing`, `--skip-derived`, `--overwrite`)은
+`docs/data-management.md`를 본다.
+
 Vite 개발 서버를 API와 별도로 띄울 때는 `.env`에 `VITE_API_BASE_URL=http://127.0.0.1:3001`를 둡니다. 그러면 브라우저 요청이 API 서버로 전달됩니다.
 
 `docker compose up -d postgres`를 실행하기 전에는 Docker Desktop이 켜져 있어야 합니다. Docker가 설치되어 있어도 엔진이 꺼져 있으면 PostgreSQL 이미지를 내려받거나 컨테이너를 시작할 수 없습니다.

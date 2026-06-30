@@ -49,6 +49,7 @@ EC2 Docker/PostgreSQL workflow는 PoC 보존용 수동 workflow입니다. 새 �
 - `infra/lib/pineflow-serverless-stack.ts`: CDK stack 정의.
 - `infra/scripts/verify-template.mjs`: 비용/보안 guardrail 검증.
 - `infra/bootstrap/github-oidc-deploy-role.template.yaml`: GitHub OIDC 배포 Role 템플릿.
+- `docs/serverless-deployment-handoff.md`: 사용자가 따라갈 최초 배포/검증/롤백 인계서.
 - `docs/aws-iam-oidc.md`: OIDC Role 생성 절차.
 - `docs/aws-serverless-deployment-checklist.md`: 배포 전후 점검표.
 
